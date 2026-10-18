@@ -3,6 +3,16 @@ package org.mayad.fame_life.core.preview
 import org.mayad.fame_life.data.content.SeedContent
 import org.mayad.fame_life.data.local.CreatorProfile
 import org.mayad.fame_life.data.local.InAppNotification
+import org.mayad.fame_life.domain.ai.SpeechStatus
+import org.mayad.fame_life.domain.simulation.AiActivity
+import org.mayad.fame_life.domain.simulation.AudienceEvent
+import org.mayad.fame_life.domain.simulation.AudienceMember
+import org.mayad.fame_life.domain.simulation.CommentTone
+import org.mayad.fame_life.domain.simulation.GiftCatalog
+import org.mayad.fame_life.domain.simulation.LiveSessionState
+import org.mayad.fame_life.domain.simulation.LiveSnapshot
+import org.mayad.fame_life.domain.simulation.ReactionKind
+import org.mayad.fame_life.domain.simulation.SessionStatus
 import org.mayad.fame_life.domain.simulation.SessionSummary
 
 /**
@@ -58,4 +68,36 @@ object SampleData {
     val creator = SeedContent.creators.first()
     val post = SeedContent.posts.first()
     val room = SeedContent.liveRooms.first()
+
+    private val members = listOf(
+        AudienceMember("m1", "lina.vibes", 280f),
+        AudienceMember("m2", "omar_k", 30f, isVip = true),
+        AudienceMember("m3", "nightowl", 190f),
+        AudienceMember("m4", "sara.m", 330f),
+    )
+
+    val comments = listOf(
+        AudienceEvent.Comment(1, 1_000, members[0], "wait, tell us more!!", CommentTone.CURIOUS, contextual = true),
+        AudienceEvent.Comment(2, 2_000, members[1], "this story is wild 😂", CommentTone.FUNNY, contextual = true),
+        AudienceEvent.Comment(3, 3_000, members[2], "hello from Cairo 👋", CommentTone.SUPPORTIVE, contextual = false),
+        AudienceEvent.Comment(4, 4_000, members[3], "not sure I agree tbh", CommentTone.CRITICAL, contextual = true),
+    )
+
+    val gift = AudienceEvent.GiftSent(10, 5_000, members[1], GiftCatalog.byId("crown")!!, reason = null)
+
+    val liveState = LiveSessionState(
+        live = LiveSnapshot(
+            status = SessionStatus.RUNNING,
+            elapsedSeconds = 312,
+            remainingSeconds = 288,
+            viewers = 2_480,
+            peakViewers = 2_610,
+            comments = comments,
+            spotlight = gift,
+            reactions = listOf(AudienceEvent.Reaction(20, 5_500, ReactionKind.HEART, 5)),
+        ),
+        ai = AiActivity.ON_DEVICE,
+        speech = SpeechStatus.LISTENING,
+        livePartial = "so then I told them the whole story",
+    )
 }

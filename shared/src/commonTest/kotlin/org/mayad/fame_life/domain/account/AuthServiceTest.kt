@@ -4,17 +4,8 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
-class AuthRulesTest {
-    @Test
-    fun everyRealFailureHasUserFacingCopyAndClosingThePickerHasNone() {
-        assertNull(AuthRules.message(AuthErrorKind.CANCELLED))
-        AuthErrorKind.entries.filter { it != AuthErrorKind.CANCELLED }
-            .forEach { assertTrue(AuthRules.message(it)?.isNotBlank() == true, it.name) }
-    }
-
+class AuthServiceTest {
     @Test
     fun unconfiguredBuildsRefuseAccountsHonestly() = runTest {
         val auth = UnavailableAuthService()

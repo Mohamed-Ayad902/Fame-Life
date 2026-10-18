@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="post_unavailable_title">This post isn\'t available</string>
+    <string name="post_unavailable_body">It may have been removed from the feed.</string>
+    <string name="post_go_back">Go back</string>
+    <string name="post_like">Like</string>
+    <string name="post_liked">Liked</string>
+    <string name="post_not_liked">Not liked</string>
+    <string name="post_share">Share</string>
+    <string name="post_comments">Comments</string>
+    <string name="post_comments_simulated">%1$s simulated</string>
+    <string name="post_more_from">More from %1$s</string>
+    <string name="post_share_text">“%1$s” by @%2$s, a simulated post in %3$s</string>
+</resources>

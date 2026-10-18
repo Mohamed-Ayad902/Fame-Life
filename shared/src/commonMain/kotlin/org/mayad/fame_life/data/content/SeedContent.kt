@@ -1,5 +1,6 @@
 package org.mayad.fame_life.data.content
 
+import org.mayad.fame_life.domain.progression.FameLevel
 import kotlin.random.Random
 
 /**
@@ -9,20 +10,20 @@ import kotlin.random.Random
  */
 object SeedContent {
     val creators: List<Creator> = listOf(
-        creator("c_nova", "Nova Reyes", "novaplays", Category.GAMING, "Speedrunner by night, chaos gremlin by day. Co-op Fridays.", 482_300, 6_210_000, "Influencer", 2, ArtMotif.HORIZON, 1, 228f),
-        creator("c_layla", "Layla Haddad", "layla.sings", Category.MUSIC, "Covers, originals and late-night piano. Requests open.", 1_240_000, 18_900_000, "Celebrity", 3, ArtMotif.WAVES, 2, 330f),
-        creator("c_omar", "Omar Fathy", "omarlaughs", Category.COMEDY, "Everyday stories that got out of hand.", 356_700, 4_480_000, "Influencer", 1, ArtMotif.STAGE, 3, 18f),
-        creator("c_mika", "Mika Tan", "mika.cooks", Category.LIFESTYLE, "Twenty-minute dinners and one ambitious dessert a week.", 214_900, 2_330_000, "Known Creator", 4, ArtMotif.BLOOM, 4, 140f),
-        creator("c_zain", "Zain Al-Masri", "zain.talks", Category.CHATTING, "Talk shows from my kitchen table. Bring tea.", 98_400, 870_000, "Known Creator", 0, ArtMotif.AURORA, 5, 200f),
-        creator("c_ivy", "Ivy Calloway", "ivytells", Category.STORYTELLING, "True-ish stories. You decide which parts.", 667_100, 9_050_000, "Influencer", 5, ArtMotif.SKYLINE, 6, 268f),
-        creator("c_dex", "Dex Okafor", "dexbeats", Category.MUSIC, "Making a beat from whatever you comment.", 529_800, 7_120_000, "Influencer", 6, ArtMotif.WAVES, 7, 172f),
-        creator("c_sara", "Sara Mansour", "sara.fit", Category.LIFESTYLE, "Strong, not perfect. Morning lives at 7.", 143_200, 1_610_000, "Known Creator", 7, ArtMotif.PRISM, 8, 156f),
-        creator("c_jun", "Jun Park", "junspeedruns", Category.GAMING, "Frame-perfect or bust.", 76_500, 640_000, "Rising Creator", 0, ArtMotif.HORIZON, 9, 210f),
-        creator("c_rania", "رانيا خليل", "rania.k", Category.CHATTING, "سوالف آخر الليل وقصص من القاهرة ☕️", 311_000, 3_900_000, "Influencer", 3, ArtMotif.AURORA, 10, 300f),
-        creator("c_theo", "Theo Marsh", "theo.after.dark", Category.ENTERTAINMENT, "Movie nights, hot takes, cold pizza.", 189_300, 2_050_000, "Known Creator", 1, ArtMotif.SKYLINE, 11, 245f),
-        creator("c_amira", "Amira Nasser", "amira.travels", Category.LIFESTYLE, "One carry-on, forty countries.", 902_600, 12_400_000, "Celebrity", 4, ArtMotif.PRISM, 12, 36f),
-        creator("c_kofi", "Kofi Mensah", "kofi.jokes", Category.COMEDY, "Crowd work, but the crowd is my group chat.", 254_700, 3_120_000, "Influencer", 2, ArtMotif.STAGE, 13, 48f),
-        creator("c_luna", "Luna Vega", "lunavega", Category.ENTERTAINMENT, "Reacting to things so you don't have to.", 1_870_000, 26_300_000, "Superstar", 5, ArtMotif.BLOOM, 14, 285f),
+        creator("c_nova", "Nova Reyes", "novaplays", Category.GAMING, "Speedrunner by night, chaos gremlin by day. Co-op Fridays.", 482_300, 6_210_000, FameLevel.INFLUENCER, 2, ArtMotif.HORIZON, 1, 228f),
+        creator("c_layla", "Layla Haddad", "layla.sings", Category.MUSIC, "Covers, originals and late-night piano. Requests open.", 1_240_000, 18_900_000, FameLevel.CELEBRITY, 3, ArtMotif.WAVES, 2, 330f),
+        creator("c_omar", "Omar Fathy", "omarlaughs", Category.COMEDY, "Everyday stories that got out of hand.", 356_700, 4_480_000, FameLevel.INFLUENCER, 1, ArtMotif.STAGE, 3, 18f),
+        creator("c_mika", "Mika Tan", "mika.cooks", Category.LIFESTYLE, "Twenty-minute dinners and one ambitious dessert a week.", 214_900, 2_330_000, FameLevel.KNOWN_CREATOR, 4, ArtMotif.BLOOM, 4, 140f),
+        creator("c_zain", "Zain Al-Masri", "zain.talks", Category.CHATTING, "Talk shows from my kitchen table. Bring tea.", 98_400, 870_000, FameLevel.KNOWN_CREATOR, 0, ArtMotif.AURORA, 5, 200f),
+        creator("c_ivy", "Ivy Calloway", "ivytells", Category.STORYTELLING, "True-ish stories. You decide which parts.", 667_100, 9_050_000, FameLevel.INFLUENCER, 5, ArtMotif.SKYLINE, 6, 268f),
+        creator("c_dex", "Dex Okafor", "dexbeats", Category.MUSIC, "Making a beat from whatever you comment.", 529_800, 7_120_000, FameLevel.INFLUENCER, 6, ArtMotif.WAVES, 7, 172f),
+        creator("c_sara", "Sara Mansour", "sara.fit", Category.LIFESTYLE, "Strong, not perfect. Morning lives at 7.", 143_200, 1_610_000, FameLevel.KNOWN_CREATOR, 7, ArtMotif.PRISM, 8, 156f),
+        creator("c_jun", "Jun Park", "junspeedruns", Category.GAMING, "Frame-perfect or bust.", 76_500, 640_000, FameLevel.RISING_CREATOR, 0, ArtMotif.HORIZON, 9, 210f),
+        creator("c_rania", "رانيا خليل", "rania.k", Category.CHATTING, "سوالف آخر الليل وقصص من القاهرة ☕️", 311_000, 3_900_000, FameLevel.INFLUENCER, 3, ArtMotif.AURORA, 10, 300f),
+        creator("c_theo", "Theo Marsh", "theo.after.dark", Category.ENTERTAINMENT, "Movie nights, hot takes, cold pizza.", 189_300, 2_050_000, FameLevel.KNOWN_CREATOR, 1, ArtMotif.SKYLINE, 11, 245f),
+        creator("c_amira", "Amira Nasser", "amira.travels", Category.LIFESTYLE, "One carry-on, forty countries.", 902_600, 12_400_000, FameLevel.CELEBRITY, 4, ArtMotif.PRISM, 12, 36f),
+        creator("c_kofi", "Kofi Mensah", "kofi.jokes", Category.COMEDY, "Crowd work, but the crowd is my group chat.", 254_700, 3_120_000, FameLevel.INFLUENCER, 2, ArtMotif.STAGE, 13, 48f),
+        creator("c_luna", "Luna Vega", "lunavega", Category.ENTERTAINMENT, "Reacting to things so you don't have to.", 1_870_000, 26_300_000, FameLevel.SUPERSTAR, 5, ArtMotif.BLOOM, 14, 285f),
     )
 
     private val captionsByCategory = mapOf(
@@ -144,8 +145,8 @@ object SeedContent {
         val q = query.trim().lowercase().removePrefix("#").removePrefix("@")
         if (q.isEmpty()) return SearchResults(emptyList(), emptyList(), emptyList())
         return SearchResults(
-            creators = creators.filter { q in it.displayName.lowercase() || q in it.handle || q in it.category.label.lowercase() },
-            posts = posts.filter { p -> q in p.caption.lowercase() || p.tags.any { q in it } || q in p.category.label.lowercase() },
+            creators = creators.filter { q in it.displayName.lowercase() || q in it.handle || q in it.category.keyword.lowercase() },
+            posts = posts.filter { p -> q in p.caption.lowercase() || p.tags.any { q in it } || q in p.category.keyword.lowercase() },
             topics = topics.filter { q in it.tag },
         )
     }
@@ -166,7 +167,7 @@ object SeedContent {
 
     private fun creator(
         id: String, name: String, handle: String, category: Category, bio: String, followers: Int, likes: Int,
-        level: String, palette: Int, coverMotif: ArtMotif, seed: Int, hue: Float,
+        level: FameLevel, palette: Int, coverMotif: ArtMotif, seed: Int, hue: Float,
     ) = Creator(
         id = id,
         displayName = name,
@@ -175,7 +176,7 @@ object SeedContent {
         bio = bio,
         followers = followers,
         totalLikes = likes,
-        levelTitle = level,
+        level = level,
         avatar = ArtSpec(palette, ArtMotif.PORTRAIT, seed),
         cover = ArtSpec(palette, coverMotif, seed + 100),
         hue = hue,

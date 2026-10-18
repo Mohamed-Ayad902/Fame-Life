@@ -5,13 +5,14 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /** Fictional in-app levels. They reward taking part; they are not proof of real-world popularity. */
-enum class FameLevel(val title: String, val threshold: Int) {
-    NEW_CREATOR("New Creator", 0),
-    RISING_CREATOR("Rising Creator", 600),
-    KNOWN_CREATOR("Known Creator", 2_200),
-    INFLUENCER("Influencer", 6_500),
-    CELEBRITY("Celebrity", 16_000),
-    SUPERSTAR("Superstar", 40_000);
+/** Display names live in string resources (`level_*`); see `core/ui/Labels.kt`. */
+enum class FameLevel(val threshold: Int) {
+    NEW_CREATOR(0),
+    RISING_CREATOR(600),
+    KNOWN_CREATOR(2_200),
+    INFLUENCER(6_500),
+    CELEBRITY(16_000),
+    SUPERSTAR(40_000);
 
     val next: FameLevel? get() = entries.getOrNull(ordinal + 1)
 }

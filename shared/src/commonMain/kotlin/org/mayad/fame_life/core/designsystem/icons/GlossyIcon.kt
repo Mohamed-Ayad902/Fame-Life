@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import org.mayad.fame_life.core.designsystem.theme.Pulse
 
 /** Three tones of one hue plus a glow. Light comes from the top, the base sinks into shadow. */
 @Immutable
@@ -42,14 +42,14 @@ fun GlossyIcon(
     glyph: ImageVector,
     gloss: Gloss,
     modifier: Modifier = Modifier,
-    size: Dp = 48.dp,
+    size: Dp = Pulse.dimens.tileMd,
     glyphSize: Dp = size * 0.46f,
     contentDescription: String? = null,
 ) {
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) { drawGlossTile(gloss) }
-        PulseIcon(glyph, Color.Black.copy(alpha = 0.22f), Modifier.offset(y = 1.dp), glyphSize)
-        PulseIcon(glyph, Color.White, size = glyphSize, contentDescription = contentDescription)
+        PulseIcon(glyph, Pulse.colors.shadow.copy(alpha = 0.22f), Modifier.offset(y = Pulse.dimens.hairline), glyphSize)
+        PulseIcon(glyph, Pulse.colors.highlight, size = glyphSize, contentDescription = contentDescription)
     }
 }
 

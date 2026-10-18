@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_settings">Settings</string>
+    <string name="profile_fame_points">Fame points</string>
+    <string name="profile_lives">Lives</string>
+    <string name="profile_best_peak">Best peak</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_plan_free">Plan: Free</string>
+    <string name="profile_plan_pro">Plan: Pro</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_first_live_title">Your first live is waiting</string>
+    <string name="profile_first_live_body">Go live, talk about anything, and your session results will collect here.</string>
+    <string name="profile_untitled_live">Untitled live</string>
+    <string name="profile_session_meta">%1$s · %2$s peak · +%3$d pts</string>
+    <string name="profile_creator_not_found">Creator not found</string>
+    <string name="profile_unavailable">This profile isn\'t available.</string>
+    <string name="profile_simulated_creator">Simulated creator</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_likes">Likes</string>
+    <string name="profile_level">Level</string>
+    <string name="profile_live_now">LIVE NOW</string>
+    <string name="profile_posts">Posts</string>
+
+    <string name="level_card_eyebrow">FAME LEVEL</string>
+    <string name="level_card_points_to">%1$d points to %2$s</string>
+    <string name="level_card_top">Top level reached</string>
+    <string name="level_card_description">Fame level %1$s, %2$d points</string>
+    <string name="level_card_description_next">Fame level %1$s, %2$d points, %3$d to next level</string>
+
+    <string name="badge_unlocked">%1$s, unlocked. %2$s</string>
+    <string name="badge_locked">%1$s, locked. %2$s</string>
+    <string name="badge_first_live">First live</string>
+    <string name="badge_first_live_detail">Finish a live</string>
+    <string name="badge_crowd">Crowd pleaser</string>
+    <string name="badge_crowd_detail">Reach 1K peak</string>
+    <string name="badge_gifted">Gifted</string>
+    <string name="badge_gifted_detail">Get a major gift</string>
+    <string name="badge_storyteller">Storyteller</string>
+    <string name="badge_storyteller_detail">Talk 10 minutes</string>
+    <string name="badge_regular">Regular</string>
+    <string name="badge_regular_detail">Finish 5 lives</string>
+    <string name="badge_rising">Rising</string>
+    <string name="badge_rising_detail">Reach Rising Creator</string>
+
+    <string name="edit_title">Edit profile</string>
+    <string name="edit_bio">Bio</string>
+    <string name="edit_bio_hint">What do you go live about?</string>
+    <string name="edit_bio_count">%1$d/%2$d</string>
+    <string name="edit_save">Save</string>
+</resources>

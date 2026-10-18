@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="level_new_creator">New Creator</string>
+    <string name="level_rising_creator">Rising Creator</string>
+    <string name="level_known_creator">Known Creator</string>
+    <string name="level_influencer">Influencer</string>
+    <string name="level_celebrity">Celebrity</string>
+    <string name="level_superstar">Superstar</string>
+
+    <string name="category_gaming">Gaming</string>
+    <string name="category_music">Music</string>
+    <string name="category_chatting">Just chatting</string>
+    <string name="category_storytelling">Storytelling</string>
+    <string name="category_lifestyle">Lifestyle</string>
+    <string name="category_comedy">Comedy</string>
+    <string name="category_entertainment">Entertainment</string>
+
+    <string name="preset_intimate">Intimate</string>
+    <string name="preset_rising">Rising</string>
+    <string name="preset_buzzing">Buzzing</string>
+    <string name="preset_viral">Viral</string>
+    <string name="preset_range">Starts near %1$s, can grow past %2$s</string>
+    <string name="vibe_supportive">Supportive</string>
+    <string name="vibe_curious">Curious</string>
+    <string name="vibe_funny">Funny</string>
+    <string name="vibe_hype">Hype</string>
+    <string name="vibe_critical">Critics</string>
+    <string name="frequency_calm">Calm</string>
+    <string name="frequency_lively">Lively</string>
+    <string name="frequency_wild">Wild</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_mixed">Mixed</string>
+    <string name="style_aurora">Aurora</string>
+    <string name="style_noir">Noir</string>
+
+    <string name="duration_seconds">%1$d s</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours">%1$d h %2$s min</string>
+    <string name="time_now">now</string>
+    <string name="time_hours">%1$dh</string>
+    <string name="time_days">%1$dd</string>
+
+    <string name="auth_error_no_account">Add a Google account to this device, then try again.</string>
+    <string name="auth_error_wrong_account">Pick the same Google account you\'re signed in with.</string>
+    <string name="auth_error_too_many">Too many attempts. Wait a minute and try again.</string>
+    <string name="auth_error_network">You\'re offline. Check your connection and try again.</string>
+    <string name="auth_error_recent_login">For your security, confirm your Google account and try again.</string>
+    <string name="auth_error_not_configured">Accounts aren\'t set up in this build yet. The developer needs to add the Firebase configuration.</string>
+    <string name="auth_error_unknown">Something went wrong. Please try again.</string>
+
+    <string name="profile_error_name_empty">Add the name people will see</string>
+    <string name="profile_error_too_short">Use at least %1$d characters</string>
+    <string name="profile_error_too_long">Use at most %1$d characters</string>
+    <string name="profile_error_characters">Use letters, numbers, dots and underscores</string>
+    <string name="profile_error_dots">Dots can\'t start, end or repeat</string>
+    <string name="profile_error_reserved">That username is reserved</string>
+</resources>

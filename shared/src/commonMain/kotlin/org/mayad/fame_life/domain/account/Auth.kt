@@ -72,18 +72,3 @@ class UnavailableAuthService : AuthService {
     override suspend fun reauthenticateWithGoogle() = unavailable()
     override suspend fun deleteCurrentUser() = unavailable()
 }
-
-/** User-facing copy for account failures. */
-object AuthRules {
-    /** Null for failures the user caused on purpose (closing the picker), which need no message. */
-    fun message(kind: AuthErrorKind): String? = when (kind) {
-        AuthErrorKind.CANCELLED -> null
-        AuthErrorKind.NO_GOOGLE_ACCOUNT -> "Add a Google account to this device, then try again."
-        AuthErrorKind.WRONG_ACCOUNT -> "Pick the same Google account you're signed in with."
-        AuthErrorKind.TOO_MANY_REQUESTS -> "Too many attempts. Wait a minute and try again."
-        AuthErrorKind.NETWORK -> "You're offline. Check your connection and try again."
-        AuthErrorKind.REQUIRES_RECENT_LOGIN -> "For your security, confirm your Google account and try again."
-        AuthErrorKind.NOT_CONFIGURED -> "Accounts aren't set up in this build yet. The developer needs to add the Firebase configuration."
-        AuthErrorKind.UNKNOWN -> "Something went wrong. Please try again."
-    }
-}

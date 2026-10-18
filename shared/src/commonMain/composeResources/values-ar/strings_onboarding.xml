@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_body">ابدأ بثًا، وتكلّم عن أي شيء، وسيتفاعل جمهور ذكي مع ما تقوله فعلًا.</string>
+    <string name="welcome_disclosure">%1$s تجربة محاكاة. المشاهدون والتعليقات والهدايا والمتابعون يُولَّدون داخل التطبيق. الكاميرا تبقى على جهازك ولا تُبث أبدًا.</string>
+    <string name="welcome_get_started">لنبدأ</string>
+    <string name="welcome_have_account">لديّ حساب بالفعل</string>
+    <string name="welcome_sample_comment_1">ضحكتني جدًا 😂</string>
+    <string name="welcome_sample_comment_2">كمّل، احكِ أكثر!!</string>
+    <string name="welcome_sample_comment_3">هلا والله 👋</string>
+
+    <string name="intro_step_of">الخطوة %1$d من %2$d</string>
+    <string name="intro_next">التالي</string>
+    <string name="how_eyebrow">كيف يعمل البث</string>
+    <string name="how_title">تتكلّم. يسمعون.\nوالجمهور يتفاعل.</string>
+    <string name="how_talk_title">أنت تتكلّم</string>
+    <string name="how_talk_body">ابدأ البث بالكاميرا وتكلّم ببساطة. قصص، نكت، أو سؤال للجمهور.</string>
+    <string name="how_listen_title">الجمهور يستمع</string>
+    <string name="how_listen_body">هاتفك يحوّل الكلام إلى نص. والجمهور الذكي يفهم ما تعنيه، لا صوتك.</string>
+    <string name="how_react_title">الجمهور يتفاعل</string>
+    <string name="how_react_body">تعليقات وأسئلة وهدايا وقفزات في عدد المشاهدين تتبع اللحظة، ثم ملخص عند الانتهاء.</string>
+
+    <string name="honesty_eyebrow">قبل أن تبدأ</string>
+    <string name="honesty_title">مشاعر حقيقية،\nوجمهور افتراضي.</string>
+    <string name="honesty_button">تمام</string>
+    <string name="honesty_audience_title">الجمهور افتراضي</string>
+    <string name="honesty_audience_body">لا يشاهدك أشخاص حقيقيون. المشاهدون والتعليقات والهدايا والمتابعون يصنعهم %1$s.</string>
+    <string name="honesty_camera_title">الكاميرا تبقى على هاتفك</string>
+    <string name="honesty_camera_body">الفيديو يظهر لك فقط. لا يُسجَّل ولا يُرفع ولا يُبث أبدًا.</string>
+    <string name="honesty_speech_title">النص المنطوق فقط قد يُرسل</string>
+    <string name="honesty_speech_body">الصوت الخام لا يُحفظ أبدًا. عند تفعيل الجمهور السحابي تُرسل مقاطع نصية قصيرة إلى خادمنا فقط.</string>
+    <string name="honesty_numbers_title">الأرقام للمتعة</string>
+    <string name="honesty_numbers_body">مستويات الشهرة والأرقام تعيش داخل التطبيق. ليست انتشارًا حقيقيًا، ولن ننشر أي شيء باسمك.</string>
+
+    <string name="account_title_new">احفظ رحلتك كصانع محتوى</string>
+    <string name="account_title_returning">أهلًا بعودتك</string>
+    <string name="account_body_new">سجّل الدخول بحساب Google لتحفظ ملفك وبثوثك على كل أجهزتك. يُنشأ حساب جديد في أول مرة.</string>
+    <string name="account_body_returning">سجّل الدخول بحساب Google الذي استخدمته سابقًا لتستعيد ملفك وبثوثك ومستوى شهرتك.</string>
+    <string name="account_what_we_use">ما الذي نستخدمه</string>
+    <string name="account_what_we_use_body">اسمك وبريدك ومعرّف حسابك في Google، فقط لتسجيل دخولك وحماية بياناتك. لن ننشر على Google أو أي مكان آخر باسمك.</string>
+    <string name="account_continue">المتابعة باستخدام Google</string>
+    <string name="account_opening">جارٍ فتح Google…</string>
+
+    <string name="sync_error_title">تعذّر الوصول إلى حسابك</string>
+    <string name="sync_error_body">أنت مسجّل الدخول، لكن تعذّر تحميل ملفك. تحقّق من الاتصال وحاول مرة أخرى.</string>
+
+    <string name="setup_step_one">الخطوة 1 من 2</string>
+    <string name="setup_step_two">الخطوة 2 من 2</string>
+    <string name="setup_profile_title">من سيبدأ البث؟</string>
+    <string name="setup_pick_look">اختر مظهرك</string>
+    <string name="setup_display_name">الاسم المعروض</string>
+    <string name="setup_display_name_hint">اسمك</string>
+    <string name="setup_username">اسم المستخدم</string>
+    <string name="setup_username_hint">yourname</string>
+    <string name="setup_saved_note">يُحفظ في حسابك ليتبعك على أي جهاز.</string>
+    <string name="setup_continue">متابعة</string>
+    <string name="setup_interests_title">عن ماذا تحب أن تتكلّم؟</string>
+    <string name="setup_interests_body">سنضبط المحتوى لك. يمكنك تخطي هذه الخطوة.</string>
+    <string name="setup_skip">تخطٍّ الآن</string>
+    <string name="setup_lets_go">يلا بينا</string>
+    <string name="setup_avatar_style">نمط الصورة %1$d</string>
+
+    <string name="welcome_notification_title">أهلًا بك في %1$s</string>
+    <string name="welcome_notification_body">اضغط على الزر المضيء لتبدأ أول بث لك. جمهورك افتراضي ويتفاعل مع ما تقوله.</string>
+</resources>

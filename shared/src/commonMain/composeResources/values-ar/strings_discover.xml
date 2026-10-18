@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_title">استكشف</string>
+    <string name="discover_for_you">لك</string>
+    <string name="discover_search_hint">ابحث عن صنّاع محتوى أو منشورات أو #وسوم</string>
+    <string name="discover_clear_search">مسح البحث</string>
+    <string name="discover_nothing_for">لا نتائج لـ «%1$s»</string>
+    <string name="discover_search_tip">جرّب اسم صانع محتوى، أو تصنيفًا مثل موسيقى، أو وسمًا مثل #storytime.</string>
+    <string name="discover_creators">صنّاع المحتوى</string>
+    <string name="discover_creators_to_know">صنّاع محتوى تعرّف عليهم</string>
+    <string name="discover_live_experiences">تجارب مباشرة</string>
+    <string name="discover_posts">منشورات</string>
+    <string name="discover_most_loved">الأكثر حبًا هذا الأسبوع</string>
+    <string name="discover_followers">%1$s متابع</string>
+    <string name="discover_topic_count">#%1$s · %2$s</string>
+</resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="level_new_creator">صانع محتوى جديد</string>
+    <string name="level_rising_creator">صانع محتوى صاعد</string>
+    <string name="level_known_creator">صانع محتوى معروف</string>
+    <string name="level_influencer">مؤثر</string>
+    <string name="level_celebrity">مشهور</string>
+    <string name="level_superstar">نجم</string>
+
+    <string name="category_gaming">ألعاب</string>
+    <string name="category_music">موسيقى</string>
+    <string name="category_chatting">دردشة</string>
+    <string name="category_storytelling">حكايات</string>
+    <string name="category_lifestyle">لايف ستايل</string>
+    <string name="category_comedy">كوميديا</string>
+    <string name="category_entertainment">ترفيه</string>
+
+    <string name="preset_intimate">قريب</string>
+    <string name="preset_rising">صاعد</string>
+    <string name="preset_buzzing">حماسي</string>
+    <string name="preset_viral">منتشر</string>
+    <string name="preset_range">يبدأ بنحو %1$s ويمكن أن يتجاوز %2$s</string>
+    <string name="vibe_supportive">داعم</string>
+    <string name="vibe_curious">فضولي</string>
+    <string name="vibe_funny">مرح</string>
+    <string name="vibe_hype">متحمس</string>
+    <string name="vibe_critical">نقّاد</string>
+    <string name="frequency_calm">هادئ</string>
+    <string name="frequency_lively">نشيط</string>
+    <string name="frequency_wild">صاخب</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_mixed">مختلط</string>
+    <string name="style_aurora">أورورا</string>
+    <string name="style_noir">نوار</string>
+
+    <string name="duration_seconds">%1$d ث</string>
+    <string name="duration_minutes">%1$d د</string>
+    <string name="duration_hours">%1$d س %2$s د</string>
+    <string name="time_now">الآن</string>
+    <string name="time_hours">%1$d س</string>
+    <string name="time_days">%1$d ي</string>
+
+    <string name="auth_error_no_account">أضف حساب Google إلى هذا الجهاز ثم حاول مرة أخرى.</string>
+    <string name="auth_error_wrong_account">اختر حساب Google نفسه الذي سجّلت الدخول به.</string>
+    <string name="auth_error_too_many">محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.</string>
+    <string name="auth_error_network">أنت غير متصل. تحقّق من الاتصال وحاول مرة أخرى.</string>
+    <string name="auth_error_recent_login">لأمانك، أكّد حساب Google وحاول مرة أخرى.</string>
+    <string name="auth_error_not_configured">الحسابات غير مفعّلة في هذه النسخة بعد. يحتاج المطوّر إلى إضافة إعدادات Firebase.</string>
+    <string name="auth_error_unknown">حدث خطأ ما. حاول مرة أخرى.</string>
+
+    <string name="profile_error_name_empty">أضف الاسم الذي سيراه الناس</string>
+    <string name="profile_error_too_short">استخدم %1$d أحرف على الأقل</string>
+    <string name="profile_error_too_long">استخدم %1$d حرفًا كحد أقصى</string>
+    <string name="profile_error_characters">استخدم الحروف والأرقام والنقاط والشرطة السفلية</string>
+    <string name="profile_error_dots">لا يمكن أن تبدأ النقاط أو تنتهي أو تتكرر</string>
+    <string name="profile_error_reserved">اسم المستخدم هذا محجوز</string>
+</resources>

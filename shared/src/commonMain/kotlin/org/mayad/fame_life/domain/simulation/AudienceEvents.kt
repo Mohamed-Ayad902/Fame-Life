@@ -12,6 +12,7 @@ data class Gift(
     val weight: Int,
 )
 
+/** Gift names shown to users live in string resources (`gift_<id>`); [Gift.name] is the English default. */
 object GiftCatalog {
     val all = listOf(
         Gift("spark", "Spark", GiftTier.SMALL, famePoints = 5, weight = 6),
@@ -79,10 +80,11 @@ sealed interface AudienceEvent {
         val member: AudienceMember,
     ) : AudienceEvent
 
+    /** [reason] comes from the audience generator, in the audience's language; null shows the default copy. */
     data class TrendingMoment(
         override val id: Long,
         override val atMs: Long,
-        val reason: String,
+        val reason: String?,
     ) : AudienceEvent
 }
 

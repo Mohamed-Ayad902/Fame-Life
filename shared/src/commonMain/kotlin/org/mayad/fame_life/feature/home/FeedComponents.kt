@@ -17,9 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import famelife.shared.generated.resources.Res
+import famelife.shared.generated.resources.home_featured_live
+import famelife.shared.generated.resources.post_likes
+import famelife.shared.generated.resources.room_description
+import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.core.designsystem.art.Artwork
 import org.mayad.fame_life.core.designsystem.components.AvatarRing
 import org.mayad.fame_life.core.designsystem.components.CreatorAvatar
@@ -39,16 +44,26 @@ import org.mayad.fame_life.core.designsystem.components.pressable
 import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
+import org.mayad.fame_life.core.designsystem.motion.CascadeState
+import org.mayad.fame_life.core.designsystem.motion.cascadeIn
+import org.mayad.fame_life.core.designsystem.motion.rememberCascadeState
+import org.mayad.fame_life.core.designsystem.preview.ComponentPreviews
+import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.format.compactCount
-import org.mayad.fame_life.core.format.hoursAgoLabel
+import org.mayad.fame_life.core.preview.SampleData
+import org.mayad.fame_life.core.ui.label
+import org.mayad.fame_life.core.ui.timeAgoText
 import org.mayad.fame_life.data.content.Category
 import org.mayad.fame_life.data.content.Creator
 import org.mayad.fame_life.data.content.LiveRoom
 import org.mayad.fame_life.data.content.Post
 import org.mayad.fame_life.data.content.SeedContent
 
-private val scrimBrush = Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color(0xE6070A14))
+/** Hero art is drawn slightly larger than its frame so parallax never reveals an edge. */
+private const val HERO_ART_SCALE = 1.12f
+private const val HERO_ASPECT = 0.86f
+private const val ROOM_CARD_ASPECT = 0.68f
 
 fun Category.glyph() = when (this) {
     Category.GAMING -> Glyphs.Gamepad
@@ -70,23 +85,32 @@ fun Category.gloss() = when (this) {
     Category.ENTERTAINMENT -> Gloss.Rose
 }
 
+@Composable
+private fun scrimBrush(): Brush {
+    val scrim = Pulse.colors.mediaScrim
+    return remember(scrim) { Brush.verticalGradient(0.45f to Color.Transparent, 1f to scrim) }
+}
+
 /** Story rail: live creators first with a live ring, then creators with fresh posts. */
 @Composable
-fun CreatorStoryRail(onCreator: (Creator) -> Unit, modifier: Modifier = Modifier) {
-    val liveIds = SeedContent.liveRooms.map { it.creatorId }.toSet()
-    val ordered = SeedContent.creators.sortedByDescending { it.id in liveIds }
-    LazyRow(modifier, contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+fun CreatorStoryRail(onCreator: (Creator) -> Unit, modifier: Modifier = Modifier, cascade: CascadeState = rememberCascadeState()) {
+    val dimens = Pulse.dimens
+    val (ordered, liveIds) = remember {
+        val live = SeedContent.liveRooms.map { it.creatorId }.toSet()
+        SeedContent.creators.sortedByDescending { it.id in live } to live
+    }
+    LazyRow(modifier, contentPadding = PaddingValues(horizontal = dimens.gutter), horizontalArrangement = Arrangement.spacedBy(dimens.md)) {
         items(ordered, key = { it.id }) { creator ->
             val live = creator.id in liveIds
             Column(
-                Modifier.width(68.dp).pressable { onCreator(creator) },
+                Modifier.width(dimens.storyItem).cascadeIn(cascade, "story-${creator.id}").pressable { onCreator(creator) },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(contentAlignment = Alignment.BottomCenter) {
-                    CreatorAvatar(creator.avatar, 66.dp, ring = if (live) AvatarRing.LIVE else AvatarRing.STORY)
-                    if (live) LiveBadge(Modifier.padding(bottom = 0.dp))
+                    CreatorAvatar(creator.avatar, dimens.storyAvatar, ring = if (live) AvatarRing.LIVE else AvatarRing.STORY)
+                    if (live) LiveBadge()
                 }
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(dimens.xs))
                 Text(
                     creator.displayName.substringBefore(' '),
                     style = Pulse.type.meta,
@@ -99,51 +123,56 @@ fun CreatorStoryRail(onCreator: (Creator) -> Unit, modifier: Modifier = Modifier
     }
 }
 
-/** Large editorial hero for the most-watched simulated live. [parallax] shifts the art for depth while scrolling. */
+/**
+ * Large editorial hero for the most-watched simulated live. [parallax] is read inside the art's layer, so scrolling
+ * shifts it without recomposing the card.
+ */
 @Composable
-fun FeaturedLiveHero(room: LiveRoom, parallax: Float, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+fun FeaturedLiveHero(room: LiveRoom, parallax: () -> Float, onOpen: () -> Unit, modifier: Modifier = Modifier, aspect: Float = HERO_ASPECT) {
     val creator = SeedContent.creator(room.creatorId) ?: return
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    val description = stringResource(Res.string.room_description, creator.displayName, room.title)
     Box(
         modifier
             .fillMaxWidth()
-            .aspectRatio(0.86f)
+            .aspectRatio(aspect)
             .pressable(pressedScale = 0.98f, onClick = onOpen)
             .clip(Pulse.shapes.hero)
-            .border(1.dp, colors.border, Pulse.shapes.hero)
-            .semantics(mergeDescendants = true) { contentDescription = "${creator.displayName}, simulated live: ${room.title}" },
+            .border(dimens.hairline, colors.border, Pulse.shapes.hero)
+            .semantics(mergeDescendants = true) { contentDescription = description },
     ) {
         Artwork(
             creator.cover,
             Modifier
                 .fillMaxSize()
                 .graphicsLayer {
-                    translationY = parallax
-                    scaleX = 1.12f
-                    scaleY = 1.12f
+                    translationY = parallax()
+                    scaleX = HERO_ART_SCALE
+                    scaleY = HERO_ART_SCALE
                 },
         )
-        Box(Modifier.fillMaxSize().background(scrimBrush))
-        Row(Modifier.padding(Pulse.dimens.lg), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
+        Box(Modifier.fillMaxSize().background(scrimBrush()))
+        Row(Modifier.padding(dimens.lg), horizontalArrangement = Arrangement.spacedBy(dimens.sm)) {
             LiveBadge()
             ViewerPill(room.viewers)
         }
-        Column(Modifier.align(Alignment.BottomStart).padding(Pulse.dimens.xl)) {
-            Text("FEATURED LIVE", style = Pulse.type.overline, color = colors.cyan)
-            Spacer(Modifier.height(Pulse.dimens.xs))
-            Text(room.title, style = Pulse.type.headline, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(Pulse.dimens.md))
+        Column(Modifier.align(Alignment.BottomStart).padding(dimens.xl)) {
+            Text(stringResource(Res.string.home_featured_live), style = Pulse.type.overline, color = colors.cyan)
+            Spacer(Modifier.height(dimens.xs))
+            Text(room.title, style = Pulse.type.headline, color = colors.onMedia, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(dimens.md))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CreatorAvatar(creator.avatar, 32.dp)
-                Spacer(Modifier.width(Pulse.dimens.sm))
+                CreatorAvatar(creator.avatar, dimens.avatarSm)
+                Spacer(Modifier.width(dimens.sm))
                 Column(Modifier.weight(1f)) {
-                    Text(creator.displayName, style = Pulse.type.titleSmall, color = Color.White, maxLines = 1)
-                    Text("@${creator.handle} · ${creator.category.label}", style = Pulse.type.meta, color = colors.textSecondary, maxLines = 1)
+                    Text(creator.displayName, style = Pulse.type.titleSmall, color = colors.onMedia, maxLines = 1)
+                    Text("@${creator.handle} · ${creator.category.label()}", style = Pulse.type.meta, color = colors.textSecondary, maxLines = 1)
                 }
                 Box(
-                    Modifier.size(44.dp).clip(RoundedCornerShape(percent = 50)).background(Color.White),
+                    Modifier.size(dimens.glassButton).clip(CircleShape).background(colors.onMedia),
                     contentAlignment = Alignment.Center,
-                ) { PulseIcon(Glyphs.ChevronRight, colors.background, size = 20.dp) }
+                ) { PulseIcon(Glyphs.ChevronRight, colors.background, size = dimens.icon) }
             }
         }
     }
@@ -153,37 +182,39 @@ fun FeaturedLiveHero(room: LiveRoom, parallax: Float, onOpen: () -> Unit, modifi
 @Composable
 fun LiveRoomCard(room: LiveRoom, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val creator = SeedContent.creator(room.creatorId) ?: return
+    val dimens = Pulse.dimens
+    val description = stringResource(Res.string.room_description, creator.displayName, room.title)
     Box(
         modifier
-            .width(148.dp)
-            .aspectRatio(0.68f)
+            .width(dimens.railCard)
+            .aspectRatio(ROOM_CARD_ASPECT)
             .pressable(onClick = onOpen)
             .clip(Pulse.shapes.card)
-            .semantics(mergeDescendants = true) { contentDescription = "${creator.displayName}, simulated live: ${room.title}" },
+            .semantics(mergeDescendants = true) { contentDescription = description },
     ) {
         Artwork(room.art, Modifier.fillMaxSize())
-        Box(Modifier.fillMaxSize().background(scrimBrush))
-        Row(Modifier.padding(Pulse.dimens.sm), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            LiveBadge()
-        }
-        Column(Modifier.align(Alignment.BottomStart).padding(Pulse.dimens.md)) {
+        Box(Modifier.fillMaxSize().background(scrimBrush()))
+        LiveBadge(Modifier.padding(dimens.sm))
+        Column(Modifier.align(Alignment.BottomStart).padding(dimens.md)) {
             ViewerPill(room.viewers)
-            Spacer(Modifier.height(6.dp))
-            Text(room.title, style = Pulse.type.titleSmall, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(dimens.xs))
+            Text(room.title, style = Pulse.type.titleSmall, color = Pulse.colors.onMedia, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text("@${creator.handle}", style = Pulse.type.meta, color = Pulse.colors.textSecondary, maxLines = 1)
         }
     }
 }
 
 /**
- * Masonry post tile. Corner radius alternates by position so the grid reads as an editorial layout rather than
+ * Masonry post tile. Every third tile uses the editorial shape so the grid reads as a magazine layout rather than
  * a wall of identical cards.
  */
 @Composable
 fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val creator = SeedContent.creator(post.creatorId) ?: return
     val colors = Pulse.colors
-    val shape = if (index % 3 == 1) RoundedCornerShape(28.dp, 10.dp, 28.dp, 28.dp) else Pulse.shapes.card
+    val dimens = Pulse.dimens
+    val shape = if (index % 3 == 1) Pulse.shapes.editorial else Pulse.shapes.card
+    val likes = stringResource(Res.string.post_likes, compactCount(post.likes))
     Column(modifier.pressable(pressedScale = 0.97f, onClick = onOpen)) {
         Box(
             Modifier
@@ -196,25 +227,26 @@ fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Mo
             Row(
                 Modifier
                     .align(Alignment.BottomStart)
-                    .padding(Pulse.dimens.sm)
+                    .padding(dimens.sm)
                     .clip(Pulse.shapes.tag)
-                    .background(Color(0x8C080B14))
-                    .padding(horizontal = 7.dp, vertical = 3.dp),
+                    .background(colors.glassStrong)
+                    .padding(horizontal = dimens.sm, vertical = dimens.xxs)
+                    .semantics(mergeDescendants = true) { contentDescription = likes },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                PulseIcon(Glyphs.HeartFilled, colors.live, size = 12.dp)
-                Spacer(Modifier.width(4.dp))
-                Text(compactCount(post.likes), style = Pulse.type.meta, color = Color.White)
+                PulseIcon(Glyphs.HeartFilled, colors.live, size = dimens.iconTiny)
+                Spacer(Modifier.width(dimens.xs))
+                Text(compactCount(post.likes), style = Pulse.type.meta, color = colors.onMedia)
             }
         }
-        Spacer(Modifier.height(Pulse.dimens.sm))
+        Spacer(Modifier.height(dimens.sm))
         Text(post.caption, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimens.xs))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            CreatorAvatar(creator.avatar, 18.dp)
-            Spacer(Modifier.width(6.dp))
+            CreatorAvatar(creator.avatar, dimens.avatarXs)
+            Spacer(Modifier.width(dimens.xs))
             Text(
-                "${creator.handle} · ${hoursAgoLabel(post.hoursAgo)}",
+                "${creator.handle} · ${timeAgoText(post.hoursAgo)}",
                 style = Pulse.type.meta,
                 color = colors.textMuted,
                 maxLines = 1,
@@ -223,3 +255,25 @@ fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Mo
         }
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Previews
+
+@ComponentPreviews
+@Composable
+private fun FeaturedLiveHeroPreview() = PreviewContainer {
+    FeaturedLiveHero(SampleData.room, parallax = { 0f }, onOpen = {}, modifier = Modifier.padding(Pulse.dimens.gutter))
+}
+
+@ComponentPreviews
+@Composable
+private fun CardsPreview() = PreviewContainer {
+    Row(Modifier.padding(Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
+        LiveRoomCard(SampleData.room, onOpen = {})
+        PostTile(SampleData.post, 0, onOpen = {}, modifier = Modifier.width(Pulse.dimens.railCardWide))
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun StoryRailPreview() = PreviewContainer { CreatorStoryRail(onCreator = {}) }

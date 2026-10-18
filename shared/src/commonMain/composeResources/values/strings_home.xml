@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_home">Home</string>
+    <string name="tab_discover">Discover</string>
+    <string name="tab_inbox">Inbox</string>
+    <string name="tab_profile">Profile</string>
+    <string name="tab_with_new">%1$s, %2$d new</string>
+    <string name="go_live">Go live</string>
+
+    <string name="home_welcome_back">Welcome back</string>
+    <string name="home_daily_challenge">DAILY CHALLENGE</string>
+    <string name="home_live_now">Live now</string>
+    <string name="home_simulated_rooms">Simulated rooms</string>
+    <string name="home_trending_topics">Trending topics</string>
+    <string name="home_for_you">For you</string>
+    <string name="home_for_you_eyebrow">Picked from your interests</string>
+    <string name="home_featured_live">FEATURED LIVE</string>
+    <string name="room_description">%1$s, simulated live: %2$s</string>
+    <string name="post_likes">%1$s likes</string>
+</resources>

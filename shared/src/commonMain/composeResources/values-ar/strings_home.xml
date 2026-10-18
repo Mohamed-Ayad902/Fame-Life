@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_home">الرئيسية</string>
+    <string name="tab_discover">استكشف</string>
+    <string name="tab_inbox">الإشعارات</string>
+    <string name="tab_profile">ملفي</string>
+    <string name="tab_with_new">%1$s، %2$d جديد</string>
+    <string name="go_live">ابدأ البث</string>
+
+    <string name="home_welcome_back">أهلًا بعودتك</string>
+    <string name="home_daily_challenge">تحدي اليوم</string>
+    <string name="home_live_now">مباشر الآن</string>
+    <string name="home_simulated_rooms">غرف افتراضية</string>
+    <string name="home_trending_topics">مواضيع رائجة</string>
+    <string name="home_for_you">لك</string>
+    <string name="home_for_you_eyebrow">مختار من اهتماماتك</string>
+    <string name="home_featured_live">بث مميز</string>
+    <string name="room_description">%1$s، بث افتراضي: %2$s</string>
+    <string name="post_likes">%1$s إعجاب</string>
+</resources>

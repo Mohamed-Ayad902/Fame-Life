@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inbox_title">Inbox</string>
+    <string name="inbox_subtitle">Moments from your lives and your progress.</string>
+    <string name="inbox_empty_title">All quiet</string>
+    <string name="inbox_empty_body">Level-ups and live recaps will land here after your sessions.</string>
+</resources>

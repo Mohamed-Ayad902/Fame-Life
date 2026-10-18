@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_title">Discover</string>
+    <string name="discover_for_you">For you</string>
+    <string name="discover_search_hint">Search creators, posts, #tags</string>
+    <string name="discover_clear_search">Clear search</string>
+    <string name="discover_nothing_for">Nothing for “%1$s”</string>
+    <string name="discover_search_tip">Try a creator\'s name, a category like music, or a tag like #storytime.</string>
+    <string name="discover_creators">Creators</string>
+    <string name="discover_creators_to_know">Creators to know</string>
+    <string name="discover_live_experiences">Live experiences</string>
+    <string name="discover_posts">Posts</string>
+    <string name="discover_most_loved">Most loved this week</string>
+    <string name="discover_followers">%1$s followers</string>
+    <string name="discover_topic_count">#%1$s · %2$s</string>
+</resources>

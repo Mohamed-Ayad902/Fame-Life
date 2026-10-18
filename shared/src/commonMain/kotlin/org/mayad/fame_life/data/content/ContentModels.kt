@@ -1,11 +1,14 @@
 package org.mayad.fame_life.data.content
 
+import org.mayad.fame_life.domain.progression.FameLevel
+
 /** Procedural cover art recipe. Rendering lives in the design system; content only names the recipe. */
 enum class ArtMotif { AURORA, STAGE, HORIZON, WAVES, BLOOM, PRISM, SKYLINE, PORTRAIT }
 
 data class ArtSpec(val palette: Int, val motif: ArtMotif, val seed: Int)
 
-enum class Category(val label: String) {
+/** [keyword] is the English search term; display names come from string resources (`category_*`). */
+enum class Category(val keyword: String) {
     GAMING("Gaming"),
     MUSIC("Music"),
     CHATTING("Just chatting"),
@@ -24,7 +27,7 @@ data class Creator(
     val bio: String,
     val followers: Int,
     val totalLikes: Int,
-    val levelTitle: String,
+    val level: FameLevel,
     val avatar: ArtSpec,
     val cover: ArtSpec,
     val hue: Float,

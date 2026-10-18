@@ -79,6 +79,7 @@ data class PulseDimens(
     val navElevation: Dp,
     val createOrb: Dp,
     val createOrbLift: Dp,
+    val navRailWidth: Dp,
     /** Space kept free at the bottom of tab content so the floating bar never covers it. */
     val bottomBarClearance: Dp,
 
@@ -88,6 +89,7 @@ data class PulseDimens(
     val railCardNarrow: Dp,
     val storyItem: Dp,
     val heroCardHeight: Dp,
+    val storyAvatar: Dp,
     val profileHeroHeight: Dp,
     val profileCoverHeight: Dp,
     val setupStageHeight: Dp,
@@ -99,9 +101,13 @@ data class PulseDimens(
     val liveChatMaxHeight: Dp,
     val liveControlsClearance: Dp,
     val liveChatClearance: Dp,
-    val giftBurst: Dp,
+    val giftSmall: Dp,
+    val giftMedium: Dp,
+    val giftMajor: Dp,
     val reactionLane: Dp,
-    val reactionRise: Dp,
+    /** Sideways sway and drift of a reaction particle. */
+    val reactionSway: Dp,
+    val reactionDrift: Dp,
     val endButtonWidth: Dp,
 
     /** Max width for reading and forms on wide windows. */
@@ -174,13 +180,13 @@ internal fun pulseDimens(scale: PulseScale, width: PulseWidth): PulseDimens {
         fieldPaddingVertical = d(15f),
         dot = d(6f), dotSmall = d(4f), badgeDot = d(9f), track = d(6f),
         navBarHeight = d(68f), navItemWidth = d(60f), navItemHeight = d(56f), navElevation = d(24f),
-        createOrb = d(70f), createOrbLift = d(22f), bottomBarClearance = d(112f),
+        createOrb = d(70f), createOrbLift = d(22f), navRailWidth = d(96f), bottomBarClearance = d(112f),
         railCard = d(148f), railCardWide = d(160f), railCardNarrow = d(132f), storyItem = d(68f),
-        heroCardHeight = d(300f), profileHeroHeight = d(300f), profileCoverHeight = d(240f),
+        heroCardHeight = d(300f), storyAvatar = d(66f), profileHeroHeight = d(300f), profileCoverHeight = d(240f),
         setupStageHeight = d(140f), setupStageTop = d(120f), brandMark = d(112f),
         liveChatMaxWidth = d(300f), liveChatMaxHeight = d(300f),
         liveControlsClearance = d(140f), liveChatClearance = d(120f),
-        giftBurst = d(148f), reactionLane = d(72f), reactionRise = d(104f), endButtonWidth = d(72f),
+        giftSmall = d(72f), giftMedium = d(104f), giftMajor = d(148f), reactionLane = d(72f), reactionSway = d(16f), reactionDrift = d(28f), endButtonWidth = d(72f),
         contentMaxWidth = d(560f),
         radiusTag = d(8f), radiusControl = d(16f), radiusCard = d(20f), radiusPanel = d(24f), radiusHero = d(32f),
         radiusSheet = d(28f), radiusBubbleTail = d(6f), radiusBubble = d(18f),
@@ -200,6 +206,8 @@ data class PulseShapes(
     val sheet: Shape,
     /** Chat bubble: the tail corner sits at the start (leading) edge, so it flips in RTL. */
     val bubble: Shape,
+    /** Masonry variant with one tight corner, so a feed grid doesn't read as identical cards. */
+    val editorial: Shape,
     val pill: Shape = CircleShape,
 )
 
@@ -211,6 +219,7 @@ internal fun PulseDimens.toShapes() = PulseShapes(
     hero = RoundedCornerShape(radiusHero),
     sheet = RoundedCornerShape(topStart = radiusSheet, topEnd = radiusSheet),
     bubble = RoundedCornerShape(topStart = radiusBubbleTail, topEnd = radiusBubble, bottomEnd = radiusBubble, bottomStart = radiusBubble),
+    editorial = RoundedCornerShape(topStart = radiusSheet, topEnd = radiusTag, bottomEnd = radiusSheet, bottomStart = radiusSheet),
 )
 
 /** Artwork crops (width / height), so feeds keep rhythm. */

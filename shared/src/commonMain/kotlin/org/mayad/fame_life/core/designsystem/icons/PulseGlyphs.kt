@@ -13,12 +13,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.mayad.fame_life.core.designsystem.theme.Pulse
 
 /**
  * One icon family for the whole app: 24-unit grid, 2-unit rounded strokes, drawn here so no icon library is
  * needed. Glyphs render flat (tinted) in dense UI and inside [GlossyIcon] tiles where they need depth.
  */
 object Glyphs {
+    private const val GRID = 24f
+
     val Home = stroke("Home", "M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z")
     val Discover = stroke("Discover", "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z", "M15.5 8.5l-2 5-5 2 2-5z")
     val Plus = stroke("Plus", "M12 5v14", "M5 12h14")
@@ -39,8 +42,8 @@ object Glyphs {
     val Pause = stroke("Pause", "M8 5v14", "M16 5v14")
     val Bolt = stroke("Bolt", "M13 2L4 14h7l-1 8 9-12h-7z")
     val Flame = stroke("Flame", "M12 22a7 7 0 0 0 7-7c0-4-3-6-4-9-1.5 2-2 3-3 3s-1-2-1-4c-3 2-6 6-6 10a7 7 0 0 0 7 7z")
-    val ChevronLeft = stroke("ChevronLeft", "M15 5l-7 7 7 7")
-    val ChevronRight = stroke("ChevronRight", "M9 5l7 7-7 7")
+    val ChevronLeft = stroke("ChevronLeft", "M15 5l-7 7 7 7", mirror = true)
+    val ChevronRight = stroke("ChevronRight", "M9 5l7 7-7 7", mirror = true)
     val Check = stroke("Check", "M5 12.5l4.5 4.5L19 7")
     val Lock = stroke("Lock", "M6 11h12v10H6z", "M8.5 11V8a3.5 3.5 0 0 1 7 0v3")
     val Star = stroke("Star", STAR)
@@ -69,11 +72,12 @@ object Glyphs {
     private const val STAR = "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"
     private const val MIC_BODY = "M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"
 
-    private fun stroke(name: String, vararg paths: String) = build(name, paths, filled = false)
-    private fun fill(name: String, vararg paths: String) = build(name, paths, filled = true)
+    private fun stroke(name: String, vararg paths: String, mirror: Boolean = false) = build(name, paths, filled = false, mirror = mirror)
+    private fun fill(name: String, vararg paths: String) = build(name, paths, filled = true, mirror = false)
 
-    private fun build(name: String, paths: Array<out String>, filled: Boolean): ImageVector {
-        val builder = ImageVector.Builder(name, 24.dp, 24.dp, 24f, 24f)
+    /** Directional glyphs ([mirror]) flip automatically in right-to-left layouts. */
+    private fun build(name: String, paths: Array<out String>, filled: Boolean, mirror: Boolean): ImageVector {
+        val builder = ImageVector.Builder(name, GRID.dp, GRID.dp, GRID, GRID, autoMirror = mirror)
         paths.forEach { d ->
             builder.addPath(
                 pathData = addPathNodes(d),
@@ -94,7 +98,7 @@ fun PulseIcon(
     glyph: ImageVector,
     tint: Color,
     modifier: Modifier = Modifier,
-    size: Dp = 22.dp,
+    size: Dp = Pulse.dimens.icon,
     contentDescription: String? = null,
 ) {
     Image(

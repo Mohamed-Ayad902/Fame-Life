@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.layer.drawLayer
 import org.mayad.fame_life.data.content.ArtMotif
 import org.mayad.fame_life.data.content.ArtSpec
 import kotlin.math.PI
@@ -47,7 +48,9 @@ fun Artwork(spec: ArtSpec, modifier: Modifier = Modifier, content: @Composable (
     Box(
         modifier.drawWithCache {
             val palette = ArtPalettes[spec.palette.mod(ArtPalettes.size)]
-            onDrawBehind {
+            // Recorded once per size: scrolling a feed replays the layer instead of re-running every shape.
+            val layer = obtainGraphicsLayer()
+            layer.record {
                 val random = Random(spec.seed * 7919 + spec.motif.ordinal)
                 drawRect(Brush.verticalGradient(listOf(palette.base, palette.deep)))
                 when (spec.motif) {
@@ -69,6 +72,7 @@ fun Artwork(spec: ArtSpec, modifier: Modifier = Modifier, content: @Composable (
                     ),
                 )
             }
+            onDrawBehind { drawLayer(layer) }
         },
     ) { content() }
 }

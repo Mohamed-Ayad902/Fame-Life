@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inbox_title">الإشعارات</string>
+    <string name="inbox_subtitle">لحظات من بثوثك وتقدّمك.</string>
+    <string name="inbox_empty_title">كل شيء هادئ</string>
+    <string name="inbox_empty_body">ستصلك هنا ترقيات المستوى وملخصات البث بعد جلساتك.</string>
+</resources>

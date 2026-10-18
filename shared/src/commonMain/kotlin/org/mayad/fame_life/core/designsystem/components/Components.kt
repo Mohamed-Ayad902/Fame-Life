@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +35,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -40,18 +43,37 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import famelife.shared.generated.resources.Res
+import famelife.shared.generated.resources.common_back
+import famelife.shared.generated.resources.common_live
+import famelife.shared.generated.resources.common_not_selected
+import famelife.shared.generated.resources.common_requires_pro
+import famelife.shared.generated.resources.common_selected
+import famelife.shared.generated.resources.common_simulated
+import famelife.shared.generated.resources.common_simulated_viewers
+import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.core.designsystem.art.Artwork
 import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
+import org.mayad.fame_life.core.designsystem.preview.ComponentPreviews
+import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
+import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.format.compactCount
+import org.mayad.fame_life.data.content.ArtMotif
 import org.mayad.fame_life.data.content.ArtSpec
+
+/** Opacity of a disabled control: still legible, clearly inactive. */
+private const val DISABLED_ALPHA = 0.45f
+private const val DEFAULT_MAX_LENGTH = 60
 
 /**
  * The app's backdrop: midnight base with two static pools of brand light. Static on purpose; animated
@@ -91,24 +113,25 @@ fun PrimaryButton(
     brush: Brush? = null,
 ) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     Row(
         modifier
-            .height(54.dp)
-            .alpha(if (enabled) 1f else 0.45f)
+            .height(dimens.buttonHeight)
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
             .pressable(enabled = enabled, onClick = onClick)
             .clip(Pulse.shapes.pill)
             .background(brush ?: colors.brandGradient)
             .drawBehind {
-                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.22f), Color.Transparent), 0f, size.height * 0.55f))
+                drawRect(Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.22f), Color.Transparent), 0f, size.height * 0.55f))
             }
-            .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.45f), Color.Transparent)), Pulse.shapes.pill)
-            .padding(horizontal = Pulse.dimens.xl),
+            .border(dimens.hairline, Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.45f), Color.Transparent)), Pulse.shapes.pill)
+            .padding(horizontal = dimens.xl),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
-            PulseIcon(leading, colors.textOnAccent, size = 20.dp)
-            Spacer(Modifier.width(Pulse.dimens.sm))
+            PulseIcon(leading, colors.textOnAccent, size = dimens.icon)
+            Spacer(Modifier.width(dimens.sm))
         }
         Text(text, style = Pulse.type.label, color = colors.textOnAccent, maxLines = 1)
     }
@@ -124,21 +147,22 @@ fun SecondaryButton(
     leading: ImageVector? = null,
 ) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     Row(
         modifier
-            .height(50.dp)
-            .alpha(if (enabled) 1f else 0.45f)
+            .height(dimens.buttonHeightCompact)
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
             .pressable(enabled = enabled, onClick = onClick)
             .clip(Pulse.shapes.pill)
             .background(colors.surfaceElevated.copy(alpha = 0.7f))
-            .border(1.dp, colors.border, Pulse.shapes.pill)
-            .padding(horizontal = Pulse.dimens.lg),
+            .border(dimens.hairline, colors.border, Pulse.shapes.pill)
+            .padding(horizontal = dimens.lg),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
-            PulseIcon(leading, colors.textPrimary, size = 18.dp)
-            Spacer(Modifier.width(Pulse.dimens.sm))
+            PulseIcon(leading, colors.textPrimary, size = dimens.iconSmall)
+            Spacer(Modifier.width(dimens.sm))
         }
         Text(text, style = Pulse.type.label, color = colors.textPrimary, maxLines = 1)
     }
@@ -151,7 +175,7 @@ fun GlassIconButton(
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: Dp = 44.dp,
+    size: Dp = Pulse.dimens.glassButton,
     tint: Color = Pulse.colors.textPrimary,
     active: Boolean = false,
 ) {
@@ -161,8 +185,8 @@ fun GlassIconButton(
             .size(size)
             .pressable(onClick = onClick)
             .clip(CircleShape)
-            .background(if (active) colors.primary.copy(alpha = 0.85f) else Color(0x66101526))
-            .border(1.dp, colors.borderStrong, CircleShape)
+            .background(if (active) colors.primary.copy(alpha = 0.85f) else colors.glass)
+            .border(Pulse.dimens.hairline, colors.borderStrong, CircleShape)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
@@ -181,26 +205,32 @@ fun PulseChip(
     locked: Boolean = false,
 ) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    val state = when {
+        selected -> stringResource(Res.string.common_selected)
+        locked -> stringResource(Res.string.common_requires_pro)
+        else -> stringResource(Res.string.common_not_selected)
+    }
     Row(
         modifier
-            .height(38.dp)
+            .height(dimens.chipHeight)
             .pressable(role = Role.Tab, onClick = onClick)
             .clip(Pulse.shapes.pill)
             .background(if (selected) colors.textPrimary else colors.surface.copy(alpha = 0.8f))
-            .border(1.dp, if (selected) Color.Transparent else colors.border, Pulse.shapes.pill)
-            .padding(horizontal = 14.dp)
-            .semantics { stateDescription = if (selected) "Selected" else if (locked) "Requires Pro" else "Not selected" },
+            .border(dimens.hairline, if (selected) Color.Transparent else colors.border, Pulse.shapes.pill)
+            .padding(horizontal = dimens.md)
+            .semantics { stateDescription = state },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val content = if (selected) colors.background else colors.textSecondary
         if (leading != null) {
-            PulseIcon(leading, content, size = 16.dp)
-            Spacer(Modifier.width(6.dp))
+            PulseIcon(leading, content, size = dimens.iconSmall)
+            Spacer(Modifier.width(dimens.xs))
         }
         Text(text, style = Pulse.type.label, color = content, maxLines = 1)
         if (locked) {
-            Spacer(Modifier.width(6.dp))
-            PulseIcon(Glyphs.Lock, colors.warning, size = 14.dp)
+            Spacer(Modifier.width(dimens.xs))
+            PulseIcon(Glyphs.Lock, colors.warning, size = dimens.iconTiny)
         }
     }
 }
@@ -211,6 +241,7 @@ enum class AvatarRing { NONE, STORY, LIVE, SELF }
 @Composable
 fun CreatorAvatar(spec: ArtSpec, size: Dp, modifier: Modifier = Modifier, ring: AvatarRing = AvatarRing.NONE) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     val ringBrush = when (ring) {
         AvatarRing.NONE -> null
         AvatarRing.STORY -> Brush.sweepGradient(listOf(colors.primary, colors.violet, colors.cyan, colors.primary))
@@ -218,53 +249,65 @@ fun CreatorAvatar(spec: ArtSpec, size: Dp, modifier: Modifier = Modifier, ring: 
         AvatarRing.SELF -> Brush.linearGradient(listOf(colors.cyan, colors.primary))
     }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
+        val art = Modifier.fillMaxSize().clip(CircleShape)
         if (ringBrush != null) {
-            Box(Modifier.fillMaxSize().border(2.dp, ringBrush, CircleShape))
+            Box(Modifier.fillMaxSize().border(dimens.ring, ringBrush, CircleShape))
+            Artwork(spec, Modifier.padding(dimens.xs).then(art))
+        } else {
+            Artwork(spec, art)
         }
-        val inset = if (ringBrush != null) 4.dp else 0.dp
-        Artwork(spec, Modifier.padding(inset).fillMaxSize().clip(CircleShape))
     }
 }
 
-/** LIVE pill with a breathing dot. The dot holds still when reduced motion is on. */
+/**
+ * LIVE pill with a breathing dot. The dot holds still when reduced motion is on; the infinite transition only runs
+ * while the badge is composed, so it stops when the badge scrolls away or the screen leaves.
+ */
 @Composable
-fun LiveBadge(modifier: Modifier = Modifier, label: String = "LIVE") {
+fun LiveBadge(modifier: Modifier = Modifier, label: String = stringResource(Res.string.common_live)) {
     val colors = Pulse.colors
-    val reduce = Pulse.reducedMotion
-    val pulse = if (reduce) {
-        1f
+    val dimens = Pulse.dimens
+    val pulse = if (Pulse.reducedMotion) {
+        null
     } else {
-        val transition = rememberInfiniteTransition(label = "live")
-        val value by transition.animateFloat(0.35f, 1f, infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Reverse), label = "dot")
-        value
+        rememberInfiniteTransition(label = "live").animateFloat(
+            0.35f,
+            1f,
+            infiniteRepeatable(tween(Motion.BREATH, easing = LinearEasing), RepeatMode.Reverse),
+            label = "dot",
+        )
     }
     Row(
         modifier
             .clip(Pulse.shapes.tag)
             .background(colors.liveGradient)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+            .padding(horizontal = dimens.sm, vertical = dimens.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(6.dp).graphicsLayer { alpha = pulse }.clip(CircleShape).background(Color.White))
-        Spacer(Modifier.width(5.dp))
-        Text(label, style = Pulse.type.overline, color = Color.White)
+        // Read inside the layer block, so breathing never recomposes the badge.
+        Box(Modifier.size(dimens.dot).graphicsLayer { alpha = pulse?.value ?: 1f }.clip(CircleShape).background(colors.onMedia))
+        Spacer(Modifier.width(dimens.xs))
+        Text(label, style = Pulse.type.overline, color = colors.onMedia)
     }
 }
 
 /** Eye + count over imagery. */
 @Composable
 fun ViewerPill(count: Int, modifier: Modifier = Modifier) {
+    val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    val description = stringResource(Res.string.common_simulated_viewers, compactCount(count))
     Row(
         modifier
             .clip(Pulse.shapes.tag)
-            .background(Color(0x8C080B14))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-            .semantics(mergeDescendants = true) { contentDescription = "${compactCount(count)} simulated viewers" },
+            .background(colors.glassStrong)
+            .padding(horizontal = dimens.sm, vertical = dimens.xxs)
+            .semantics(mergeDescendants = true) { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PulseIcon(Glyphs.Eye, Color.White, size = 13.dp)
-        Spacer(Modifier.width(4.dp))
-        Text(compactCount(count), style = Pulse.type.meta, color = Color.White)
+        PulseIcon(Glyphs.Eye, colors.onMedia, size = dimens.iconTiny)
+        Spacer(Modifier.width(dimens.xs))
+        Text(compactCount(count), style = Pulse.type.meta, color = colors.onMedia)
     }
 }
 
@@ -275,7 +318,7 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, eyebrow: String?
         Column(Modifier.weight(1f)) {
             if (eyebrow != null) {
                 Text(eyebrow.uppercase(), style = Pulse.type.overline, color = colors.cyan)
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(Pulse.dimens.xxs))
             }
             Text(title, style = Pulse.type.title, color = colors.textPrimary)
         }
@@ -293,8 +336,7 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, eyebrow: String?
 /** A number that eases to its new value instead of jumping. Formatting stays compact (24.5K). */
 @Composable
 fun AnimatedCount(value: Int, style: TextStyle, color: Color, modifier: Modifier = Modifier, compact: Boolean = true) {
-    val reduce = Pulse.reducedMotion
-    val shown by animateIntAsState(value, animationSpec = if (reduce) tween(0) else tween(600), label = "count")
+    val shown by animateIntAsState(value, animationSpec = Motion.spec(tween(Motion.COUNT)), label = "count")
     Text(if (compact) compactCount(shown) else shown.toString(), style = style, color = color, modifier = modifier, maxLines = 1)
 }
 
@@ -308,18 +350,19 @@ fun StatColumn(value: String, label: String, modifier: Modifier = Modifier, alig
 
 /** The honest-disclosure tag used wherever simulated numbers might be mistaken for real ones. */
 @Composable
-fun SimulatedTag(modifier: Modifier = Modifier, text: String = "Simulated") {
+fun SimulatedTag(modifier: Modifier = Modifier, text: String = stringResource(Res.string.common_simulated)) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     Row(
         modifier
             .clip(Pulse.shapes.tag)
             .background(colors.cyan.copy(alpha = 0.12f))
-            .border(1.dp, colors.cyan.copy(alpha = 0.3f), Pulse.shapes.tag)
-            .padding(horizontal = 7.dp, vertical = 2.dp),
+            .border(dimens.hairline, colors.cyan.copy(alpha = 0.3f), Pulse.shapes.tag)
+            .padding(horizontal = dimens.sm, vertical = dimens.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PulseIcon(Glyphs.Sparkles, colors.cyan, size = 11.dp)
-        Spacer(Modifier.width(4.dp))
+        PulseIcon(Glyphs.Sparkles, colors.cyan, size = dimens.iconTiny)
+        Spacer(Modifier.width(dimens.xs))
         Text(text, style = Pulse.type.meta, color = colors.cyan)
     }
 }
@@ -335,14 +378,15 @@ fun EmptyState(
     onAction: (() -> Unit)? = null,
 ) {
     val colors = Pulse.colors
-    Column(modifier.fillMaxWidth().padding(Pulse.dimens.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
-        GlossyIcon(glyph, gloss, size = 72.dp)
-        Spacer(Modifier.height(Pulse.dimens.lg))
+    val dimens = Pulse.dimens
+    Column(modifier.fillMaxWidth().padding(dimens.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+        GlossyIcon(glyph, gloss, size = dimens.tileXl)
+        Spacer(Modifier.height(dimens.lg))
         Text(title, style = Pulse.type.title, color = colors.textPrimary, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(Pulse.dimens.xs))
+        Spacer(Modifier.height(dimens.xs))
         Text(body, style = Pulse.type.body, color = colors.textSecondary, textAlign = TextAlign.Center)
         if (action != null && onAction != null) {
-            Spacer(Modifier.height(Pulse.dimens.lg))
+            Spacer(Modifier.height(dimens.lg))
             SecondaryButton(action, onAction)
         }
     }
@@ -359,23 +403,24 @@ fun ListRow(
     onClick: (() -> Unit)? = null,
 ) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     Row(
         modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.pressable(pressedScale = 0.98f, onClick = onClick) else Modifier)
-            .padding(vertical = Pulse.dimens.md),
+            .padding(vertical = dimens.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             leading()
-            Spacer(Modifier.width(Pulse.dimens.md))
+            Spacer(Modifier.width(dimens.md))
         }
         Column(Modifier.weight(1f)) {
             Text(title, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (detail != null) Text(detail, style = Pulse.type.bodySmall, color = colors.textSecondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         if (trailing != null) {
-            Spacer(Modifier.width(Pulse.dimens.md))
+            Spacer(Modifier.width(dimens.md))
             trailing()
         }
     }
@@ -392,67 +437,131 @@ fun PulseTextField(
     error: String? = null,
     prefix: String? = null,
     singleLine: Boolean = true,
-    maxLength: Int = 60,
-    keyboardType: androidx.compose.ui.text.input.KeyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
+    maxLength: Int = DEFAULT_MAX_LENGTH,
+    keyboardType: KeyboardType = KeyboardType.Text,
     secret: Boolean = false,
     trailing: @Composable (() -> Unit)? = null,
 ) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
     Column(modifier.fillMaxWidth()) {
         Text(label, style = Pulse.type.meta, color = colors.textSecondary)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(dimens.xs))
         Row(
             Modifier
                 .fillMaxWidth()
                 .clip(Pulse.shapes.control)
                 .background(colors.surface)
-                .border(1.dp, if (error != null) colors.error else colors.border, Pulse.shapes.control)
-                .padding(horizontal = Pulse.dimens.lg, vertical = 15.dp),
+                .border(dimens.hairline, if (error != null) colors.error else colors.border, Pulse.shapes.control)
+                .padding(horizontal = dimens.lg, vertical = dimens.fieldPaddingVertical),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (prefix != null) Text(prefix, style = Pulse.type.body, color = colors.textMuted)
             Box(Modifier.weight(1f)) {
                 if (value.isEmpty()) Text(placeholder, style = Pulse.type.body, color = colors.textMuted)
-                androidx.compose.foundation.text.BasicTextField(
+                BasicTextField(
                     value = value,
                     onValueChange = { if (it.length <= maxLength) onValueChange(it) },
                     singleLine = singleLine,
                     textStyle = Pulse.type.body.copy(color = colors.textPrimary),
-                    cursorBrush = androidx.compose.ui.graphics.SolidColor(colors.cyan),
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    cursorBrush = SolidColor(colors.cyan),
+                    keyboardOptions = KeyboardOptions(
                         keyboardType = keyboardType,
-                        autoCorrectEnabled = !secret && keyboardType == androidx.compose.ui.text.input.KeyboardType.Text,
+                        autoCorrectEnabled = !secret && keyboardType == KeyboardType.Text,
                     ),
-                    visualTransformation = if (secret) {
-                        androidx.compose.ui.text.input.PasswordVisualTransformation()
-                    } else {
-                        androidx.compose.ui.text.input.VisualTransformation.None
-                    },
+                    visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             if (trailing != null) {
-                Spacer(Modifier.width(Pulse.dimens.sm))
+                Spacer(Modifier.width(dimens.sm))
                 trailing()
             }
         }
         if (error != null) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimens.xs))
             Text(error, style = Pulse.type.meta, color = colors.error)
         }
     }
 }
 
-/** Header for pushed screens: back control, title and an optional trailing action. */
+/** Header for pushed screens: back control (mirrored in RTL), title and an optional trailing action. */
 @Composable
 fun ScreenHeader(title: String, onBack: () -> Unit, modifier: Modifier = Modifier, trailing: @Composable (() -> Unit)? = null) {
+    val dimens = Pulse.dimens
     Row(
-        modifier.fillMaxWidth().padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
+        modifier.fillMaxWidth().padding(horizontal = dimens.lg, vertical = dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        GlassIconButton(Glyphs.ChevronLeft, contentDescription = "Back", onClick = onBack)
-        Spacer(Modifier.width(Pulse.dimens.md))
+        GlassIconButton(Glyphs.ChevronLeft, contentDescription = stringResource(Res.string.common_back), onClick = onBack)
+        Spacer(Modifier.width(dimens.md))
         Text(title, style = Pulse.type.headline, color = Pulse.colors.textPrimary, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (trailing != null) trailing()
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Previews
+
+private val PreviewAvatar = ArtSpec(3, ArtMotif.PORTRAIT, 42)
+
+@ComponentPreviews
+@Composable
+private fun ButtonsPreview() = PreviewContainer {
+    Column(Modifier.padding(Pulse.dimens.gutter), verticalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
+        PrimaryButton(stringResource(Res.string.common_live), {}, Modifier.fillMaxWidth(), leading = Glyphs.Bolt)
+        PrimaryButton(stringResource(Res.string.common_live), {}, Modifier.fillMaxWidth(), enabled = false)
+        SecondaryButton(stringResource(Res.string.common_back), {}, leading = Glyphs.ChevronLeft)
+        Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
+            GlassIconButton(Glyphs.Bell, stringResource(Res.string.common_back), {})
+            GlassIconButton(Glyphs.Mic, stringResource(Res.string.common_back), {}, active = true)
+        }
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun ChipsAndTagsPreview() = PreviewContainer {
+    Column(Modifier.padding(Pulse.dimens.gutter), verticalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
+            PulseChip(stringResource(Res.string.common_selected), selected = true, onClick = {}, leading = Glyphs.Star)
+            PulseChip(stringResource(Res.string.common_requires_pro), selected = false, onClick = {}, locked = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm), verticalAlignment = Alignment.CenterVertically) {
+            LiveBadge()
+            ViewerPill(12_480)
+            SimulatedTag()
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
+            AvatarRing.entries.forEach { CreatorAvatar(PreviewAvatar, Pulse.dimens.avatarLg, ring = it) }
+        }
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun RowsAndFieldsPreview() = PreviewContainer {
+    Column(Modifier.padding(Pulse.dimens.gutter)) {
+        ScreenHeader(stringResource(Res.string.common_simulated), onBack = {})
+        SectionHeader(stringResource(Res.string.common_simulated), eyebrow = stringResource(Res.string.common_live))
+        ListRow(
+            stringResource(Res.string.common_simulated),
+            detail = stringResource(Res.string.common_simulated_viewers, "2.4K"),
+            leading = { GlossyIcon(Glyphs.Sparkles, Gloss.Cyan, size = Pulse.dimens.tileSm) },
+            onClick = {},
+        )
+        PulseTextField("", {}, stringResource(Res.string.common_simulated), placeholder = stringResource(Res.string.common_live))
+        Spacer(Modifier.height(Pulse.dimens.md))
+        PulseTextField("x", {}, stringResource(Res.string.common_simulated), error = stringResource(Res.string.common_requires_pro))
+        Row(Modifier.fillMaxWidth().padding(top = Pulse.dimens.lg), horizontalArrangement = Arrangement.SpaceEvenly) {
+            StatColumn("2.4K", stringResource(Res.string.common_simulated))
+            AnimatedCount(12_480, Pulse.type.metricSmall, Pulse.colors.textPrimary)
+        }
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun EmptyStatePreview() = PreviewContainer {
+    EmptyState(Glyphs.Sparkles, Gloss.Violet, stringResource(Res.string.common_simulated), stringResource(Res.string.common_simulated_viewers, "0"))
 }

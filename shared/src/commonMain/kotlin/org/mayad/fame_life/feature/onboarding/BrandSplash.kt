@@ -15,12 +15,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.mayad.fame_life.app.AppConfig
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.icons.BrandMark
 import org.mayad.fame_life.core.designsystem.theme.Motion
+import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
+import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 
 /** How long the in-app splash stays at least, so it reads as a moment rather than a flicker. */
@@ -48,14 +49,14 @@ fun BrandSplash(modifier: Modifier = Modifier) {
         ) {
             BrandMark(
                 Modifier
-                    .size(112.dp)
+                    .size(Pulse.dimens.brandMark)
                     .graphicsLayer {
                         val t = lift.value
                         alpha = 0.4f + 0.6f * t
                         scaleX = 0.92f + 0.08f * t
                         scaleY = scaleX
                     },
-                lineProgress = line.value,
+                lineProgress = { line.value },
             )
             Spacer(Modifier.height(Pulse.dimens.lg))
             Text(
@@ -67,3 +68,7 @@ fun BrandSplash(modifier: Modifier = Modifier) {
         }
     }
 }
+
+@ScreenPreviews
+@Composable
+private fun BrandSplashPreview() = PreviewContainer { BrandSplash() }

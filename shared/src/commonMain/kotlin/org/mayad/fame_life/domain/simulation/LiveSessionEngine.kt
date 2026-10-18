@@ -231,7 +231,7 @@ class LiveSessionEngine(
             ApprovedEvent.Trending -> {
                 viewers.spike(1.0)
                 snapshot = snapshot.copy(
-                    spotlight = AudienceEvent.TrendingMoment(nextEventId++, sessionMs, reason ?: "Your live is trending"),
+                    spotlight = AudienceEvent.TrendingMoment(nextEventId++, sessionMs, reason),
                 )
             }
         }

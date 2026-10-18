@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_body">Start a live, talk about anything, and an AI audience reacts to what you actually say.</string>
+    <string name="welcome_disclosure">%1$s is a simulation. Viewers, comments, gifts and followers are generated in the app. Your camera stays on your device and is never broadcast.</string>
+    <string name="welcome_get_started">Get started</string>
+    <string name="welcome_have_account">I already have an account</string>
+    <string name="welcome_sample_comment_1">you\'re so funny 😂</string>
+    <string name="welcome_sample_comment_2">wait, tell us more!!</string>
+    <string name="welcome_sample_comment_3">هلا والله 👋</string>
+
+    <string name="intro_step_of">Step %1$d of %2$d</string>
+    <string name="intro_next">Next</string>
+    <string name="how_eyebrow">HOW A LIVE WORKS</string>
+    <string name="how_title">Talk. They listen.\nThe room reacts.</string>
+    <string name="how_talk_title">You talk</string>
+    <string name="how_talk_body">Go live with your camera and just speak. Stories, jokes, a question for the room.</string>
+    <string name="how_listen_title">The audience listens</string>
+    <string name="how_listen_body">Your phone turns speech into text. The AI audience reads what you mean, not your voice.</string>
+    <string name="how_react_title">The room reacts</string>
+    <string name="how_react_body">Comments, questions, gifts and viewer spikes follow the moment, then a recap when you end.</string>
+
+    <string name="honesty_eyebrow">BEFORE YOU START</string>
+    <string name="honesty_title">Real feelings,\nsimulated crowd.</string>
+    <string name="honesty_button">Sounds good</string>
+    <string name="honesty_audience_title">The audience is simulated</string>
+    <string name="honesty_audience_body">No real people watch. Viewers, comments, gifts and followers are made by %1$s.</string>
+    <string name="honesty_camera_title">Your camera stays on your phone</string>
+    <string name="honesty_camera_body">Video is shown only to you. It\'s never recorded, uploaded or broadcast.</string>
+    <string name="honesty_speech_title">Only speech text may leave</string>
+    <string name="honesty_speech_body">Raw audio is never stored. When the cloud audience is on, short bits of text go to our server, nowhere else.</string>
+    <string name="honesty_numbers_title">Numbers are for fun</string>
+    <string name="honesty_numbers_body">Fame levels and counts live inside the app. They aren\'t real reach, and we never post for you.</string>
+
+    <string name="account_title_new">Save your creator life</string>
+    <string name="account_title_returning">Welcome back</string>
+    <string name="account_body_new">Sign in with Google to keep your profile and lives safe across devices. A new account is created the first time.</string>
+    <string name="account_body_returning">Sign in with the Google account you used before to pick up your profile, lives and fame level.</string>
+    <string name="account_what_we_use">What we use</string>
+    <string name="account_what_we_use_body">Your Google name, email and account id, only to sign you in and keep your data yours. We never post to Google or anywhere else for you.</string>
+    <string name="account_continue">Continue with Google</string>
+    <string name="account_opening">Opening Google…</string>
+
+    <string name="sync_error_title">Can\'t reach your account</string>
+    <string name="sync_error_body">You\'re signed in, but your profile couldn\'t load. Check your connection and try again.</string>
+
+    <string name="setup_step_one">STEP 1 OF 2</string>
+    <string name="setup_step_two">STEP 2 OF 2</string>
+    <string name="setup_profile_title">Who\'s going live?</string>
+    <string name="setup_pick_look">Pick your look</string>
+    <string name="setup_display_name">Display name</string>
+    <string name="setup_display_name_hint">Your name</string>
+    <string name="setup_username">Username</string>
+    <string name="setup_username_hint">yourname</string>
+    <string name="setup_saved_note">Saved to your account so it follows you to any device.</string>
+    <string name="setup_continue">Continue</string>
+    <string name="setup_interests_title">What do you love talking about?</string>
+    <string name="setup_interests_body">We\'ll tune your feed. You can skip this.</string>
+    <string name="setup_skip">Skip for now</string>
+    <string name="setup_lets_go">Let\'s go</string>
+    <string name="setup_avatar_style">Avatar style %1$d</string>
+
+    <string name="welcome_notification_title">Welcome to %1$s</string>
+    <string name="welcome_notification_body">Tap the glowing button to start your first live. Your audience is simulated and reacts to what you say.</string>
+</resources>

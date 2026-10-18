@@ -34,6 +34,11 @@ object Motion {
     /** Items that start within this window of each other count as one batch. */
     const val CASCADE_BATCH_WINDOW = 120
 
+    /** A reaction particle's rise, the gap between particles of one burst, and a major gift's light burst. */
+    const val PARTICLE = 2000
+    const val PARTICLE_STAGGER = 140
+    const val GIFT_BURST = 1100
+
     /** Live badge breathing period. */
     const val BREATH = 900
     /** Onboarding countdown step before a live, and its reduced-motion version. */

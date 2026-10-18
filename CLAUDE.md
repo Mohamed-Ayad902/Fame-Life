@@ -8,7 +8,8 @@ camera, talk, and a **simulated** audience reacts. Nothing is broadcast. Read th
 - Kotlin Multiplatform + Compose Multiplatform. `shared` holds all UI and logic; `androidApp` and `iosApp` only host it.
 - One shared module, organised by feature under `shared/src/commonMain/kotlin/org/mayad/fame_life/`:
   - `app/` — `AppContainer` (manual DI), typed `Navigator` + `Route`, `AppConfig` brand strings.
-  - `core/designsystem/` — tokens (`PulseTheme`, `PulseTokens`, `PulseTypography`), glyphs, 3D `GlossyIcon`, `GiftArt`, procedural `Artwork`, shared components.
+  - `core/designsystem/` — `theme/` (`Pulse`, colors, dimens/shapes, type, `Motion`), `motion/` (cascade, scroll-linked), `preview/`, glyphs, 3D `GlossyIcon`, `GiftArt`, procedural `Artwork`, shared components (incl. `SplitPanes`).
+  - `core/ui/Labels.kt` — domain enums and error codes to localized strings. `core/preview/SampleData.kt` — preview data.
   - `core/platform/` — `expect` boundaries: storage, share, reduce motion, speech, camera, permissions.
   - `domain/` — pure Kotlin: `simulation/` (engine, controller, event policy), `ai/` (transcript, protocol, validator, generators), `account/` (`AuthService`, `AuthRules`), `entitlement/`, `progression/`, `profile/`.
   - `data/` — fictional seed content (`content/`), the device-cache repositories (`local/`), and Firebase (`cloud/`: `FirebaseAuthService`, `FirestoreCloudStore`, `AccountSync`).
@@ -35,14 +36,27 @@ Consult these when they apply:
 - No dead buttons. A control either works, or is visibly disabled with an explanation.
 - No invented prices, fake urgency, fabricated analytics, testimonials or test results.
 - Analytics events (`AnalyticsEvent`) never carry transcripts, comment text or names.
-- Respect `LocalReduceMotion`: every decorative animation needs a calm fallback.
+- Respect `Pulse.reducedMotion`: every decorative animation needs a calm fallback.
 
-## Design tokens
+## Design system (one entry point: `Pulse`)
 
-Dark-first. Colors come from `Pulse.colors` (background `#080B14`, surfaces `#101526/#151D32/#1D2843`, blue `#4C7DFF`,
-violet `#945CFF`, cyan `#55E5F2`, text `#F7F8FC/#A5AEC4/#717C96`, success `#52D6A0`, warning `#FFC66D`, error `#FF647C`).
-Spacing `Space`, shapes `Shapes`, motion `Motion`. Never hard-code a new color or duration in a screen when a token fits.
-Icons on feature surfaces are glossy 3D tiles (`GlossyIcon`), not flat glyphs; small inline icons use `PulseIcon`.
+- Everything visual comes from `Pulse`: `Pulse.colors`, `Pulse.type`, `Pulse.dimens`, `Pulse.shapes`, `Pulse.width`
+  (Compact/Medium/Expanded by window width), `Pulse.reducedMotion`. Motion tokens live in `Motion`; wrap specs in
+  `Motion.spec(...)` so they snap under reduced motion.
+- **No hard-coded dp, sp, colors or strings in screens or components.** Sizes: `Pulse.dimens.*` (scaled by the window's
+  shortest side). Colors: `Pulse.colors.*` (media scrims, glass and on-media ink included). Copy: string resources in
+  `composeResources/values/strings_*.xml` with the Arabic in `values-ar/`; enum and error labels go through
+  `core/ui/Labels.kt`. Domain code returns codes, never display text.
+- Screens follow three tiers: a stateful `XScreen` (reads the container, logs analytics, navigates), a stateless
+  `XContent(state, callbacks)`, and portrait vs split layouts chosen with `Pulse.width.split` (`SplitPanes` helps).
+- Every screen and component file ends with previews: `@ScreenPreviews` / `@ComponentPreviews` inside
+  `PreviewContainer`, fed from `core/preview/SampleData.kt` only.
+- Motion: lists and sections enter with `Modifier.cascadeIn(rememberCascadeState(), key)` (once per item, 550 ms,
+  70 ms stagger, max 8); headers use `scrollLinkedHeader { state.headerScroll() }`.
+- Performance: read scroll and animation values only inside `graphicsLayer`/draw lambdas (pass `() -> Float`), use
+  stable lazy keys, keep token classes `@Immutable`, no infinite animation outside a composed, visible element.
+- Dark-first palette: background `#080B14`, surfaces `#101526/#151D32/#1D2843`, blue `#4C7DFF`, violet `#945CFF`,
+  cyan `#55E5F2`. Icons on feature surfaces are glossy 3D tiles (`GlossyIcon`); small inline icons use `PulseIcon`.
 
 ## Build and test
 

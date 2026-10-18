@@ -66,10 +66,14 @@ name and look → interests → home. On Android, Google sign-in needs a Google 
 androidApp/                 Android host: MainActivity, manifest, splash theme, google-services.json
 iosApp/                     iOS host: iOSApp.swift (configures Firebase), launch screen, Xcode project
 shared/src/
+  commonMain/composeResources/  Fonts and strings (values/ English, values-ar/ Arabic)
   commonMain/kotlin/org/mayad/fame_life/
     App.kt                  Root: splash → onboarding → profile setup → main, based on sign-in state
     app/                    AppContainer (creates everything), Navigator + Route (screen stack), AppConfig
-    core/designsystem/      Colors, type, spacing, motion tokens, glossy 3D icons, shared components
+    core/designsystem/      Pulse theme (colors, type, adaptive dimens, shapes, motion), cascade + scroll motion,
+                            previews, glossy 3D icons, shared components
+    core/ui/                Domain values to localized labels
+    core/preview/           SampleData for previews
     core/platform/          "expect" functions each platform implements: storage, camera, mic, speech, share
     core/analytics/         Typed analytics events (never carry names, transcripts or comment text)
     domain/                 Pure Kotlin rules, no UI and no Firebase
@@ -163,33 +167,43 @@ decides if and when it shows, and what the totals are.
 
 ## 5. How to add a screen
 
-1. Create the composable in a feature folder, for example `feature/badges/BadgesScreen.kt`:
+Every screen has three tiers, its strings in resources, and previews. Example `feature/badges/BadgesScreen.kt`:
 
-   ```kotlin
-   @Composable
-   fun BadgesScreen(navigator: Navigator) {
-       val container = LocalAppContainer.current          // repositories, analytics, auth
-       AtmosphereBackground {
-           Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-               ScreenHeader("Badges", onBack = { navigator.pop() })
-               // ... use Pulse.colors, Pulse.type, Space, Shapes, GlossyIcon
-           }
-       }
-   }
-   ```
+```kotlin
+// Tier 1: stateful. Reads the container, logs analytics, navigates.
+@Composable
+fun BadgesScreen(navigator: Navigator) {
+    val container = LocalAppContainer.current
+    val profile = container.profiles.profile.collectAsState().value ?: return
+    BadgesContent(points = profile.famePoints, onBack = { navigator.pop() })
+}
 
-2. Add a route in `app/Navigation.kt`: `@Serializable data object Badges : Route { override val key get() = "badges" }`.
-3. Map it in `PulseNavHost` in `App.kt`: `Route.Badges -> BadgesScreen(navigator)`.
-4. Open it from anywhere with `navigator.push(Route.Badges)`.
+// Tier 2: stateless. Only parameters in, callbacks out, so it previews in any state.
+@Composable
+fun BadgesContent(points: Int, onBack: () -> Unit) {
+    val cascade = rememberCascadeState()
+    AtmosphereBackground {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            ScreenHeader(stringResource(Res.string.badges_title), onBack = onBack)
+            // Tier 3: pick the layout by window width, not by device.
+            if (Pulse.width.split) { /* side-by-side panes, e.g. SplitPanes(...) */ } else { /* one column */ }
+        }
+    }
+}
 
-Checklist (from `CLAUDE.md`): use design tokens, not new hex colors or durations; glossy `GlossyIcon` tiles on
-feature surfaces; every button works or is visibly disabled with a reason; respect `LocalReduceMotion`; label
-simulated numbers with `SimulatedTag`.
+@ScreenPreviews
+@Composable
+private fun BadgesPreview() = PreviewContainer { BadgesContent(points = SampleData.profile.famePoints, onBack = {}) }
+```
 
-If the screen needs data, put rules in `domain/`, storage in `data/`, and read a `StateFlow` with
-`collectAsState()` in the screen. Don't call Firebase from a composable.
+Then:
+1. Add the strings to `composeResources/values/strings_<feature>.xml` **and** the Arabic to `values-ar/`.
+2. Add a route in `app/Navigation.kt` and map it in `PulseNavHost` (`App.kt`); open it with `navigator.push(...)`.
 
----
+Rules (from `CLAUDE.md`): sizes from `Pulse.dimens`, colors from `Pulse.colors`, shapes from `Pulse.shapes`, no
+literal dp/sp/colors/strings; glossy `GlossyIcon` tiles on feature surfaces; every button works or is visibly
+disabled with a reason; respect `Pulse.reducedMotion`; label simulated numbers with `SimulatedTag`; enter lists with
+`cascadeIn`; read scroll/animation values only in `graphicsLayer` or draw lambdas.
 
 ## 6. Tests
 

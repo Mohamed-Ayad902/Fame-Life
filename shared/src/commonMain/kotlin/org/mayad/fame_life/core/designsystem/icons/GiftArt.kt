@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import org.mayad.fame_life.core.designsystem.theme.Pulse
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -26,7 +26,7 @@ import kotlin.math.sin
  * cleanly and needs no image assets.
  */
 @Composable
-fun GiftArt(giftId: String, modifier: Modifier = Modifier, size: Dp = 56.dp, name: String? = null) {
+fun GiftArt(giftId: String, modifier: Modifier = Modifier, size: Dp = Pulse.dimens.tileLg, name: String? = null) {
     Canvas(
         modifier
             .size(size)

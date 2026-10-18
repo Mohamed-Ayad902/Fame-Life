@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_settings">الإعدادات</string>
+    <string name="profile_fame_points">نقاط الشهرة</string>
+    <string name="profile_lives">البثوث</string>
+    <string name="profile_best_peak">أعلى ذروة</string>
+    <string name="profile_edit">تعديل الملف</string>
+    <string name="profile_plan_free">الخطة: مجانية</string>
+    <string name="profile_plan_pro">الخطة: Pro</string>
+    <string name="profile_badges">الشارات</string>
+    <string name="profile_first_live_title">أول بث لك بانتظارك</string>
+    <string name="profile_first_live_body">ابدأ البث وتكلّم عن أي شيء، وستتجمع نتائج بثوثك هنا.</string>
+    <string name="profile_untitled_live">بث بلا عنوان</string>
+    <string name="profile_session_meta">%1$s · ذروة %2$s · +%3$d نقطة</string>
+    <string name="profile_creator_not_found">صانع المحتوى غير موجود</string>
+    <string name="profile_unavailable">هذا الملف غير متاح.</string>
+    <string name="profile_simulated_creator">صانع محتوى افتراضي</string>
+    <string name="profile_followers">المتابعون</string>
+    <string name="profile_likes">الإعجابات</string>
+    <string name="profile_level">المستوى</string>
+    <string name="profile_live_now">مباشر الآن</string>
+    <string name="profile_posts">المنشورات</string>
+
+    <string name="level_card_eyebrow">مستوى الشهرة</string>
+    <string name="level_card_points_to">%1$d نقطة للوصول إلى %2$s</string>
+    <string name="level_card_top">وصلت إلى أعلى مستوى</string>
+    <string name="level_card_description">مستوى الشهرة %1$s، %2$d نقطة</string>
+    <string name="level_card_description_next">مستوى الشهرة %1$s، %2$d نقطة، %3$d للمستوى التالي</string>
+
+    <string name="badge_unlocked">%1$s، مفتوحة. %2$s</string>
+    <string name="badge_locked">%1$s، مقفلة. %2$s</string>
+    <string name="badge_first_live">أول بث</string>
+    <string name="badge_first_live_detail">أنهِ بثًا</string>
+    <string name="badge_crowd">محبوب الجمهور</string>
+    <string name="badge_crowd_detail">صل إلى ذروة 1K</string>
+    <string name="badge_gifted">صاحب الهدايا</string>
+    <string name="badge_gifted_detail">احصل على هدية كبيرة</string>
+    <string name="badge_storyteller">الحكّاء</string>
+    <string name="badge_storyteller_detail">تكلّم 10 دقائق</string>
+    <string name="badge_regular">المنتظم</string>
+    <string name="badge_regular_detail">أنهِ 5 بثوث</string>
+    <string name="badge_rising">الصاعد</string>
+    <string name="badge_rising_detail">صل إلى صانع محتوى صاعد</string>
+
+    <string name="edit_title">تعديل الملف</string>
+    <string name="edit_bio">نبذة</string>
+    <string name="edit_bio_hint">عن ماذا تبث؟</string>
+    <string name="edit_bio_count">%1$d/%2$d</string>
+    <string name="edit_save">حفظ</string>
+</resources>

@@ -10,17 +10,19 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -38,13 +40,22 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
+import famelife.shared.generated.resources.Res
+import famelife.shared.generated.resources.go_live
+import famelife.shared.generated.resources.tab_discover
+import famelife.shared.generated.resources.tab_home
+import famelife.shared.generated.resources.tab_inbox
+import famelife.shared.generated.resources.tab_profile
+import famelife.shared.generated.resources.tab_with_new
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.app.LocalAppContainer
 import org.mayad.fame_life.app.Navigator
 import org.mayad.fame_life.app.Route
@@ -54,28 +65,44 @@ import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.pressable
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
+import org.mayad.fame_life.core.designsystem.preview.ComponentPreviews
+import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
+import org.mayad.fame_life.core.designsystem.theme.PulseWidth
 import org.mayad.fame_life.feature.discover.DiscoverScreen
 import org.mayad.fame_life.feature.home.HomeScreen
 import org.mayad.fame_life.feature.notifications.InboxScreen
 import org.mayad.fame_life.feature.profile.OwnProfileScreen
 
-/** Height reserved at the bottom of tab content so the floating bar never covers it. */
-val BottomBarClearance = PaddingValues(bottom = 112.dp)
+private data class TabSpec(val tab: Tab, val glyph: ImageVector, val label: StringResource)
 
+private val Tabs = listOf(
+    TabSpec(Tab.HOME, Glyphs.Home, Res.string.tab_home),
+    TabSpec(Tab.DISCOVER, Glyphs.Discover, Res.string.tab_discover),
+    TabSpec(Tab.INBOX, Glyphs.Bell, Res.string.tab_inbox),
+    TabSpec(Tab.PROFILE, Glyphs.User, Res.string.tab_profile),
+)
+
+/**
+ * The tab shell. Phones and medium windows get a floating bottom bar with the raised Create orb; expanded windows
+ * (tablets, desktop-size) get a side rail, so the content keeps its full height.
+ */
 @Composable
 fun MainShell(navigator: Navigator) {
     var tabName by rememberSaveable { mutableStateOf(Tab.HOME.name) }
     val tab = Tab.valueOf(tabName)
     val container = LocalAppContainer.current
     val unread = container.notifications.notifications.collectAsState().value.count { !it.read }
-
-    AtmosphereBackground {
+    val onCreate = {
+        container.analytics.log(AnalyticsEvent.CreateLiveTapped)
+        navigator.push(Route.LiveSetup())
+    }
+    val content: @Composable (Modifier) -> Unit = { modifier ->
         AnimatedContent(
             targetState = tab,
             transitionSpec = { fadeIn(Motion.standard()) togetherWith fadeOut(Motion.exit()) },
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier,
             label = "tabs",
         ) { current ->
             when (current) {
@@ -85,84 +112,116 @@ fun MainShell(navigator: Navigator) {
                 Tab.PROFILE -> OwnProfileScreen(navigator)
             }
         }
-        PulseTabBar(
-            selected = tab,
-            unread = unread,
-            onSelect = { tabName = it.name },
-            onCreate = {
-                container.analytics.log(AnalyticsEvent.CreateLiveTapped)
-                navigator.push(Route.LiveSetup())
-            },
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
+    }
+
+    AtmosphereBackground {
+        if (Pulse.width == PulseWidth.Expanded) {
+            Row(Modifier.fillMaxSize()) {
+                PulseNavRail(tab, unread, onSelect = { tabName = it.name }, onCreate = onCreate)
+                content(Modifier.weight(1f).fillMaxHeight())
+            }
+        } else {
+            content(Modifier.fillMaxSize())
+            PulseTabBar(tab, unread, onSelect = { tabName = it.name }, onCreate = onCreate, modifier = Modifier.align(Alignment.BottomCenter))
+        }
     }
 }
 
 @Composable
-private fun PulseTabBar(selected: Tab, unread: Int, onSelect: (Tab) -> Unit, onCreate: () -> Unit, modifier: Modifier = Modifier) {
+private fun Modifier.navSurface(shape: Shape): Modifier {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    return this
+        .shadow(dimens.navElevation, shape, ambientColor = colors.shadow, spotColor = colors.shadow)
+        .clip(shape)
+        .background(colors.navSurface)
+        .border(dimens.hairline, Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.14f), colors.highlight.copy(alpha = 0.03f))), shape)
+}
+
+@Composable
+private fun PulseTabBar(selected: Tab, unread: Int, onSelect: (Tab) -> Unit, onCreate: () -> Unit, modifier: Modifier = Modifier) {
+    val dimens = Pulse.dimens
     Box(
         modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = dimens.lg, vertical = dimens.sm),
         contentAlignment = Alignment.BottomCenter,
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(68.dp)
-                .shadow(24.dp, CircleShape, ambientColor = Color.Black, spotColor = Color.Black)
-                .clip(CircleShape)
-                .background(Color(0xF00D1220))
-                .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.14f), Color.White.copy(alpha = 0.03f))), CircleShape)
-                .padding(horizontal = 8.dp),
+                .height(dimens.navBarHeight)
+                .navSurface(CircleShape)
+                .padding(horizontal = dimens.sm),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TabItem(Glyphs.Home, "Home", selected == Tab.HOME) { onSelect(Tab.HOME) }
-            TabItem(Glyphs.Discover, "Discover", selected == Tab.DISCOVER) { onSelect(Tab.DISCOVER) }
-            Spacer(Modifier.size(64.dp))
-            TabItem(Glyphs.Bell, "Inbox", selected == Tab.INBOX, badge = unread) { onSelect(Tab.INBOX) }
-            TabItem(Glyphs.User, "Profile", selected == Tab.PROFILE) { onSelect(Tab.PROFILE) }
+            Tabs.take(2).forEach { TabItem(it, selected == it.tab, if (it.tab == Tab.INBOX) unread else 0) { onSelect(it.tab) } }
+            Spacer(Modifier.size(dimens.createOrb - dimens.xs))
+            Tabs.drop(2).forEach { TabItem(it, selected == it.tab, if (it.tab == Tab.INBOX) unread else 0) { onSelect(it.tab) } }
         }
-        CreateOrb(onCreate, Modifier.offset(y = (-22).dp))
+        CreateOrb(onCreate, Modifier.offset(y = -dimens.createOrbLift))
     }
 }
 
 @Composable
-private fun TabItem(glyph: ImageVector, label: String, selected: Boolean, badge: Int = 0, onClick: () -> Unit) {
-    val colors = Pulse.colors
-    val emphasis by animateFloatAsState(if (selected) 1f else 0f, Motion.standard(), label = "tab")
+private fun PulseNavRail(selected: Tab, unread: Int, onSelect: (Tab) -> Unit, onCreate: () -> Unit) {
+    val dimens = Pulse.dimens
     Column(
         Modifier
-            .size(width = 60.dp, height = 56.dp)
+            .fillMaxHeight()
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(dimens.md)
+            .width(dimens.navRailWidth)
+            .navSurface(Pulse.shapes.panel)
+            .padding(vertical = dimens.xl),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(dimens.lg),
+    ) {
+        CreateOrb(onCreate)
+        Spacer(Modifier.height(dimens.sm))
+        Tabs.forEach { TabItem(it, selected == it.tab, if (it.tab == Tab.INBOX) unread else 0) { onSelect(it.tab) } }
+    }
+}
+
+@Composable
+private fun TabItem(spec: TabSpec, selected: Boolean, badge: Int, onClick: () -> Unit) {
+    val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    val label = stringResource(spec.label)
+    val description = if (badge > 0) stringResource(Res.string.tab_with_new, label, badge) else label
+    val emphasis = animateFloatAsState(if (selected) 1f else 0f, Motion.spec(Motion.standard()), label = "tab")
+    Column(
+        Modifier
+            .size(width = dimens.navItemWidth, height = dimens.navItemHeight)
             .pressable(role = Role.Tab, onClick = onClick)
-            .semantics { this.selected = selected; contentDescription = if (badge > 0) "$label, $badge new" else label },
+            .semantics { this.selected = selected; contentDescription = description },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Box {
-            PulseIcon(glyph, if (selected) colors.textPrimary else colors.textMuted, size = 24.dp)
+            PulseIcon(spec.glyph, if (selected) colors.textPrimary else colors.textMuted, size = dimens.iconMedium)
             if (badge > 0) {
                 Box(
                     Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = 4.dp, y = (-2).dp)
-                        .size(9.dp)
+                        .offset(x = dimens.xs, y = -dimens.xxs)
+                        .size(dimens.badgeDot)
                         .clip(CircleShape)
                         .background(colors.live)
-                        .border(1.5.dp, Color(0xFF0D1220), CircleShape),
+                        .border(dimens.stroke, colors.navSurface, CircleShape),
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(dimens.xs))
         Text(label, style = Pulse.type.meta, color = if (selected) colors.textPrimary else colors.textMuted, maxLines = 1)
         Box(
             Modifier
-                .padding(top = 3.dp)
-                .size(4.dp)
-                .graphicsLayer { alpha = emphasis; scaleX = emphasis; scaleY = emphasis }
+                .padding(top = dimens.xxs)
+                .size(dimens.dotSmall)
+                // The selection dot animates in its layer; switching tabs never recomposes the bar for it.
+                .graphicsLayer { val e = emphasis.value; alpha = e; scaleX = e; scaleY = e }
                 .clip(CircleShape)
                 .background(colors.cyan),
         )
@@ -173,27 +232,44 @@ private fun TabItem(glyph: ImageVector, label: String, selected: Boolean, badge:
 @Composable
 private fun CreateOrb(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = Pulse.colors
+    val dimens = Pulse.dimens
+    val description = stringResource(Res.string.go_live)
     Box(
         modifier
-            .size(70.dp)
+            .size(dimens.createOrb)
             .pressable(pressedScale = 0.9f, onClick = onClick)
-            .semantics { contentDescription = "Go live" }
+            .semantics { contentDescription = description }
             .drawBehind {
                 drawCircle(Brush.radialGradient(listOf(colors.violet.copy(alpha = 0.55f), Color.Transparent), center, size.width * 0.75f), size.width * 0.75f)
             }
-            .padding(5.dp)
+            .padding(dimens.xs)
             .clip(CircleShape)
-            .background(Brush.linearGradient(listOf(Color(0xFF7FA2FF), colors.primary, colors.violet), start = Offset.Zero, end = Offset(180f, 180f)))
+            .background(colors.orbGradient)
             .drawBehind {
                 drawCircle(
-                    Brush.radialGradient(listOf(Color.White.copy(alpha = 0.55f), Color.Transparent), Offset(size.width * 0.35f, size.height * 0.25f), size.width * 0.45f),
+                    Brush.radialGradient(listOf(colors.highlight.copy(alpha = 0.55f), Color.Transparent), Offset(size.width * 0.35f, size.height * 0.25f), size.width * 0.45f),
                     size.width * 0.45f,
                     Offset(size.width * 0.35f, size.height * 0.25f),
                 )
             }
-            .border(1.5.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.7f), Color.Transparent)), CircleShape),
+            .border(dimens.stroke, Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.7f), Color.Transparent)), CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        PulseIcon(Glyphs.Plus, Color.White, size = 30.dp)
+        PulseIcon(Glyphs.Plus, colors.onMedia, size = dimens.iconLarge)
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Previews
+
+@ComponentPreviews
+@Composable
+private fun TabBarPreview() = PreviewContainer {
+    Box(Modifier.fillMaxWidth().height(Pulse.dimens.bottomBarClearance + Pulse.dimens.xl)) {
+        PulseTabBar(Tab.HOME, unread = 2, onSelect = {}, onCreate = {}, modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun NavRailPreview() = PreviewContainer { PulseNavRail(Tab.DISCOVER, unread = 0, onSelect = {}, onCreate = {}) }

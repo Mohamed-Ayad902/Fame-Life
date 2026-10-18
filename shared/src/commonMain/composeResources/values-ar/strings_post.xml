@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="post_unavailable_title">هذا المنشور غير متاح</string>
+    <string name="post_unavailable_body">ربما أُزيل من الصفحة الرئيسية.</string>
+    <string name="post_go_back">رجوع</string>
+    <string name="post_like">إعجاب</string>
+    <string name="post_liked">معجب به</string>
+    <string name="post_not_liked">غير معجب به</string>
+    <string name="post_share">مشاركة</string>
+    <string name="post_comments">التعليقات</string>
+    <string name="post_comments_simulated">%1$s افتراضي</string>
+    <string name="post_more_from">المزيد من %1$s</string>
+    <string name="post_share_text">«%1$s» من @%2$s، منشور افتراضي في %3$s</string>
+</resources>

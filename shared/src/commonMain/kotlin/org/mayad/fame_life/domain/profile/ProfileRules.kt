@@ -1,6 +1,9 @@
 package org.mayad.fame_life.domain.profile
 
-/** Validation shared by onboarding and profile editing. Returns a user-facing message, or null when valid. */
+/** Why a profile field is invalid. The UI turns these into localized messages (`core/ui/Labels.kt`). */
+enum class ProfileFieldError { EMPTY, TOO_SHORT, TOO_LONG, INVALID_CHARACTERS, BAD_DOTS, RESERVED }
+
+/** Validation shared by onboarding and profile editing. Returns the problem, or null when valid. */
 object ProfileRules {
     const val USERNAME_MIN = 3
     const val USERNAME_MAX = 20
@@ -14,23 +17,23 @@ object ProfileRules {
 
     fun normalizeUsername(input: String): String = input.trim().removePrefix("@").lowercase()
 
-    fun usernameError(input: String): String? {
+    fun usernameError(input: String): ProfileFieldError? {
         val name = normalizeUsername(input)
         return when {
-            name.length < USERNAME_MIN -> "Use at least $USERNAME_MIN characters"
-            name.length > USERNAME_MAX -> "Use at most $USERNAME_MAX characters"
-            !usernamePattern.matches(name) -> "Use letters, numbers, dots and underscores"
-            name.startsWith(".") || name.endsWith(".") || ".." in name -> "Dots can't start, end or repeat"
-            name in reserved -> "That username is reserved"
+            name.length < USERNAME_MIN -> ProfileFieldError.TOO_SHORT
+            name.length > USERNAME_MAX -> ProfileFieldError.TOO_LONG
+            !usernamePattern.matches(name) -> ProfileFieldError.INVALID_CHARACTERS
+            name.startsWith(".") || name.endsWith(".") || ".." in name -> ProfileFieldError.BAD_DOTS
+            name in reserved -> ProfileFieldError.RESERVED
             else -> null
         }
     }
 
-    fun displayNameError(input: String): String? {
+    fun displayNameError(input: String): ProfileFieldError? {
         val name = input.trim()
         return when {
-            name.isEmpty() -> "Add the name people will see"
-            name.length > DISPLAY_NAME_MAX -> "Use at most $DISPLAY_NAME_MAX characters"
+            name.isEmpty() -> ProfileFieldError.EMPTY
+            name.length > DISPLAY_NAME_MAX -> ProfileFieldError.TOO_LONG
             else -> null
         }
     }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pulse</string>
+    <string name="app_tagline">ابدأ البث. تكلّم براحتك. واشعر بالجمهور.</string>
+    <string name="common_back">رجوع</string>
+    <string name="common_live">مباشر</string>
+    <string name="common_simulated">محاكاة</string>
+    <string name="common_selected">محدد</string>
+    <string name="common_not_selected">غير محدد</string>
+    <string name="common_requires_pro">يتطلب Pro</string>
+    <string name="common_simulated_viewers">%1$s مشاهد افتراضي</string>
+    <string name="common_keep">إبقاء</string>
+    <string name="common_try_again">حاول مرة أخرى</string>
+    <string name="common_sign_out">تسجيل الخروج</string>
+    <string name="common_see_all">عرض الكل</string>
+    <string name="common_posts_count">%1$s منشور</string>
+</resources>

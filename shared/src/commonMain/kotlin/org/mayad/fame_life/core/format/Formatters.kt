@@ -29,19 +29,3 @@ fun clock(totalSeconds: Int): String {
     fun two(n: Int) = n.toString().padStart(2, '0')
     return if (h > 0) "$h:${two(m)}:${two(sec)}" else "${two(m)}:${two(sec)}"
 }
-
-/** "12 min", "1 h 05 min", "45 s". */
-fun durationLabel(totalSeconds: Int): String {
-    val s = totalSeconds.coerceAtLeast(0)
-    return when {
-        s < 60 -> "$s s"
-        s < 3600 -> "${s / 60} min"
-        else -> "${s / 3600} h ${((s % 3600) / 60).toString().padStart(2, '0')} min"
-    }
-}
-
-fun hoursAgoLabel(hours: Int): String = when {
-    hours <= 0 -> "now"
-    hours < 24 -> "${hours}h"
-    else -> "${hours / 24}d"
-}
