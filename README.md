@@ -1,0 +1,227 @@
+# Pulse (Fame Life)
+
+Pulse is a mobile app that lets anyone feel what it's like to be a popular creator. You browse a social-style feed,
+tap the glowing button to go live with your own camera, and talk. A **simulated** audience listens to what you say
+and reacts: comments, questions, gifts, viewer spikes. When you end the live you get a recap and earn fame points.
+
+Nothing is broadcast. The viewers aren't real, the camera never leaves your phone, and the app says so wherever a
+number could be mistaken for real reach. Keep it that way. The rules every contributor follows are in
+[`CLAUDE.md`](CLAUDE.md); the deeper design notes are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+- **Platforms:** Android and iOS from one Kotlin codebase (Kotlin Multiplatform + Compose Multiplatform).
+- **Accounts and data:** Firebase Authentication (email and password) and Cloud Firestore, project `live-fame`.
+- **Working name:** "Pulse". Brand strings live in `AppConfig` (`shared/.../app/AppContainer.kt`).
+
+---
+
+## 1. Run it
+
+### What you need
+
+- Android Studio (recent), with an emulator or a phone in developer mode.
+- For iOS: a Mac with Xcode 16 or newer.
+- JDK 17 or newer (Android Studio's bundled one is fine).
+
+### Android
+
+```bash
+./gradlew :androidApp:assembleDebug          # build the APK
+./gradlew :androidApp:installDebug           # install on the running emulator/phone
+```
+
+Or open the folder in Android Studio and press Run on the `androidApp` configuration.
+Firebase is already connected on Android through `androidApp/google-services.json`.
+
+### iOS
+
+1. Add the Firebase config file (only once): download `GoogleService-Info.plist` for the iOS app with bundle id
+   `org.mayad.fame_life.FameLife` from the Firebase console (project `live-fame`) and drop it into `iosApp/iosApp/`.
+   The Xcode project picks up every file in that folder automatically. Without this file the app still runs, but
+   the sign-in step says accounts aren't set up in this build.
+2. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK (Swift Package Manager);
+   give it a minute.
+3. Pick an iPhone simulator and press Run. Xcode runs Gradle for you to build the shared Kotlin code.
+
+From the terminal instead:
+
+```bash
+./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO build
+```
+
+If `xcodebuild` says it "requires Xcode", your Mac points at the Command Line Tools. Either run
+`sudo xcode-select -s /Applications/Xcode.app` once, or prefix commands with
+`DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+
+### First launch
+
+Splash → welcome → "How a live works" → "Before you start" (what's simulated) → create an account → pick your
+name and look → interests → home. Next time you open the app you go straight home.
+
+---
+
+## 2. Folder map
+
+```
+androidApp/                 Android host: MainActivity, manifest, splash theme, google-services.json
+iosApp/                     iOS host: iOSApp.swift (configures Firebase), launch screen, Xcode project
+shared/src/
+  commonMain/kotlin/org/mayad/fame_life/
+    App.kt                  Root: splash → onboarding → profile setup → main, based on sign-in state
+    app/                    AppContainer (creates everything), Navigator + Route (screen stack), AppConfig
+    core/designsystem/      Colors, type, spacing, motion tokens, glossy 3D icons, shared components
+    core/platform/          "expect" functions each platform implements: storage, camera, mic, speech, share
+    core/analytics/         Typed analytics events (never carry names, transcripts or comment text)
+    domain/                 Pure Kotlin rules, no UI and no Firebase
+      account/              AuthService interface, AuthRules (validation + error copy)
+      simulation/           The live engine: viewers, comments, gifts, pacing, cooldowns, summary
+      ai/                   Speech transcript buffer, AI request policy, response validator, on-device audience
+      entitlement/          Free/Pro limits (Pro only from a server-verified source)
+      progression/ profile/ Fame levels, profile validation
+    data/
+      content/              Fictional seed feed: creators, posts, lives (stable ids, no randomness per render)
+      local/                Repositories screens read from (profile, sessions, inbox) = the device cache
+      cloud/                FirebaseAuthService, FirestoreCloudStore, AccountSync (keeps cache and cloud in step)
+    feature/                One folder per area: onboarding, home, discover, post, profile, live, notifications, settings, shell
+  androidMain/ iosMain/     The platform implementations of core/platform
+  commonTest/               Tests, shared by both platforms
+docs/ARCHITECTURE.md        Data flow, backend boundary, Firestore layout, entitlements
+firestore.rules             Who may read/write what in Firestore
+firebase.json, .firebaserc  Firebase CLI config (rules deploy)
+_removed_template/          Old template files, not built, not committed
+```
+
+---
+
+## 3. How a live session flows through the code
+
+```
+LiveSetupScreen ──(navigator.push(Route.Live))──▶ LiveSessionScreen
+                                                    │ creates
+                                                    ▼
+Microphone ─▶ SpeechInput (platform) ─▶ LiveSessionController ─▶ AudienceGenerator ─▶ ResponseValidator
+                                          │  (every 200 ms tick)     (on-device today;      (rejects bad output)
+                                          ▼                           backend later)
+                                     LiveSessionEngine + EventPolicy  ◀── validated comment ideas
+                                          │  decides viewers, gifts, timing, totals
+                                          ▼
+                                     LiveSessionState (StateFlow) ─▶ Compose UI (comments, viewer count, gifts)
+                                          │
+                                   end() │
+                                          ▼
+                                     SessionSummary ─▶ history.save / profiles.recordSession / inbox ─▶ AccountSync ─▶ Firestore
+                                          │
+                                          ▼
+                                     LiveSummaryScreen (recap, level progress)
+```
+
+Where to look:
+
+| Step | File |
+| --- | --- |
+| Setup (title, audience size, mood, camera/mic permission) | `feature/live/LiveSetupScreen.kt` |
+| The live screen and saving the result | `feature/live/LiveSessionScreen.kt` (`recordSession`) |
+| Coroutines, speech, AI requests, start/pause/end | `domain/simulation/LiveSessionController.kt` |
+| Viewer counts, comment pacing, gifts, totals | `domain/simulation/LiveSessionEngine.kt`, `EventPolicy.kt`, `ViewerCountEngine.kt` |
+| What the audience says | `domain/ai/LocalAudienceGenerator.kt` (on device), `AudienceProtocol.kt` (future backend) |
+| Safety net on AI output | `domain/ai/ResponseValidator.kt` |
+
+The golden rule: **the AI proposes, the engine decides.** The AI can suggest a comment or a gift; only the engine
+decides if and when it shows, and what the totals are.
+
+---
+
+## 4. How Firebase is wired
+
+- **Start-up:** Android initializes Firebase from `google-services.json` (`PulseAndroid.init` in
+  `shared/src/androidMain/.../PlatformServices.android.kt`). iOS calls `FirebaseApp.configure()` in
+  `iosApp/iosApp/iOSApp.swift` when `GoogleService-Info.plist` is bundled.
+- **Choosing real or "not configured":** `AppContainer` checks `isFirebaseConfigured()`. If false it uses
+  `UnavailableAuthService`, so the app runs and says plainly that sign-in isn't set up.
+- **Accounts:** `domain/account/Auth.kt` defines `AuthService` (sign up, sign in, password reset, sign out,
+  re-authenticate, delete). `data/cloud/FirebaseAuthService.kt` implements it with GitLive's Firebase SDK and turns
+  Firebase errors into `AuthErrorKind`, which `AuthRules.message` turns into friendly copy.
+- **Data:** screens never talk to Firestore. They read the repositories in `data/local/` (plain `StateFlow`s).
+  `AccountSync` (`data/cloud/AccountSync.kt`):
+  - on sign-in, loads `users/{uid}`, the newest sessions and the inbox into those repositories;
+  - whenever a repository changes, writes the change to Firestore;
+  - on sign-out (or a different account), wipes the device cache.
+- **Firestore layout:** `users/{uid}` (profile), `users/{uid}/sessions/{id}`, `users/{uid}/notifications/{id}`.
+  `entitlements/{uid}` and `usage/{uid}` are reserved for the server; the app never writes them.
+- **Rules:** `firestore.rules`. Deploy them with the Firebase CLI:
+  `firebase deploy --only firestore --project live-fame`.
+- **Library:** [GitLive firebase-kotlin-sdk](https://github.com/GitLiveApp/firebase-kotlin-sdk) 2.7.0 in
+  `commonMain`. On iOS it needs the real Firebase iOS SDK linked, which the Xcode project does through Swift Package
+  Manager (`firebase-ios-sdk` 11.x: FirebaseCore, FirebaseAuth, FirebaseFirestore).
+
+---
+
+## 5. How to add a screen
+
+1. Create the composable in a feature folder, for example `feature/badges/BadgesScreen.kt`:
+
+   ```kotlin
+   @Composable
+   fun BadgesScreen(navigator: Navigator) {
+       val container = LocalAppContainer.current          // repositories, analytics, auth
+       AtmosphereBackground {
+           Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+               ScreenHeader("Badges", onBack = { navigator.pop() })
+               // ... use Pulse.colors, Pulse.type, Space, Shapes, GlossyIcon
+           }
+       }
+   }
+   ```
+
+2. Add a route in `app/Navigation.kt`: `@Serializable data object Badges : Route { override val key get() = "badges" }`.
+3. Map it in `PulseNavHost` in `App.kt`: `Route.Badges -> BadgesScreen(navigator)`.
+4. Open it from anywhere with `navigator.push(Route.Badges)`.
+
+Checklist (from `CLAUDE.md`): use design tokens, not new hex colors or durations; glossy `GlossyIcon` tiles on
+feature surfaces; every button works or is visibly disabled with a reason; respect `LocalReduceMotion`; label
+simulated numbers with `SimulatedTag`.
+
+If the screen needs data, put rules in `domain/`, storage in `data/`, and read a `StateFlow` with
+`collectAsState()` in the screen. Don't call Firebase from a composable.
+
+---
+
+## 6. Tests
+
+```bash
+./gradlew :shared:testAndroidHostTest        # all shared tests, on your computer (fast)
+```
+
+Tests live in `shared/src/commonTest/`. They cover the simulation engine, AI pipeline, progression, local
+repositories, auth validation and account sync. Firebase is never called in tests: `FakeAuthService` and
+`FakeCloudStore` stand in for it. To test new logic, put it in `domain/` or `data/` (not in a composable) and use
+these fakes.
+
+`./gradlew :shared:iosSimulatorArm64Test` currently **fails to link** (`framework 'FirebaseCore' not found`) because
+the iOS test binary needs the Firebase frameworks on its search path. The same tests run on the Android host above.
+
+---
+
+## 7. What isn't built yet
+
+- **AI backend.** The audience runs on the device (`LocalAudienceGenerator`). The protocol for a server-side LLM is
+  ready (`AudienceProtocol.kt`); the server isn't. Never put an API key in the app.
+- **Billing.** Everyone is on Free. Pro must come from a server-verified purchase written to `entitlements/{uid}`.
+- **iOS camera and speech.** The iOS live screen shows honest fallbacks; AVFoundation and SFSpeechRecognizer aren't
+  wired.
+- **iOS Firebase config.** `GoogleService-Info.plist` isn't in the repo yet (see "Run it").
+- **Sign-in options.** Email and password only. Google and Apple sign-in, email verification and unique usernames
+  are not done.
+- **Firebase extras.** Analytics forwarding, Crashlytics, App Check, Remote Config.
+- **iOS unit tests** (see Tests).
+
+---
+
+## 8. Firebase console checklist (one-time)
+
+1. Authentication → Sign-in method → enable **Email/Password**.
+2. Firestore Database → create the database (production mode) if it doesn't exist.
+3. Deploy the rules: `npm i -g firebase-tools`, `firebase login`, then
+   `firebase deploy --only firestore --project live-fame`.
+4. Add the iOS app (bundle id `org.mayad.fame_life.FameLife`) and put its `GoogleService-Info.plist` in `iosApp/iosApp/`.

@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Pulse Firestore rules. Deploy with: firebase deploy --only firestore --project live-fame
+//
+// - A signed-in user can read and write only their own tree under users/{uid}.
+// - Entitlements and usage counters are written by the trusted backend only (the Admin SDK bypasses these rules);
+//   clients may read their own but never write them. The app never treats a client-written value as a paid unlock.
+// - Everything not matched below is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isShortString(value, max) {
+      return value is string && value.size() <= max;
+    }
+
+    // Mirrors CreatorProfile in shared/src/commonMain/.../data/local/LocalRepositories.kt.
+    function isValidProfile(data) {
+      return data.keys().hasOnly(['displayName', 'username', 'bio', 'avatarPalette', 'interests',
+                                  'createdAtEpochMs', 'famePoints', 'sessionsCompleted'])
+        && isShortString(data.displayName, 32)
+        && isShortString(data.username, 21)
+        && (!('bio' in data) || isShortString(data.bio, 140))
+        && (!('interests' in data) || (data.interests is list && data.interests.size() <= 12))
+        && (!('famePoints' in data) || (data.famePoints is int && data.famePoints >= 0))
+        && (!('sessionsCompleted' in data) || (data.sessionsCompleted is int && data.sessionsCompleted >= 0));
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
+
+      // One finished live per document; nothing is written while a live is running.
+      match /sessions/{sessionId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.id == sessionId
+          && request.resource.data.size() <= 24
+          && isShortString(request.resource.data.title, 120);
+      }
+
+      match /notifications/{notificationId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.id == notificationId
+          && request.resource.data.keys().hasOnly(['id', 'kind', 'title', 'body', 'createdAtEpochMs', 'read'])
+          && isShortString(request.resource.data.title, 120)
+          && isShortString(request.resource.data.body, 400);
+      }
+    }
+
+    // Server-owned. Written by the backend after verifying a store purchase.
+    match /entitlements/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    // Server-owned AI and session usage counters.
+    match /usage/{uid}/{document=**} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+  }
+}

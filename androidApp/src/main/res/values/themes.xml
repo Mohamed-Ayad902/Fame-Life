@@ -1,0 +1,18 @@
+<resources>
+    <color name="pulse_background">#080B14</color>
+
+    <!-- Dark from the first frame so launch never flashes white before Compose draws. -->
+    <style name="Theme.Pulse" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pulse_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Launch theme: the system splash (Android 12+, backported by core-splashscreen) on the same dark background,
+         then the app theme. The in-app BrandSplash continues the moment while sign-in is restored. -->
+    <style name="Theme.Pulse.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/pulse_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_mark</item>
+        <item name="postSplashScreenTheme">@style/Theme.Pulse</item>
+    </style>
+</resources>

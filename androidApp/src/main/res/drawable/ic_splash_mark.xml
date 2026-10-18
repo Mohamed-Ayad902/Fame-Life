@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app mark for the system splash: the same glossy tile and heartbeat line as BrandMark in shared code.
+     Drawn inside the 108dp icon box so it stays clear of the circular splash mask. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M45,30 L63,30 Q78,30 78,45 L78,61 Q78,76 63,76 L45,76 Q30,76 30,61 L30,45 Q30,30 45,30 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54" android:startY="30"
+                android:endX="54" android:endY="76">
+                <item android:offset="0" android:color="#FFB4C6FF" />
+                <item android:offset="0.5" android:color="#FF6A6CFF" />
+                <item android:offset="1" android:color="#FF4B23A6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M45,31.5 L63,31.5 Q76,31.5 76,44 L76,50 L32,50 L32,44 Q32,31.5 45,31.5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54" android:startY="31.5"
+                android:endX="54" android:endY="50">
+                <item android:offset="0" android:color="#66FFFFFF" />
+                <item android:offset="1" android:color="#00FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:pathData="M40.56,53.46 L48.24,53.46 L51.60,45.34 L56.40,61.58 L59.76,49.85 L62.16,53.46 L67.44,53.46"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+</vector>

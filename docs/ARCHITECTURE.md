@@ -1,0 +1,92 @@
+# Pulse architecture
+
+## Live session data flow
+
+```
+Microphone → platform SpeechInput (Flow<SpeechEvent>) → TranscriptBuffer (dedupe, partial/final)
+  → AudienceContext (last 5 utterances, last 8 comments, topic) → AiRequestPolicy (rate, budget, circuit breaker)
+  → AudienceGenerator (remote backend, or LocalAudienceGenerator on device)
+  → ResponseValidator (schema, length, blocklist, tone rules)
+  → LiveSessionEngine + EventPolicy (pacing, viewers, gifts, cooldowns, totals)
+  → LiveSnapshot (immutable) → Compose
+```
+
+- `LiveSessionController` owns the coroutines: a 200 ms tick loop, the speech collection and at most one generation
+  request. `end()` cancels everything and is idempotent; responses that arrive after the end are dropped.
+- If the remote generator fails, times out (6 s) or its circuit is open, the on-device generator answers, so the room
+  never goes silent. The live screen shows which one is running.
+- The engine is deterministic for a given seed and clock, which is what the tests rely on.
+
+## Trusted backend boundary (to build)
+
+The app must never hold an LLM key. Planned shape:
+
+1. Firebase Auth (now wired) issues the user's ID token; App Check attests the app (not yet configured).
+2. The app calls one HTTPS endpoint (Cloud Functions or Cloud Run) with `AudienceRequest` JSON (`PROTOCOL_VERSION = 1`).
+   It contains recent speech text and session settings, never audio or images.
+3. The server verifies the token and App Check, looks up the **server-side** entitlement and usage counters,
+   enforces per-minute and per-session limits, calls the model with a versioned prompt, and returns
+   `AudienceResponseDto` JSON.
+4. The app validates the response again (`ResponseValidator`) and the engine still decides events.
+
+To plug it in: implement `AudienceTransport.post(requestJson)` with the HTTP client, wrap it in
+`RemoteAudienceGenerator`, and set `AppContainer.audienceGenerator`.
+
+## Accounts and cloud data (Firebase)
+
+Configured project: `live-fame`. Library: GitLive `firebase-kotlin-sdk` (`dev.gitlive:firebase-auth`,
+`firebase-firestore`) in `commonMain`; on iOS the Firebase iOS SDK (11.x) is linked through Swift Package Manager in
+`iosApp.xcodeproj`, as GitLive requires.
+
+```
+AuthService (domain/account)  ← FirebaseAuthService (data/cloud), UnavailableAuthService when Firebase isn't configured
+CloudStore (data/cloud)       ← FirestoreCloudStore
+AccountSync (data/cloud)      — pulls on sign-in, mirrors local changes up, wipes the cache on sign-out
+Profile/SessionHistory/NotificationRepository (data/local) — the device cache screens read (StateFlow)
+```
+
+- The repositories are the device cache. Every user change goes through `CloudSink` to `AccountSync`, which writes to
+  Firestore in the background (Firestore queues offline writes itself). Loads from the cloud use `replace(...)`, which
+  never echoes back.
+- The cache is tagged with its owner uid (`account.owner.v1`). A different account signing in, or a sign-out, clears it.
+- `App.kt` gates the root on `AuthState` + `SyncState`: splash → welcome/onboarding (signed out) → profile setup (signed
+  in, no profile) → main. Offline with a cached profile still opens the app; offline with nothing cached shows a retry.
+- Account deletion (Settings): re-authenticate with the password → delete Firestore docs → delete the Firebase user →
+  clear the device. Nothing local is removed if the cloud step fails.
+
+| Path | Contents | Who writes |
+| --- | --- | --- |
+| `users/{uid}` | `CreatorProfile` | owner |
+| `users/{uid}/sessions/{id}` | `SessionSummary`, one per finished live, trimmed to the plan's history size | owner |
+| `users/{uid}/notifications/{id}` | `InAppNotification`, newest 100 | owner |
+| `entitlements/{uid}` | verified plan | backend only |
+| `usage/{uid}/…` | AI and session counters | backend only |
+
+Rules live in `firestore.rules` (owner-only, field validation, server-only entitlements and usage); deploy with
+`firebase deploy --only firestore --project live-fame`. No per-tick live data and no transcripts are written.
+
+Still planned: Functions/Run (audience generation, purchase verification, entitlement and quota writes), App Check,
+Analytics forwarding (`AnalyticsEvent` names already follow Firebase rules), Crashlytics, Google/Apple sign-in.
+
+## Entitlements
+
+`Entitlements(plan, source)` maps to `PlanLimits`. Today the source is always `DEFAULT_FREE`. Paid limits will require
+`VERIFIED` (from the server after store purchase verification). Local counters, such as lives per day on the setup
+screen, are a convenience only; the server is the authority.
+
+## Local data
+
+`TextStore` (SharedPreferences on Android, NSUserDefaults on iOS) holds versioned JSON for the profile, session
+history and inbox: the offline cache of the signed-in account. Unreadable data is discarded and reported instead of
+crashing. Sign-out and account deletion clear it.
+
+## Splash
+
+Android 12+ system splash (`core-splashscreen`, `Theme.Pulse.Starting`, `ic_splash_mark.xml`) and the iOS launch
+screen (`UILaunchScreen` → `LaunchBackground` color + `LaunchMark` image) show the mark on `#080B14`. The in-app
+`BrandSplash` then stays up for at least `BRAND_SPLASH_MIN_MS` and until auth and the account's data are known.
+
+## Imagery
+
+No photography is bundled. Feed, profile and live backdrops are procedural `Artwork` (8 palettes × 8 motifs), so every
+creator is visibly fictional and nothing needs licensing. Fonts: Sora and Manrope (SIL OFL 1.1, see `docs/licenses`).

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "381658086645",
+    "project_id": "live-fame",
+    "storage_bucket": "live-fame.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381658086645:android:83f3524765079aec0199bc",
+        "android_client_info": {
+          "package_name": "org.mayad.fame_life"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKOYOf08Y-8RS9zReEX302cZf2Uh2TXes"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
