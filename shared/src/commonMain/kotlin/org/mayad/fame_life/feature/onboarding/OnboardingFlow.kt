@@ -59,7 +59,6 @@ import org.mayad.fame_life.core.designsystem.art.Artwork
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.AvatarRing
 import org.mayad.fame_life.core.designsystem.components.CreatorAvatar
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.components.LiveBadge
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.PulseChip
@@ -71,8 +70,6 @@ import org.mayad.fame_life.core.designsystem.icons.GiftArt
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.data.content.ArtMotif
 import org.mayad.fame_life.data.content.ArtSpec
 import org.mayad.fame_life.data.content.Category
@@ -94,7 +91,7 @@ private enum class IntroStep { WELCOME, HOW_IT_WORKS, HONESTY, ACCOUNT }
 @Composable
 fun OnboardingFlow(modifier: Modifier = Modifier) {
     val container = LocalAppContainer.current
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     var stepName by rememberSaveable { mutableStateOf(IntroStep.WELCOME.name) }
     var startInSignIn by rememberSaveable { mutableStateOf(false) }
     val step = IntroStep.valueOf(stepName)
@@ -129,7 +126,7 @@ private enum class SetupStep { PROFILE, INTERESTS }
 @Composable
 fun ProfileSetupFlow(modifier: Modifier = Modifier) {
     val container = LocalAppContainer.current
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     var stepName by rememberSaveable { mutableStateOf(SetupStep.PROFILE.name) }
     val step = SetupStep.valueOf(stepName)
     var displayName by rememberSaveable { mutableStateOf("") }
@@ -198,7 +195,7 @@ private fun stepTransition(forward: Boolean, reduceMotion: Boolean): ContentTran
 @Composable
 private fun WelcomeStep(onContinue: () -> Unit, onSignIn: () -> Unit) {
     val colors = Pulse.colors
-    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Space.screen)) {
+    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Pulse.dimens.gutter)) {
         // A small stage of what's to come: a live card, floating comments and a gift.
         Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
             Box(
@@ -206,16 +203,16 @@ private fun WelcomeStep(onContinue: () -> Unit, onSignIn: () -> Unit) {
                     .fillMaxWidth(0.68f)
                     .aspectRatio(0.66f)
                     .rotate(-4f)
-                    .clip(Shapes.hero)
-                    .border(1.dp, colors.borderStrong, Shapes.hero),
+                    .clip(Pulse.shapes.hero)
+                    .border(1.dp, colors.borderStrong, Pulse.shapes.hero),
             ) {
                 Artwork(ArtSpec(3, ArtMotif.PORTRAIT, 42), Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.55f to Color.Transparent, 1f to Color(0xCC070A14))))
-                Row(Modifier.padding(Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Row(Modifier.padding(Pulse.dimens.md), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     LiveBadge()
                     ViewerPill(12_480)
                 }
-                Column(Modifier.align(Alignment.BottomStart).padding(Space.md), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(Modifier.align(Alignment.BottomStart).padding(Pulse.dimens.md), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     FloatingComment("you're so funny 😂")
                     FloatingComment("wait, tell us more!!")
                     FloatingComment("هلا والله 👋")
@@ -226,24 +223,24 @@ private fun WelcomeStep(onContinue: () -> Unit, onSignIn: () -> Unit) {
             GiftArt("spark", Modifier.align(Alignment.BottomEnd).offset(x = (-24).dp, y = (-30).dp), size = 54.dp)
         }
         Text(AppConfig.TAGLINE, style = Pulse.type.display, color = colors.textPrimary)
-        Spacer(Modifier.height(Space.md))
+        Spacer(Modifier.height(Pulse.dimens.md))
         Text(
             "Start a live, talk about anything, and an AI audience reacts to what you actually say.",
             style = Pulse.type.body,
             color = colors.textSecondary,
         )
-        Spacer(Modifier.height(Space.md))
+        Spacer(Modifier.height(Pulse.dimens.md))
         Text(
             "${AppConfig.APP_NAME} is a simulation. Viewers, comments, gifts and followers are generated in the app. " +
                 "Your camera stays on your device and is never broadcast.",
             style = Pulse.type.bodySmall,
             color = colors.textMuted,
         )
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         PrimaryButton("Get started", onContinue, Modifier.fillMaxWidth())
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         SecondaryButton("I already have an account", onSignIn, Modifier.fillMaxWidth())
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
     }
 }
 
@@ -253,7 +250,7 @@ private fun FloatingComment(text: String) {
         text,
         style = Pulse.type.bodySmall,
         color = Color.White,
-        modifier = Modifier.clip(Shapes.bubble).background(Color(0x80101526)).padding(horizontal = 10.dp, vertical = 5.dp),
+        modifier = Modifier.clip(Pulse.shapes.bubble).background(Color(0x80101526)).padding(horizontal = 10.dp, vertical = 5.dp),
     )
 }
 
@@ -277,22 +274,22 @@ private fun ProfileStep(
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(Space.screen),
+            .padding(Pulse.dimens.gutter),
     ) {
         Text("STEP 1 OF 2", style = Pulse.type.overline, color = colors.cyan)
-        Spacer(Modifier.height(Space.xs))
+        Spacer(Modifier.height(Pulse.dimens.xs))
         Text("Who's going live?", style = Pulse.type.display, color = colors.textPrimary)
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             CreatorAvatar(selfAvatar(palette), 120.dp, ring = AvatarRing.SELF)
         }
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         Text("Pick your look", style = Pulse.type.meta, color = colors.textSecondary)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         AvatarPalettePicker(palette, onPalette)
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         PulseTextField(displayName, onName, "Display name", placeholder = "Your name", error = if (attempted) nameError else null, maxLength = ProfileRules.DISPLAY_NAME_MAX)
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         PulseTextField(
             username,
             { onUsername(it.trim().lowercase()) },
@@ -302,9 +299,9 @@ private fun ProfileStep(
             error = if (attempted || username.length >= ProfileRules.USERNAME_MIN) usernameError else null,
             maxLength = ProfileRules.USERNAME_MAX + 1,
         )
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text("Saved to your account so it follows you to any device.", style = Pulse.type.meta, color = colors.textMuted)
-        Spacer(Modifier.height(Space.xxl))
+        Spacer(Modifier.height(Pulse.dimens.xxl))
         PrimaryButton(
             "Continue",
             onClick = {
@@ -320,20 +317,20 @@ private fun ProfileStep(
 @Composable
 private fun InterestsStep(selected: List<String>, onToggle: (String) -> Unit, onFinish: () -> Unit) {
     val colors = Pulse.colors
-    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Space.screen)) {
+    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Pulse.dimens.gutter)) {
         Text("STEP 2 OF 2", style = Pulse.type.overline, color = colors.cyan)
-        Spacer(Modifier.height(Space.xs))
+        Spacer(Modifier.height(Pulse.dimens.xs))
         Text("What do you love talking about?", style = Pulse.type.display, color = colors.textPrimary)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text("We'll tune your feed. You can skip this.", style = Pulse.type.body, color = colors.textSecondary)
-        Spacer(Modifier.height(Space.xl))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Spacer(Modifier.height(Pulse.dimens.xl))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm), verticalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
             Category.entries.forEach { category ->
                 PulseChip(category.label, selected = category.name in selected, onClick = { onToggle(category.name) }, leading = category.glyph())
             }
         }
         Spacer(Modifier.weight(1f))
         PrimaryButton(if (selected.isEmpty()) "Skip for now" else "Let's go", onFinish, Modifier.fillMaxWidth(), leading = Glyphs.Bolt)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
     }
 }

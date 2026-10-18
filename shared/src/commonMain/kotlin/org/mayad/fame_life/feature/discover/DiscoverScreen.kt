@@ -54,8 +54,6 @@ import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.data.content.Category
 import org.mayad.fame_life.data.content.Creator
@@ -95,24 +93,24 @@ fun DiscoverScreen(navigator: Navigator) {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = Space.screen, end = Space.screen, bottom = BottomBarClearance.calculateBottomPadding()),
-        horizontalArrangement = Arrangement.spacedBy(Space.md),
-        verticalItemSpacing = Space.lg,
+        contentPadding = PaddingValues(start = Pulse.dimens.gutter, end = Pulse.dimens.gutter, bottom = BottomBarClearance.calculateBottomPadding()),
+        horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md),
+        verticalItemSpacing = Pulse.dimens.lg,
     ) {
         item(span = StaggeredGridItemSpan.FullLine, key = "header") {
             Column {
                 Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-                Spacer(Modifier.height(Space.md))
+                Spacer(Modifier.height(Pulse.dimens.md))
                 Text("Discover", style = Pulse.type.display, color = Pulse.colors.textPrimary)
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 SearchField(query, onChange = { query = it })
             }
         }
         item(span = StaggeredGridItemSpan.FullLine, key = "categories") {
             LazyRow(
-                modifier = Modifier.bleed(Space.screen),
-                contentPadding = PaddingValues(horizontal = Space.screen),
-                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                modifier = Modifier.bleed(Pulse.dimens.gutter),
+                contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter),
+                horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm),
             ) {
                 item(key = "all") { PulseChip("For you", selected = category == null, onClick = { categoryName = null }) }
                 items(Category.entries, key = { it.name }) { c ->
@@ -134,7 +132,7 @@ fun DiscoverScreen(navigator: Navigator) {
         }
         if (searching && results.topics.isNotEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine, key = "topics") {
-                LazyRow(Modifier.bleed(Space.screen), contentPadding = PaddingValues(horizontal = Space.screen), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                LazyRow(Modifier.bleed(Pulse.dimens.gutter), contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     items(results.topics, key = { it.tag }) { topic ->
                         PulseChip("#${topic.tag} · ${compactCount(topic.posts)}", selected = false, onClick = { query = topic.tag })
                     }
@@ -145,8 +143,8 @@ fun DiscoverScreen(navigator: Navigator) {
             item(span = StaggeredGridItemSpan.FullLine, key = "creators") {
                 Column {
                     SectionHeader(if (searching) "Creators" else "Creators to know")
-                    Spacer(Modifier.height(Space.md))
-                    LazyRow(Modifier.bleed(Space.screen), contentPadding = PaddingValues(horizontal = Space.screen), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                    Spacer(Modifier.height(Pulse.dimens.md))
+                    LazyRow(Modifier.bleed(Pulse.dimens.gutter), contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
                         items(creators, key = { it.id }) { creator ->
                             CreatorCard(creator) { navigator.push(Route.CreatorProfile(creator.id)) }
                         }
@@ -160,8 +158,8 @@ fun DiscoverScreen(navigator: Navigator) {
                 item(span = StaggeredGridItemSpan.FullLine, key = "lives") {
                     Column {
                         SectionHeader("Live experiences", eyebrow = "Simulated")
-                        Spacer(Modifier.height(Space.md))
-                        LazyRow(Modifier.bleed(Space.screen), contentPadding = PaddingValues(horizontal = Space.screen), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                        Spacer(Modifier.height(Pulse.dimens.md))
+                        LazyRow(Modifier.bleed(Pulse.dimens.gutter), contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
                             items(rooms, key = { it.id }) { room ->
                                 LiveRoomCard(room, onOpen = { navigator.push(Route.CreatorProfile(room.creatorId)) })
                             }
@@ -188,14 +186,14 @@ private fun SearchField(query: String, onChange: (String) -> Unit) {
         Modifier
             .fillMaxWidth()
             .height(52.dp)
-            .clip(Shapes.control)
+            .clip(Pulse.shapes.control)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.control)
-            .padding(horizontal = Space.lg),
+            .border(1.dp, colors.border, Pulse.shapes.control)
+            .padding(horizontal = Pulse.dimens.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PulseIcon(Glyphs.Search, colors.textMuted, size = 20.dp)
-        Spacer(Modifier.width(Space.md))
+        Spacer(Modifier.width(Pulse.dimens.md))
         Box(Modifier.weight(1f)) {
             if (query.isEmpty()) Text("Search creators, posts, #tags", style = Pulse.type.body, color = colors.textMuted)
             BasicTextField(
@@ -227,17 +225,17 @@ private fun CreatorCard(creator: Creator, onClick: () -> Unit) {
         Modifier
             .width(132.dp)
             .pressable(onClick = onClick)
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.card)
-            .padding(Space.md),
+            .border(1.dp, colors.border, Pulse.shapes.card)
+            .padding(Pulse.dimens.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CreatorAvatar(creator.avatar, 64.dp)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text(creator.displayName, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text("@${creator.handle}", style = Pulse.type.meta, color = colors.textMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(Space.xs))
+        Spacer(Modifier.height(Pulse.dimens.xs))
         Text("${compactCount(creator.followers)} followers", style = Pulse.type.meta, color = colors.textSecondary)
     }
 }

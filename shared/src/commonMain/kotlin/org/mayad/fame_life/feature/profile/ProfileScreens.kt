@@ -56,8 +56,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.core.format.durationLabel
 import org.mayad.fame_life.data.content.ArtMotif
@@ -96,37 +94,37 @@ fun OwnProfileScreen(navigator: Navigator) {
                     Glyphs.Sliders,
                     contentDescription = "Settings",
                     onClick = { navigator.push(Route.Settings) },
-                    modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(Space.lg),
+                    modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(Pulse.dimens.lg),
                 )
             }
         }
         item(key = "identity") {
-            Column(Modifier.padding(horizontal = Space.screen)) {
+            Column(Modifier.padding(horizontal = Pulse.dimens.gutter)) {
                 Text(profile.displayName, style = Pulse.type.display, color = colors.textPrimary, maxLines = 2)
                 Text("@${profile.username}", style = Pulse.type.label, color = colors.textSecondary)
                 if (profile.bio.isNotBlank()) {
-                    Spacer(Modifier.height(Space.sm))
+                    Spacer(Modifier.height(Pulse.dimens.sm))
                     Text(profile.bio, style = Pulse.type.body, color = colors.textSecondary)
                 }
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     StatColumn(compactCount(profile.famePoints), "Fame points", align = Alignment.Start)
                     StatColumn(profile.sessionsCompleted.toString(), "Lives")
                     StatColumn(compactCount(sessions.maxOfOrNull { it.peakViewers } ?: 0), "Best peak", align = Alignment.End)
                 }
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 LevelCard(progress)
-                Spacer(Modifier.height(Space.lg))
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Spacer(Modifier.height(Pulse.dimens.lg))
+                Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     SecondaryButton("Edit profile", { navigator.push(Route.EditProfile) }, Modifier.weight(1f), leading = Glyphs.Edit)
                     SecondaryButton("Plan: Free", { navigator.push(Route.Paywall) }, Modifier.weight(1f), leading = Glyphs.Sparkles)
                 }
-                Spacer(Modifier.height(Space.xl))
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Spacer(Modifier.height(Pulse.dimens.xl))
+                Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     PulseChip("Lives", selected = tab == 0, onClick = { tab = 0 })
                     PulseChip("Badges", selected = tab == 1, onClick = { tab = 1 })
                 }
-                Spacer(Modifier.height(Space.md))
+                Spacer(Modifier.height(Pulse.dimens.md))
             }
         }
         if (tab == 0) {
@@ -143,14 +141,14 @@ fun OwnProfileScreen(navigator: Navigator) {
                 }
             } else {
                 items(sessions, key = { it.id }) { summary ->
-                    SessionRow(summary, Modifier.padding(horizontal = Space.screen, vertical = Space.xs)) {
+                    SessionRow(summary, Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.xs)) {
                         navigator.push(Route.Summary(summary.id))
                     }
                 }
             }
         } else {
             items(badges.chunked(3), key = { row -> row.first().title }) { row ->
-                Row(Modifier.padding(horizontal = Space.screen, vertical = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Row(Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.xs), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     row.forEach { BadgeTile(it, Modifier.weight(1f)) }
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
@@ -178,14 +176,14 @@ private fun SessionRow(summary: SessionSummary, modifier: Modifier = Modifier, o
         modifier
             .fillMaxWidth()
             .pressable(pressedScale = 0.98f, onClick = onClick)
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.card)
-            .padding(Space.md),
+            .border(1.dp, colors.border, Pulse.shapes.card)
+            .padding(Pulse.dimens.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         GlossyIcon(Glyphs.Wave, Gloss.Violet, size = 44.dp)
-        Spacer(Modifier.width(Space.md))
+        Spacer(Modifier.width(Pulse.dimens.md))
         Column(Modifier.weight(1f)) {
             Text(summary.title.ifBlank { "Untitled live" }, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
@@ -225,49 +223,49 @@ fun CreatorProfileScreen(creatorId: String, navigator: Navigator) {
                 )
             }
             item(key = "identity") {
-                Column(Modifier.padding(horizontal = Space.screen)) {
+                Column(Modifier.padding(horizontal = Pulse.dimens.gutter)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(creator.displayName, style = Pulse.type.display, color = colors.textPrimary, modifier = Modifier.weight(1f, fill = false))
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("@${creator.handle} · ${creator.category.label}", style = Pulse.type.label, color = colors.textSecondary)
-                        Spacer(Modifier.width(Space.sm))
+                        Spacer(Modifier.width(Pulse.dimens.sm))
                         SimulatedTag(text = "Simulated creator")
                     }
-                    Spacer(Modifier.height(Space.md))
+                    Spacer(Modifier.height(Pulse.dimens.md))
                     Text(creator.bio, style = Pulse.type.body, color = colors.textSecondary)
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         StatColumn(compactCount(creator.followers), "Followers", align = Alignment.Start)
                         StatColumn(compactCount(creator.totalLikes), "Likes")
                         StatColumn(creator.levelTitle, "Level", align = Alignment.End)
                     }
                     if (live != null) {
-                        Spacer(Modifier.height(Space.lg))
+                        Spacer(Modifier.height(Pulse.dimens.lg))
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .clip(Shapes.panel)
+                                .clip(Pulse.shapes.panel)
                                 .background(colors.live.copy(alpha = 0.12f))
-                                .border(1.dp, colors.live.copy(alpha = 0.35f), Shapes.panel)
-                                .padding(Space.lg),
+                                .border(1.dp, colors.live.copy(alpha = 0.35f), Pulse.shapes.panel)
+                                .padding(Pulse.dimens.lg),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(Modifier.weight(1f)) {
                                 LiveBadge(label = "LIVE NOW")
-                                Spacer(Modifier.height(Space.sm))
+                                Spacer(Modifier.height(Pulse.dimens.sm))
                                 Text(live.title, style = Pulse.type.titleSmall, color = colors.textPrimary)
                             }
                             ViewerPill(live.viewers)
                         }
                     }
-                    Spacer(Modifier.height(Space.xl))
+                    Spacer(Modifier.height(Pulse.dimens.xl))
                     Text("Posts", style = Pulse.type.title, color = colors.textPrimary)
-                    Spacer(Modifier.height(Space.md))
+                    Spacer(Modifier.height(Pulse.dimens.md))
                 }
             }
             items(posts.chunked(2), key = { row -> row.first().id }) { row ->
-                Row(Modifier.padding(horizontal = Space.screen, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                Row(Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.sm), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
                     row.forEachIndexed { i, post ->
                         PostTile(post, i, onOpen = { navigator.push(Route.PostDetail(post.id)) }, modifier = Modifier.weight(1f))
                     }
@@ -276,7 +274,7 @@ fun CreatorProfileScreen(creatorId: String, navigator: Navigator) {
             }
             item(key = "nav-space") {
                 Column {
-                    Spacer(Modifier.height(Space.xxl))
+                    Spacer(Modifier.height(Pulse.dimens.xxl))
                     Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
                 }
             }
@@ -285,7 +283,7 @@ fun CreatorProfileScreen(creatorId: String, navigator: Navigator) {
             Glyphs.ChevronLeft,
             contentDescription = "Back",
             onClick = { navigator.pop() },
-            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).padding(Space.lg),
+            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).padding(Pulse.dimens.lg),
         )
     }
 }

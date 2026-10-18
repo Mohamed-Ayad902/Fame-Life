@@ -31,11 +31,9 @@ import org.mayad.fame_life.app.Navigator
 import org.mayad.fame_life.app.Route
 import org.mayad.fame_life.app.rememberNavigator
 import org.mayad.fame_life.core.analytics.AnalyticsEvent
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.designsystem.theme.PulseTheme
-import org.mayad.fame_life.core.platform.isReduceMotionEnabled
 import org.mayad.fame_life.feature.live.LiveSessionScreen
 import org.mayad.fame_life.feature.live.LiveSetupScreen
 import org.mayad.fame_life.feature.live.LiveSummaryScreen
@@ -61,10 +59,10 @@ private enum class Gate { SPLASH, WELCOME, SETUP, SYNC_ERROR, MAIN }
 fun App() {
     val container = remember { AppContainer() }
     DisposableEffect(container) { onDispose { container.close() } }
-    val reduceMotion = remember { isReduceMotionEnabled() }
     LaunchedEffect(Unit) { container.analytics.log(AnalyticsEvent.AppOpened) }
     PulseTheme {
-        CompositionLocalProvider(LocalAppContainer provides container, LocalReduceMotion provides reduceMotion) {
+        CompositionLocalProvider(LocalAppContainer provides container) {
+            val reduceMotion = Pulse.reducedMotion
             val auth by container.auth.state.collectAsState()
             val sync by container.account.state.collectAsState()
             val profile by container.profiles.profile.collectAsState()
@@ -109,7 +107,7 @@ fun App() {
 @Composable
 private fun PulseNavHost(navigator: Navigator) {
     val saveable = rememberSaveableStateHolder()
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     BackHandler(enabled = navigator.canPop) { navigator.pop() }
     AnimatedContent(
         targetState = navigator.current,

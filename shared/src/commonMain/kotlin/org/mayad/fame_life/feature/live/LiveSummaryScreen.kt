@@ -40,7 +40,6 @@ import org.mayad.fame_life.core.designsystem.components.AnimatedCount
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.EmptyState
 import org.mayad.fame_life.core.designsystem.components.GlassIconButton
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.SecondaryButton
 import org.mayad.fame_life.core.designsystem.components.SimulatedTag
@@ -49,8 +48,6 @@ import org.mayad.fame_life.core.designsystem.icons.GiftArt
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.core.format.durationLabel
 import org.mayad.fame_life.core.platform.shareText
@@ -71,7 +68,7 @@ fun LiveSummaryScreen(sessionId: String, navigator: Navigator) {
 
     AtmosphereBackground(accent = Pulse.colors.gold) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            Row(Modifier.fillMaxWidth().padding(Space.lg)) {
+            Row(Modifier.fillMaxWidth().padding(Pulse.dimens.lg)) {
                 GlassIconButton(Glyphs.Close, contentDescription = "Done", onClick = { navigator.popToMain() })
             }
             if (summary == null) {
@@ -86,20 +83,20 @@ fun LiveSummaryScreen(sessionId: String, navigator: Navigator) {
                 return@Column
             }
             Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.screen),
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Pulse.dimens.gutter),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 SummaryHero(summary)
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
                 StatGrid(summary)
                 summary.topGiftId?.let(GiftCatalog::byId)?.let { gift ->
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                     Row(
-                        Modifier.fillMaxWidth().clip(Shapes.panel).background(Pulse.colors.surface).border(1.dp, Pulse.colors.border, Shapes.panel).padding(Space.lg),
+                        Modifier.fillMaxWidth().clip(Pulse.shapes.panel).background(Pulse.colors.surface).border(1.dp, Pulse.colors.border, Pulse.shapes.panel).padding(Pulse.dimens.lg),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         GiftArt(gift.id, size = 64.dp, name = gift.name)
-                        Spacer(Modifier.width(Space.lg))
+                        Spacer(Modifier.width(Pulse.dimens.lg))
                         Column {
                             Text("Top gift", style = Pulse.type.meta, color = Pulse.colors.textMuted)
                             Text(gift.name, style = Pulse.type.title, color = Pulse.colors.textPrimary)
@@ -107,22 +104,22 @@ fun LiveSummaryScreen(sessionId: String, navigator: Navigator) {
                     }
                 }
                 summary.highlight?.let { quote ->
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                     Column(
-                        Modifier.fillMaxWidth().clip(Shapes.panel).background(Pulse.colors.surface).border(1.dp, Pulse.colors.border, Shapes.panel).padding(Space.lg),
+                        Modifier.fillMaxWidth().clip(Pulse.shapes.panel).background(Pulse.colors.surface).border(1.dp, Pulse.colors.border, Pulse.shapes.panel).padding(Pulse.dimens.lg),
                     ) {
                         Text("Moment of the live", style = Pulse.type.meta, color = Pulse.colors.textMuted)
-                        Spacer(Modifier.height(Space.xs))
+                        Spacer(Modifier.height(Pulse.dimens.xs))
                         Text("“$quote”", style = Pulse.type.title, color = Pulse.colors.textPrimary)
                     }
                 }
                 if (profile != null) {
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                     LevelCard(FameProgression.progress(profile.famePoints), Modifier.fillMaxWidth())
                 }
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Pulse.dimens.xxl))
             }
-            Column(Modifier.padding(horizontal = Space.screen, vertical = Space.md)) {
+            Column(Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.md)) {
                 PrimaryButton(
                     "Go live again",
                     onClick = {
@@ -134,8 +131,8 @@ fun LiveSummaryScreen(sessionId: String, navigator: Navigator) {
                     brush = Pulse.colors.liveGradient,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(Modifier.height(Space.sm))
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Spacer(Modifier.height(Pulse.dimens.sm))
+                Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                     SecondaryButton(
                         "Share recap",
                         onClick = {
@@ -161,7 +158,7 @@ private fun shareMessage(summary: SessionSummary) =
 @Composable
 private fun SummaryHero(summary: SessionSummary) {
     val colors = Pulse.colors
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     val reveal = remember { Animatable(if (reduce) 1f else 0f) }
     LaunchedEffect(Unit) { reveal.animateTo(1f, Motion.enter()) }
     Column(
@@ -174,16 +171,16 @@ private fun SummaryHero(summary: SessionSummary) {
         },
     ) {
         SimulatedTag(text = "Simulated results")
-        Spacer(Modifier.height(Space.md))
+        Spacer(Modifier.height(Pulse.dimens.md))
         Text("That's a wrap", style = Pulse.type.display, color = colors.textPrimary, textAlign = TextAlign.Center)
         if (summary.title.isNotBlank()) {
             Text(summary.title, style = Pulse.type.body, color = colors.textSecondary, textAlign = TextAlign.Center)
         }
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         Text("PEAK VIEWERS", style = Pulse.type.overline, color = colors.textMuted)
         AnimatedCount(summary.peakViewers, Pulse.type.metric, colors.textPrimary)
-        Spacer(Modifier.height(Space.sm))
-        Box(Modifier.clip(Shapes.pill).background(colors.goldGradient).padding(horizontal = Space.md, vertical = 4.dp)) {
+        Spacer(Modifier.height(Pulse.dimens.sm))
+        Box(Modifier.clip(Pulse.shapes.pill).background(colors.goldGradient).padding(horizontal = Pulse.dimens.md, vertical = 4.dp)) {
             Text("+${summary.famePointsEarned} fame points", style = Pulse.type.label, color = colors.background)
         }
     }
@@ -199,9 +196,9 @@ private fun StatGrid(summary: SessionSummary) {
         compactCount(summary.reactions) to "Reactions",
         summary.milestones.toString() to "Milestones",
     )
-    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
         stats.chunked(3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                 row.forEach { (value, label) -> StatCell(value, label, Modifier.weight(1f)) }
             }
         }
@@ -212,7 +209,7 @@ private fun StatGrid(summary: SessionSummary) {
 private fun StatCell(value: String, label: String, modifier: Modifier) {
     val colors = Pulse.colors
     Column(
-        modifier.clip(Shapes.control).background(colors.surface).border(1.dp, colors.border, Shapes.control).padding(vertical = Space.md),
+        modifier.clip(Pulse.shapes.control).background(colors.surface).border(1.dp, colors.border, Pulse.shapes.control).padding(vertical = Pulse.dimens.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(value, style = Pulse.type.metricSmall, color = colors.textPrimary, maxLines = 1)

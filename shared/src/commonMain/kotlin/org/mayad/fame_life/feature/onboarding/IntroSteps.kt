@@ -35,15 +35,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.mayad.fame_life.app.AppConfig
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 
 private data class Beat(val glyph: ImageVector, val gloss: Gloss, val title: String, val body: String)
 
@@ -93,20 +90,20 @@ private fun IntroScaffold(
     content: @Composable () -> Unit,
 ) {
     val colors = Pulse.colors
-    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Space.screen)) {
+    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Pulse.dimens.gutter)) {
         StepDots(step, total)
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         Text(eyebrow, style = Pulse.type.overline, color = colors.cyan)
-        Spacer(Modifier.height(Space.xs))
+        Spacer(Modifier.height(Pulse.dimens.xs))
         Text(title, style = Pulse.type.display, color = colors.textPrimary)
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Space.md),
+            verticalArrangement = Arrangement.spacedBy(Pulse.dimens.md),
         ) { content() }
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         PrimaryButton(button, onContinue, Modifier.fillMaxWidth())
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
     }
 }
 
@@ -116,17 +113,17 @@ private fun BeatRow(beat: Beat, connector: Boolean) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .background(colors.surface.copy(alpha = 0.72f))
-            .border(1.dp, colors.border, Shapes.card)
-            .padding(Space.lg),
+            .border(1.dp, colors.border, Pulse.shapes.card)
+            .padding(Pulse.dimens.lg),
         verticalAlignment = Alignment.Top,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             GlossyIcon(beat.glyph, beat.gloss, size = 52.dp)
             if (connector) {
                 // A short lit thread hinting that each beat feeds the next.
-                Spacer(Modifier.height(Space.xs))
+                Spacer(Modifier.height(Pulse.dimens.xs))
                 Box(
                     Modifier
                         .size(width = 2.dp, height = 18.dp)
@@ -135,10 +132,10 @@ private fun BeatRow(beat: Beat, connector: Boolean) {
                 )
             }
         }
-        Spacer(Modifier.width(Space.lg))
+        Spacer(Modifier.width(Pulse.dimens.lg))
         Column(Modifier.weight(1f)) {
             Text(beat.title, style = Pulse.type.title, color = colors.textPrimary)
-            Spacer(Modifier.height(Space.xs))
+            Spacer(Modifier.height(Pulse.dimens.xs))
             Text(beat.body, style = Pulse.type.bodySmall, color = colors.textSecondary)
         }
     }
@@ -147,7 +144,7 @@ private fun BeatRow(beat: Beat, connector: Boolean) {
 /** Rises each item in after the previous one; shown immediately when motion is reduced. */
 @Composable
 private fun StaggeredBeat(index: Int, content: @Composable () -> Unit) {
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     val progress = remember { Animatable(if (reduceMotion) 1f else 0f) }
     LaunchedEffect(Unit) {
         if (reduceMotion) return@LaunchedEffect

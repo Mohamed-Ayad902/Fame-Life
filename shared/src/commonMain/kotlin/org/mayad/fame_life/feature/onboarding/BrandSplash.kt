@@ -19,11 +19,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.mayad.fame_life.app.AppConfig
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.icons.BrandMark
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Space
 
 /** How long the in-app splash stays at least, so it reads as a moment rather than a flicker. */
 const val BRAND_SPLASH_MIN_MS = 900L
@@ -34,7 +32,7 @@ const val BRAND_SPLASH_MIN_MS = 900L
  */
 @Composable
 fun BrandSplash(modifier: Modifier = Modifier) {
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     val line = remember { Animatable(if (reduceMotion) 1f else 0f) }
     val lift = remember { Animatable(if (reduceMotion) 1f else 0f) }
     LaunchedEffect(Unit) {
@@ -59,7 +57,7 @@ fun BrandSplash(modifier: Modifier = Modifier) {
                     },
                 lineProgress = line.value,
             )
-            Spacer(Modifier.height(Space.lg))
+            Spacer(Modifier.height(Pulse.dimens.lg))
             Text(
                 AppConfig.APP_NAME,
                 style = Pulse.type.headline,

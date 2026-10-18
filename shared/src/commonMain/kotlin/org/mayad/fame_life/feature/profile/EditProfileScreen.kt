@@ -31,7 +31,6 @@ import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.PulseTextField
 import org.mayad.fame_life.core.designsystem.components.ScreenHeader
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.domain.profile.ProfileRules
 
 @Composable
@@ -54,16 +53,16 @@ fun EditProfileScreen(navigator: Navigator) {
     AtmosphereBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding()) {
             ScreenHeader("Edit profile", onBack = { navigator.pop() })
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Space.screen)) {
-                Spacer(Modifier.height(Space.lg))
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Pulse.dimens.gutter)) {
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CreatorAvatar(selfAvatar(palette), 112.dp, ring = AvatarRing.SELF)
                 }
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 AvatarPalettePicker(palette, { palette = it })
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
                 PulseTextField(displayName, { displayName = it }, "Display name", error = nameError, maxLength = ProfileRules.DISPLAY_NAME_MAX)
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 PulseTextField(
                     username,
                     { username = it.trim().lowercase() },
@@ -72,7 +71,7 @@ fun EditProfileScreen(navigator: Navigator) {
                     error = usernameError,
                     maxLength = ProfileRules.USERNAME_MAX + 1,
                 )
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 PulseTextField(
                     bio,
                     { bio = it },
@@ -83,7 +82,7 @@ fun EditProfileScreen(navigator: Navigator) {
                 )
                 Spacer(Modifier.height(4.dp))
                 Text("${bio.length}/${ProfileRules.BIO_MAX}", style = Pulse.type.meta, color = colors.textMuted)
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Pulse.dimens.xxl))
                 PrimaryButton(
                     "Save",
                     enabled = changed && nameError == null && usernameError == null,
@@ -100,7 +99,7 @@ fun EditProfileScreen(navigator: Navigator) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Pulse.dimens.xxl))
             }
         }
     }

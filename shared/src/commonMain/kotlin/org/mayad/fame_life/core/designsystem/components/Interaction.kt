@@ -1,11 +1,11 @@
 package org.mayad.fame_life.core.designsystem.components
 
+import org.mayad.fame_life.core.designsystem.theme.Pulse
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -14,9 +14,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
 import org.mayad.fame_life.core.designsystem.theme.Motion
-
-/** Whether decorative motion should run. Provided once at the root from the OS setting. */
-val LocalReduceMotion = compositionLocalOf { false }
 
 /**
  * Tap handling for custom surfaces: a springy press-down instead of a ripple, which suits the layered, glassy
@@ -30,7 +27,7 @@ fun Modifier.pressable(
 ): Modifier = composed {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     val scale by animateFloatAsState(
         targetValue = if (pressed && enabled && !reduceMotion) pressedScale else 1f,
         animationSpec = Motion.press(),
@@ -43,9 +40,6 @@ fun Modifier.pressable(
         }
         .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = role, onClick = onClick)
 }
-
-@Composable
-fun rememberReduceMotion(): Boolean = LocalReduceMotion.current
 
 /**
  * Lets a child extend past its parent's horizontal padding, for edge-to-edge rails inside padded lists.

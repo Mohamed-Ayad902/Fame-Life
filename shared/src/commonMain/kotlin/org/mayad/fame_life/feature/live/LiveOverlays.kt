@@ -52,7 +52,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.GiftArt
 import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
@@ -60,8 +59,6 @@ import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.domain.simulation.AudienceEvent
 import org.mayad.fame_life.domain.simulation.AudienceMember
@@ -87,7 +84,7 @@ fun LiveCommentStream(comments: List<AudienceEvent.Comment>, modifier: Modifier 
                 drawContent()
                 drawRect(Brush.verticalGradient(0f to Color.Transparent, 0.3f to Color.Black), blendMode = BlendMode.DstIn)
             },
-        verticalArrangement = Arrangement.spacedBy(Space.xs, Alignment.Bottom),
+        verticalArrangement = Arrangement.spacedBy(Pulse.dimens.xs, Alignment.Bottom),
     ) {
         comments.forEach { comment -> key(comment.id) { CommentBubble(comment) } }
     }
@@ -96,7 +93,7 @@ fun LiveCommentStream(comments: List<AudienceEvent.Comment>, modifier: Modifier 
 @Composable
 private fun CommentBubble(comment: AudienceEvent.Comment) {
     val colors = Pulse.colors
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     val enter = remember { Animatable(if (reduce) 1f else 0f) }
     LaunchedEffect(Unit) { enter.animateTo(1f, Motion.enter()) }
     val critical = comment.tone == CommentTone.CRITICAL
@@ -107,9 +104,9 @@ private fun CommentBubble(comment: AudienceEvent.Comment) {
                 alpha = enter.value
                 translationY = (1f - enter.value) * 24.dp.toPx()
             }
-            .clip(Shapes.bubble)
+            .clip(Pulse.shapes.bubble)
             .background(if (critical) Color(0x553A1420) else Color(0x5C0B0F1C))
-            .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = Space.md),
+            .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = Pulse.dimens.md),
         verticalAlignment = Alignment.Top,
     ) {
         Box(
@@ -118,7 +115,7 @@ private fun CommentBubble(comment: AudienceEvent.Comment) {
         ) {
             Text(comment.author.handle.take(1).uppercase(), style = Pulse.type.meta, color = Color(0xFF080B14))
         }
-        Spacer(Modifier.width(Space.sm))
+        Spacer(Modifier.width(Pulse.dimens.sm))
         Text(
             buildAnnotatedString {
                 withStyle(SpanStyle(color = if (comment.author.isVip) colors.gold else colors.textSecondary)) {
@@ -136,7 +133,7 @@ private fun CommentBubble(comment: AudienceEvent.Comment) {
 /** Center-stage moments: gifts, milestones, VIP arrivals and trending. One at a time, announced to screen readers. */
 @Composable
 fun LiveSpotlight(event: AudienceEvent?, style: LiveStyle, modifier: Modifier = Modifier) {
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     AnimatedContent(
         targetState = event,
         contentKey = { it?.id },
@@ -174,7 +171,7 @@ fun LiveSpotlight(event: AudienceEvent?, style: LiveStyle, modifier: Modifier = 
 
 @Composable
 private fun GiftMoment(event: AudienceEvent.GiftSent, style: LiveStyle) {
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     val size = when (event.gift.tier) {
         GiftTier.SMALL -> 72.dp
         GiftTier.MEDIUM -> 104.dp
@@ -209,7 +206,7 @@ private fun GiftMoment(event: AudienceEvent.GiftSent, style: LiveStyle) {
 private fun Moment(art: @Composable () -> Unit, headline: String, detail: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         art()
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         MomentCaption(headline, detail)
     }
 }
@@ -219,10 +216,10 @@ private fun MomentCaption(headline: String, detail: String) {
     val colors = Pulse.colors
     Column(
         Modifier
-            .clip(Shapes.control)
+            .clip(Pulse.shapes.control)
             .background(Color(0x99080B14))
-            .border(1.dp, colors.border, Shapes.control)
-            .padding(horizontal = Space.lg, vertical = Space.sm),
+            .border(1.dp, colors.border, Pulse.shapes.control)
+            .padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(headline, style = Pulse.type.titleSmall, color = colors.textPrimary, textAlign = TextAlign.Center)
@@ -244,14 +241,14 @@ private fun ReactionKind.visual(): Pair<ImageVector, Color> = when (this) {
  */
 @Composable
 fun LiveReactions(reactions: List<AudienceEvent.Reaction>, modifier: Modifier = Modifier) {
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     if (reduce) {
-        Column(modifier, verticalArrangement = Arrangement.spacedBy(Space.xs), horizontalAlignment = Alignment.End) {
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(Pulse.dimens.xs), horizontalAlignment = Alignment.End) {
             reactions.takeLast(2).forEach { reaction ->
                 key(reaction.id) {
                     val (glyph, tint) = reaction.kind.visual()
                     Row(
-                        Modifier.clip(Shapes.pill).background(Color(0x66080B14)).padding(horizontal = Space.sm, vertical = 4.dp)
+                        Modifier.clip(Pulse.shapes.pill).background(Color(0x66080B14)).padding(horizontal = Pulse.dimens.sm, vertical = 4.dp)
                             .semantics { contentDescription = "${reaction.count} reactions" },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -306,7 +303,7 @@ private fun ReactionParticle(kind: ReactionKind, index: Int, seed: Long, travel:
 @Composable
 fun CountdownOverlay(value: Int, style: LiveStyle) {
     val colors = Pulse.colors
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     Box(Modifier.fillMaxSize().background(Color(0x99080B14)), contentAlignment = Alignment.Center) {
         AnimatedContent(
             targetState = value,
@@ -334,7 +331,7 @@ fun CountdownOverlay(value: Int, style: LiveStyle) {
 @Composable
 fun StatusChip(text: String, glyph: ImageVector, tint: Color, modifier: Modifier = Modifier) {
     Row(
-        modifier.clip(Shapes.pill).background(Color(0x66080B14)).border(1.dp, Color(0x22FFFFFF), Shapes.pill).padding(horizontal = 10.dp, vertical = 5.dp),
+        modifier.clip(Pulse.shapes.pill).background(Color(0x66080B14)).border(1.dp, Color(0x22FFFFFF), Pulse.shapes.pill).padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PulseIcon(glyph, tint, size = 13.dp)
@@ -352,9 +349,9 @@ fun TranscriptCaption(text: String, modifier: Modifier = Modifier) {
         maxLines = 2,
         modifier = modifier
             .fillMaxWidth()
-            .clip(Shapes.control)
+            .clip(Pulse.shapes.control)
             .background(Color(0x55080B14))
-            .padding(horizontal = Space.md, vertical = 6.dp)
+            .padding(horizontal = Pulse.dimens.md, vertical = 6.dp)
             .semantics { contentDescription = "What the audience heard: $text" },
     )
 }

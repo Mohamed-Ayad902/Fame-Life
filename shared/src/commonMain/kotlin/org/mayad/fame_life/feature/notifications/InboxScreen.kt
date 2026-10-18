@@ -38,8 +38,6 @@ import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.hoursAgoLabel
 import org.mayad.fame_life.data.local.InAppNotification
 import org.mayad.fame_life.data.local.nowEpochMs
@@ -64,13 +62,13 @@ fun InboxScreen(navigator: Navigator) {
 
     LazyColumn(
         Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars),
-        contentPadding = PaddingValues(start = Space.screen, end = Space.screen, top = Space.lg, bottom = BottomBarClearance.calculateBottomPadding()),
+        contentPadding = PaddingValues(start = Pulse.dimens.gutter, end = Pulse.dimens.gutter, top = Pulse.dimens.lg, bottom = BottomBarClearance.calculateBottomPadding()),
     ) {
         item(key = "title") {
             Column {
                 Text("Inbox", style = Pulse.type.display, color = colors.textPrimary)
                 Text("Moments from your lives and your progress.", style = Pulse.type.body, color = colors.textSecondary)
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
             }
         }
         if (notifications.isEmpty()) {
@@ -92,7 +90,7 @@ fun InboxScreen(navigator: Navigator) {
                     ageLabel = hoursAgoLabel(((now - item.createdAtEpochMs).coerceAtLeast(0) / 3_600_000L).toInt()),
                     onClick = notificationTarget(item)?.let { route -> { navigator.push(route) } },
                 )
-                Spacer(Modifier.height(Space.sm))
+                Spacer(Modifier.height(Pulse.dimens.sm))
             }
         }
     }
@@ -118,13 +116,13 @@ private fun NotificationRow(item: InAppNotification, fresh: Boolean, ageLabel: S
         Modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.pressable(pressedScale = 0.98f, onClick = onClick) else Modifier)
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .background(if (fresh) colors.surfaceElevated else colors.surface)
-            .border(1.dp, if (fresh) colors.borderStrong else colors.border, Shapes.card)
-            .padding(Space.md),
+            .border(1.dp, if (fresh) colors.borderStrong else colors.border, Pulse.shapes.card)
+            .padding(Pulse.dimens.md),
     ) {
         GlossyIcon(glyph, gloss, size = 44.dp)
-        Spacer(Modifier.width(Space.md))
+        Spacer(Modifier.width(Pulse.dimens.md))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(item.title, style = Pulse.type.titleSmall, color = colors.textPrimary, modifier = Modifier.weight(1f))
@@ -132,7 +130,7 @@ private fun NotificationRow(item: InAppNotification, fresh: Boolean, ageLabel: S
             }
             Spacer(Modifier.height(2.dp))
             Text(item.body, style = Pulse.type.bodySmall, color = colors.textSecondary)
-            Spacer(Modifier.height(Space.xs))
+            Spacer(Modifier.height(Pulse.dimens.xs))
             Text(ageLabel, style = Pulse.type.meta, color = colors.textMuted)
         }
     }

@@ -50,8 +50,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.data.content.ArtSpec
 
@@ -98,19 +96,19 @@ fun PrimaryButton(
             .height(54.dp)
             .alpha(if (enabled) 1f else 0.45f)
             .pressable(enabled = enabled, onClick = onClick)
-            .clip(Shapes.pill)
+            .clip(Pulse.shapes.pill)
             .background(brush ?: colors.brandGradient)
             .drawBehind {
                 drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.22f), Color.Transparent), 0f, size.height * 0.55f))
             }
-            .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.45f), Color.Transparent)), Shapes.pill)
-            .padding(horizontal = Space.xl),
+            .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.45f), Color.Transparent)), Pulse.shapes.pill)
+            .padding(horizontal = Pulse.dimens.xl),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             PulseIcon(leading, colors.textOnAccent, size = 20.dp)
-            Spacer(Modifier.width(Space.sm))
+            Spacer(Modifier.width(Pulse.dimens.sm))
         }
         Text(text, style = Pulse.type.label, color = colors.textOnAccent, maxLines = 1)
     }
@@ -131,16 +129,16 @@ fun SecondaryButton(
             .height(50.dp)
             .alpha(if (enabled) 1f else 0.45f)
             .pressable(enabled = enabled, onClick = onClick)
-            .clip(Shapes.pill)
+            .clip(Pulse.shapes.pill)
             .background(colors.surfaceElevated.copy(alpha = 0.7f))
-            .border(1.dp, colors.border, Shapes.pill)
-            .padding(horizontal = Space.lg),
+            .border(1.dp, colors.border, Pulse.shapes.pill)
+            .padding(horizontal = Pulse.dimens.lg),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             PulseIcon(leading, colors.textPrimary, size = 18.dp)
-            Spacer(Modifier.width(Space.sm))
+            Spacer(Modifier.width(Pulse.dimens.sm))
         }
         Text(text, style = Pulse.type.label, color = colors.textPrimary, maxLines = 1)
     }
@@ -187,9 +185,9 @@ fun PulseChip(
         modifier
             .height(38.dp)
             .pressable(role = Role.Tab, onClick = onClick)
-            .clip(Shapes.pill)
+            .clip(Pulse.shapes.pill)
             .background(if (selected) colors.textPrimary else colors.surface.copy(alpha = 0.8f))
-            .border(1.dp, if (selected) Color.Transparent else colors.border, Shapes.pill)
+            .border(1.dp, if (selected) Color.Transparent else colors.border, Pulse.shapes.pill)
             .padding(horizontal = 14.dp)
             .semantics { stateDescription = if (selected) "Selected" else if (locked) "Requires Pro" else "Not selected" },
         verticalAlignment = Alignment.CenterVertically,
@@ -232,7 +230,7 @@ fun CreatorAvatar(spec: ArtSpec, size: Dp, modifier: Modifier = Modifier, ring: 
 @Composable
 fun LiveBadge(modifier: Modifier = Modifier, label: String = "LIVE") {
     val colors = Pulse.colors
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     val pulse = if (reduce) {
         1f
     } else {
@@ -242,7 +240,7 @@ fun LiveBadge(modifier: Modifier = Modifier, label: String = "LIVE") {
     }
     Row(
         modifier
-            .clip(Shapes.tag)
+            .clip(Pulse.shapes.tag)
             .background(colors.liveGradient)
             .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -258,7 +256,7 @@ fun LiveBadge(modifier: Modifier = Modifier, label: String = "LIVE") {
 fun ViewerPill(count: Int, modifier: Modifier = Modifier) {
     Row(
         modifier
-            .clip(Shapes.tag)
+            .clip(Pulse.shapes.tag)
             .background(Color(0x8C080B14))
             .padding(horizontal = 8.dp, vertical = 3.dp)
             .semantics(mergeDescendants = true) { contentDescription = "${compactCount(count)} simulated viewers" },
@@ -286,7 +284,7 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, eyebrow: String?
                 action,
                 style = Pulse.type.meta,
                 color = colors.textSecondary,
-                modifier = Modifier.pressable(onClick = onAction).padding(Space.xs),
+                modifier = Modifier.pressable(onClick = onAction).padding(Pulse.dimens.xs),
             )
         }
     }
@@ -295,7 +293,7 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, eyebrow: String?
 /** A number that eases to its new value instead of jumping. Formatting stays compact (24.5K). */
 @Composable
 fun AnimatedCount(value: Int, style: TextStyle, color: Color, modifier: Modifier = Modifier, compact: Boolean = true) {
-    val reduce = LocalReduceMotion.current
+    val reduce = Pulse.reducedMotion
     val shown by animateIntAsState(value, animationSpec = if (reduce) tween(0) else tween(600), label = "count")
     Text(if (compact) compactCount(shown) else shown.toString(), style = style, color = color, modifier = modifier, maxLines = 1)
 }
@@ -314,9 +312,9 @@ fun SimulatedTag(modifier: Modifier = Modifier, text: String = "Simulated") {
     val colors = Pulse.colors
     Row(
         modifier
-            .clip(Shapes.tag)
+            .clip(Pulse.shapes.tag)
             .background(colors.cyan.copy(alpha = 0.12f))
-            .border(1.dp, colors.cyan.copy(alpha = 0.3f), Shapes.tag)
+            .border(1.dp, colors.cyan.copy(alpha = 0.3f), Pulse.shapes.tag)
             .padding(horizontal = 7.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -337,14 +335,14 @@ fun EmptyState(
     onAction: (() -> Unit)? = null,
 ) {
     val colors = Pulse.colors
-    Column(modifier.fillMaxWidth().padding(Space.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier.fillMaxWidth().padding(Pulse.dimens.xxl), horizontalAlignment = Alignment.CenterHorizontally) {
         GlossyIcon(glyph, gloss, size = 72.dp)
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         Text(title, style = Pulse.type.title, color = colors.textPrimary, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(Space.xs))
+        Spacer(Modifier.height(Pulse.dimens.xs))
         Text(body, style = Pulse.type.body, color = colors.textSecondary, textAlign = TextAlign.Center)
         if (action != null && onAction != null) {
-            Spacer(Modifier.height(Space.lg))
+            Spacer(Modifier.height(Pulse.dimens.lg))
             SecondaryButton(action, onAction)
         }
     }
@@ -365,19 +363,19 @@ fun ListRow(
         modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.pressable(pressedScale = 0.98f, onClick = onClick) else Modifier)
-            .padding(vertical = Space.md),
+            .padding(vertical = Pulse.dimens.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
             leading()
-            Spacer(Modifier.width(Space.md))
+            Spacer(Modifier.width(Pulse.dimens.md))
         }
         Column(Modifier.weight(1f)) {
             Text(title, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (detail != null) Text(detail, style = Pulse.type.bodySmall, color = colors.textSecondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         if (trailing != null) {
-            Spacer(Modifier.width(Space.md))
+            Spacer(Modifier.width(Pulse.dimens.md))
             trailing()
         }
     }
@@ -406,10 +404,10 @@ fun PulseTextField(
         Row(
             Modifier
                 .fillMaxWidth()
-                .clip(Shapes.control)
+                .clip(Pulse.shapes.control)
                 .background(colors.surface)
-                .border(1.dp, if (error != null) colors.error else colors.border, Shapes.control)
-                .padding(horizontal = Space.lg, vertical = 15.dp),
+                .border(1.dp, if (error != null) colors.error else colors.border, Pulse.shapes.control)
+                .padding(horizontal = Pulse.dimens.lg, vertical = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (prefix != null) Text(prefix, style = Pulse.type.body, color = colors.textMuted)
@@ -434,7 +432,7 @@ fun PulseTextField(
                 )
             }
             if (trailing != null) {
-                Spacer(Modifier.width(Space.sm))
+                Spacer(Modifier.width(Pulse.dimens.sm))
                 trailing()
             }
         }
@@ -449,11 +447,11 @@ fun PulseTextField(
 @Composable
 fun ScreenHeader(title: String, onBack: () -> Unit, modifier: Modifier = Modifier, trailing: @Composable (() -> Unit)? = null) {
     Row(
-        modifier.fillMaxWidth().padding(horizontal = Space.lg, vertical = Space.sm),
+        modifier.fillMaxWidth().padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         GlassIconButton(Glyphs.ChevronLeft, contentDescription = "Back", onClick = onBack)
-        Spacer(Modifier.width(Space.md))
+        Spacer(Modifier.width(Pulse.dimens.md))
         Text(title, style = Pulse.type.headline, color = Pulse.colors.textPrimary, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (trailing != null) trailing()
     }

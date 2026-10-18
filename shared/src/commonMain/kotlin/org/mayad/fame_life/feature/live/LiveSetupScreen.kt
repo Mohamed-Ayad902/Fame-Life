@@ -61,8 +61,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.platform.CameraLens
 import org.mayad.fame_life.core.platform.CameraPreview
 import org.mayad.fame_life.core.platform.LivePermissions
@@ -148,22 +146,22 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
             ),
         )
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding()) {
-            Row(Modifier.fillMaxWidth().padding(Space.lg), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(Pulse.dimens.lg), verticalAlignment = Alignment.CenterVertically) {
                 GlassIconButton(Glyphs.Close, contentDescription = "Close", onClick = { navigator.pop() })
                 Spacer(Modifier.weight(1f))
                 LiveBadge(label = "PREVIEW")
             }
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.screen)) {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Pulse.dimens.gutter)) {
                 Spacer(Modifier.height(140.dp))
                 Text("Creator studio", style = Pulse.type.overline, color = style.glow)
                 Text("Set the room", style = Pulse.type.display, color = colors.textPrimary)
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 if (!permissions.camera || !permissions.microphone) {
                     PermissionPanel(permissions)
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                 }
                 PulseTextField(title, { title = it }, "What's your live about?", placeholder = "Q&A, cooking, a game, a story…", maxLength = 60)
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
 
                 SetupLabel("Audience size")
                 ChipRow {
@@ -179,7 +177,7 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
                     }
                 }
                 Text(AudiencePreset.valueOf(presetName).hint + " simulated viewers", style = Pulse.type.meta, color = colors.textMuted)
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
 
                 SetupLabel("Audience mood")
                 ChipRow {
@@ -202,10 +200,10 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
 
                 SetupLabel("Live style")
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
                     LiveStyles.all.forEach { option ->
                         val locked = option.id !in limits.liveStyles
                         StyleCard(option, selected = option.id == styleId, locked = locked) {
@@ -218,34 +216,34 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
                     ProHint(proHint.orEmpty(), onSeePro = { navigator.push(Route.Paywall) }, onDismiss = { proHint = null })
                 }
 
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 SecondaryButton(
                     if (showMore) "Fewer options" else "More options",
                     onClick = { showMore = !showMore },
                     leading = Glyphs.Sliders,
                 )
                 AnimatedVisibility(showMore) {
-                    Column(Modifier.padding(top = Space.lg)) {
+                    Column(Modifier.padding(top = Pulse.dimens.lg)) {
                         SetupLabel("Gifts")
                         ChipRow {
                             PulseChip("Gifts on", selected = gifts, onClick = { gifts = true }, leading = Glyphs.Gift)
                             PulseChip("Gifts off", selected = !gifts, onClick = { gifts = false })
                         }
-                        Spacer(Modifier.height(Space.lg))
+                        Spacer(Modifier.height(Pulse.dimens.lg))
                         SetupLabel("Pace")
                         ChipRow {
                             EventFrequency.entries.forEach { frequency ->
                                 PulseChip(frequency.label, selected = frequency.name == frequencyName, onClick = { frequencyName = frequency.name })
                             }
                         }
-                        Spacer(Modifier.height(Space.lg))
+                        Spacer(Modifier.height(Pulse.dimens.lg))
                         SetupLabel("Audience language")
                         ChipRow {
                             AudienceLanguage.entries.forEach { language ->
                                 PulseChip(language.label, selected = language.name == languageName, onClick = { languageName = language.name })
                             }
                         }
-                        Spacer(Modifier.height(Space.lg))
+                        Spacer(Modifier.height(Pulse.dimens.lg))
                         SetupLabel("Length")
                         ChipRow {
                             listOf(5, 10, 20, 45).forEach { option ->
@@ -261,9 +259,9 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
                         }
                     }
                 }
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
             }
-            Column(Modifier.padding(horizontal = Space.screen, vertical = Space.md)) {
+            Column(Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.md)) {
                 PrimaryButton(
                     if (livesLeft > 0) "Go live" else "No lives left today",
                     onClick = ::goLive,
@@ -272,10 +270,10 @@ fun LiveSetupScreen(initialTitle: String, navigator: Navigator) {
                     brush = colors.liveGradient,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(Modifier.height(Space.sm))
+                Spacer(Modifier.height(Pulse.dimens.sm))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     SimulatedTag(text = "Simulated audience")
-                    Spacer(Modifier.width(Space.sm))
+                    Spacer(Modifier.width(Pulse.dimens.sm))
                     Text(livesLeftLabel(livesLeft, limits), style = Pulse.type.meta, color = colors.textMuted)
                 }
             }
@@ -305,14 +303,14 @@ private fun PermissionPanel(permissions: LivePermissions) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(Shapes.panel)
+            .clip(Pulse.shapes.panel)
             .background(colors.surface.copy(alpha = 0.88f))
-            .border(1.dp, colors.borderStrong, Shapes.panel)
-            .padding(Space.lg),
+            .border(1.dp, colors.borderStrong, Pulse.shapes.panel)
+            .padding(Pulse.dimens.lg),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             GlossyIcon(Glyphs.Mic, Gloss.Violet, size = 44.dp)
-            Spacer(Modifier.width(Space.md))
+            Spacer(Modifier.width(Pulse.dimens.md))
             Column(Modifier.weight(1f)) {
                 Text(
                     if (!permissions.supported) "Camera and mic aren't ready on this device yet" else "Let your audience see and hear you",
@@ -331,7 +329,7 @@ private fun PermissionPanel(permissions: LivePermissions) {
             }
         }
         if (permissions.supported && !permissions.asked) {
-            Spacer(Modifier.height(Space.md))
+            Spacer(Modifier.height(Pulse.dimens.md))
             SecondaryButton("Allow camera and mic", onClick = permissions::request, modifier = Modifier.fillMaxWidth())
         }
     }
@@ -340,14 +338,14 @@ private fun PermissionPanel(permissions: LivePermissions) {
 @Composable
 private fun SetupLabel(text: String) {
     Text(text, style = Pulse.type.label, color = Pulse.colors.textPrimary)
-    Spacer(Modifier.height(Space.sm))
+    Spacer(Modifier.height(Pulse.dimens.sm))
 }
 
 @Composable
 private fun ChipRow(content: @Composable () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = Space.xs),
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = Pulse.dimens.xs),
+        horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm),
     ) { content() }
 }
 
@@ -365,8 +363,8 @@ private fun StyleCard(style: LiveStyle, selected: Boolean, locked: Boolean, onCl
             Modifier
                 .fillMaxWidth()
                 .height(84.dp)
-                .clip(Shapes.control)
-                .border(2.dp, if (selected) style.glow else colors.border, Shapes.control),
+                .clip(Pulse.shapes.control)
+                .border(2.dp, if (selected) style.glow else colors.border, Pulse.shapes.control),
         ) {
             if (locked) {
                 Box(Modifier.fillMaxSize().background(colors.scrim), contentAlignment = Alignment.Center) {
@@ -384,23 +382,23 @@ private fun ProHint(text: String, onSeePro: () -> Unit, onDismiss: () -> Unit) {
     val colors = Pulse.colors
     Row(
         Modifier
-            .padding(top = Space.lg)
+            .padding(top = Pulse.dimens.lg)
             .fillMaxWidth()
-            .clip(Shapes.control)
+            .clip(Pulse.shapes.control)
             .background(colors.gold.copy(alpha = 0.12f))
-            .border(1.dp, colors.gold.copy(alpha = 0.35f), Shapes.control)
-            .padding(start = Space.md, top = Space.sm, bottom = Space.sm, end = Space.xs),
+            .border(1.dp, colors.gold.copy(alpha = 0.35f), Pulse.shapes.control)
+            .padding(start = Pulse.dimens.md, top = Pulse.dimens.sm, bottom = Pulse.dimens.sm, end = Pulse.dimens.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PulseIcon(Glyphs.Crown, colors.gold, size = 18.dp)
-        Spacer(Modifier.width(Space.sm))
+        Spacer(Modifier.width(Pulse.dimens.sm))
         Text(text, style = Pulse.type.bodySmall, color = colors.textPrimary, modifier = Modifier.weight(1f))
         Text(
             "See Pro",
             style = Pulse.type.label,
             color = colors.gold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.pressable(onClick = onSeePro).padding(horizontal = Space.sm, vertical = Space.xs),
+            modifier = Modifier.pressable(onClick = onSeePro).padding(horizontal = Pulse.dimens.sm, vertical = Pulse.dimens.xs),
         )
         Box(Modifier.size(36.dp).pressable(onClick = onDismiss).semantics { contentDescription = "Dismiss" }, contentAlignment = Alignment.Center) {
             PulseIcon(Glyphs.Close, colors.textMuted, size = 14.dp)

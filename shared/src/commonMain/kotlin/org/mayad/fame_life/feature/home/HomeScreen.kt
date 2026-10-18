@@ -49,8 +49,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.data.content.ArtMotif
 import org.mayad.fame_life.data.content.ArtSpec
@@ -78,9 +76,9 @@ fun HomeScreen(navigator: Navigator, onOpenInbox: () -> Unit) {
         columns = StaggeredGridCells.Fixed(2),
         state = grid,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = Space.screen, end = Space.screen, bottom = BottomBarClearance.calculateBottomPadding()),
-        horizontalArrangement = Arrangement.spacedBy(Space.md),
-        verticalItemSpacing = Space.lg,
+        contentPadding = PaddingValues(start = Pulse.dimens.gutter, end = Pulse.dimens.gutter, bottom = BottomBarClearance.calculateBottomPadding()),
+        horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md),
+        verticalItemSpacing = Pulse.dimens.lg,
     ) {
         item(span = StaggeredGridItemSpan.FullLine, key = "top") {
             Column {
@@ -96,7 +94,7 @@ fun HomeScreen(navigator: Navigator, onOpenInbox: () -> Unit) {
         item(span = StaggeredGridItemSpan.FullLine, key = "stories") {
             CreatorStoryRail(
                 onCreator = { navigator.push(Route.CreatorProfile(it.id)) },
-                modifier = Modifier.bleed(Space.screen),
+                modifier = Modifier.bleed(Pulse.dimens.gutter),
             )
         }
         item(span = StaggeredGridItemSpan.FullLine, key = "hero") {
@@ -112,11 +110,11 @@ fun HomeScreen(navigator: Navigator, onOpenInbox: () -> Unit) {
         item(span = StaggeredGridItemSpan.FullLine, key = "lives") {
             Column {
                 SectionHeader("Live now", eyebrow = "Simulated rooms")
-                Spacer(Modifier.height(Space.md))
+                Spacer(Modifier.height(Pulse.dimens.md))
                 LazyRow(
-                    modifier = Modifier.bleed(Space.screen),
-                    contentPadding = PaddingValues(horizontal = Space.screen),
-                    horizontalArrangement = Arrangement.spacedBy(Space.md),
+                    modifier = Modifier.bleed(Pulse.dimens.gutter),
+                    contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter),
+                    horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md),
                 ) {
                     items(otherLives, key = { it.id }) { room ->
                         LiveRoomCard(room, onOpen = { navigator.push(Route.CreatorProfile(room.creatorId)) })
@@ -127,23 +125,23 @@ fun HomeScreen(navigator: Navigator, onOpenInbox: () -> Unit) {
         item(span = StaggeredGridItemSpan.FullLine, key = "topics") {
             Column {
                 SectionHeader("Trending topics")
-                Spacer(Modifier.height(Space.md))
+                Spacer(Modifier.height(Pulse.dimens.md))
                 LazyRow(
-                    modifier = Modifier.bleed(Space.screen),
-                    contentPadding = PaddingValues(horizontal = Space.screen),
-                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                    modifier = Modifier.bleed(Pulse.dimens.gutter),
+                    contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter),
+                    horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm),
                 ) {
                     items(SeedContent.topics, key = { it.tag }) { topic ->
                         Row(
                             Modifier
-                                .clip(Shapes.control)
+                                .clip(Pulse.shapes.control)
                                 .background(Pulse.colors.surface)
-                                .border(1.dp, Pulse.colors.border, Shapes.control)
-                                .padding(horizontal = Space.md, vertical = Space.sm),
+                                .border(1.dp, Pulse.colors.border, Pulse.shapes.control)
+                                .padding(horizontal = Pulse.dimens.md, vertical = Pulse.dimens.sm),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             GlossyIcon(topic.category.glyph(), topic.category.gloss(), size = 30.dp)
-                            Spacer(Modifier.width(Space.sm))
+                            Spacer(Modifier.width(Pulse.dimens.sm))
                             Column {
                                 Text("#${topic.tag}", style = Pulse.type.titleSmall, color = Pulse.colors.textPrimary, maxLines = 1)
                                 Text("${compactCount(topic.posts)} posts", style = Pulse.type.meta, color = Pulse.colors.textMuted)
@@ -165,9 +163,9 @@ fun HomeScreen(navigator: Navigator, onOpenInbox: () -> Unit) {
 @Composable
 private fun HomeTopBar(name: String, palette: Int, unread: Int, onInbox: () -> Unit) {
     val colors = Pulse.colors
-    Row(Modifier.fillMaxWidth().padding(vertical = Space.md), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = Pulse.dimens.md), verticalAlignment = Alignment.CenterVertically) {
         CreatorAvatar(ArtSpec(palette, ArtMotif.PORTRAIT, palette * 13 + 1), 44.dp, ring = AvatarRing.SELF)
-        Spacer(Modifier.width(Space.md))
+        Spacer(Modifier.width(Pulse.dimens.md))
         Column(Modifier.weight(1f)) {
             Text("Welcome back", style = Pulse.type.meta, color = colors.textMuted)
             Text(name, style = Pulse.type.title, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -188,21 +186,21 @@ private fun ChallengeCard(title: String, body: String, onStart: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .pressable(pressedScale = 0.98f, onClick = onStart)
-            .clip(Shapes.panel)
+            .clip(Pulse.shapes.panel)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.panel)
-            .padding(Space.lg),
+            .border(1.dp, colors.border, Pulse.shapes.panel)
+            .padding(Pulse.dimens.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         GlossyIcon(Glyphs.Trophy, Gloss.Gold, size = 56.dp)
-        Spacer(Modifier.width(Space.lg))
+        Spacer(Modifier.width(Pulse.dimens.lg))
         Column(Modifier.weight(1f)) {
             Text("DAILY CHALLENGE", style = Pulse.type.overline, color = colors.gold)
             Spacer(Modifier.height(2.dp))
             Text(title, style = Pulse.type.titleSmall, color = colors.textPrimary)
             Text(body, style = Pulse.type.bodySmall, color = colors.textSecondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        Spacer(Modifier.width(Space.sm))
+        Spacer(Modifier.width(Pulse.dimens.sm))
         PulseIcon(Glyphs.ChevronRight, colors.textMuted, size = 20.dp)
     }
 }

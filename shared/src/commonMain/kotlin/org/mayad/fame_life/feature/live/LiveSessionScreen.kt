@@ -54,15 +54,12 @@ import org.mayad.fame_life.core.designsystem.components.AvatarRing
 import org.mayad.fame_life.core.designsystem.components.CreatorAvatar
 import org.mayad.fame_life.core.designsystem.components.GlassIconButton
 import org.mayad.fame_life.core.designsystem.components.LiveBadge
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.pressable
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.clock
 import org.mayad.fame_life.core.platform.CameraLens
 import org.mayad.fame_life.core.platform.CameraPreview
@@ -115,7 +112,7 @@ fun LiveSessionScreen(sessionId: String, config: SimulationConfig, navigator: Na
     var lens by remember { mutableStateOf(CameraLens.FRONT) }
     var confirmEnd by remember { mutableStateOf(false) }
     var recorded by remember { mutableStateOf(false) }
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
 
     DisposableEffect(controller) { onDispose { controller.end() } }
     LaunchedEffect(controller) {
@@ -155,20 +152,20 @@ fun LiveSessionScreen(sessionId: String, config: SimulationConfig, navigator: Na
 
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             LiveTopBar(profile, live.elapsedSeconds, live.remainingSeconds, live.viewers, onClose = { confirmEnd = true })
-            Row(Modifier.padding(horizontal = Space.lg), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+            Row(Modifier.padding(horizontal = Pulse.dimens.lg), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.xs)) {
                 StatusChip("Simulated audience", Glyphs.Sparkles, Pulse.colors.cyan)
                 aiChip(state)?.let { (text, tint) -> StatusChip(text, Glyphs.Bolt, tint) }
             }
-            Spacer(Modifier.height(Space.xs))
-            Row(Modifier.padding(horizontal = Space.lg)) { SpeechChip(state) }
+            Spacer(Modifier.height(Pulse.dimens.xs))
+            Row(Modifier.padding(horizontal = Pulse.dimens.lg)) { SpeechChip(state) }
 
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 LiveSpotlight(live.spotlight, style, Modifier.align(Alignment.Center).padding(bottom = 120.dp))
-                LiveReactions(live.reactions, Modifier.align(Alignment.BottomEnd).width(72.dp).fillMaxHeight(0.7f).padding(end = Space.lg, bottom = Space.lg))
-                Column(Modifier.align(Alignment.BottomStart).fillMaxWidth(0.8f).padding(start = Space.lg)) {
+                LiveReactions(live.reactions, Modifier.align(Alignment.BottomEnd).width(72.dp).fillMaxHeight(0.7f).padding(end = Pulse.dimens.lg, bottom = Pulse.dimens.lg))
+                Column(Modifier.align(Alignment.BottomStart).fillMaxWidth(0.8f).padding(start = Pulse.dimens.lg)) {
                     LiveCommentStream(live.comments)
                     state.livePartial?.let {
-                        Spacer(Modifier.height(Space.sm))
+                        Spacer(Modifier.height(Pulse.dimens.sm))
                         TranscriptCaption(it)
                     }
                 }
@@ -277,7 +274,7 @@ private fun CameraOffBackdrop(profile: CreatorProfile, style: LiveStyle) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(bottom = 140.dp)) {
                 CreatorAvatar(selfAvatar(profile.avatarPalette), 148.dp, ring = AvatarRing.LIVE)
-                Spacer(Modifier.height(Space.md))
+                Spacer(Modifier.height(Pulse.dimens.md))
                 Text("Camera off", style = Pulse.type.label, color = Pulse.colors.textSecondary)
             }
         }
@@ -287,13 +284,13 @@ private fun CameraOffBackdrop(profile: CreatorProfile, style: LiveStyle) {
 @Composable
 private fun LiveTopBar(profile: CreatorProfile, elapsed: Int, remaining: Int, viewers: Int, onClose: () -> Unit) {
     val colors = Pulse.colors
-    Row(Modifier.fillMaxWidth().padding(Space.lg), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(Pulse.dimens.lg), verticalAlignment = Alignment.CenterVertically) {
         Row(
-            Modifier.weight(1f, fill = false).clip(Shapes.pill).background(Color(0x66080B14)).padding(4.dp).padding(end = Space.md),
+            Modifier.weight(1f, fill = false).clip(Pulse.shapes.pill).background(Color(0x66080B14)).padding(4.dp).padding(end = Pulse.dimens.md),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CreatorAvatar(selfAvatar(profile.avatarPalette), 34.dp)
-            Spacer(Modifier.width(Space.sm))
+            Spacer(Modifier.width(Pulse.dimens.sm))
             Column {
                 Text(profile.displayName, style = Pulse.type.label, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -310,14 +307,14 @@ private fun LiveTopBar(profile: CreatorProfile, elapsed: Int, remaining: Int, vi
         }
         Spacer(Modifier.weight(1f))
         Row(
-            Modifier.clip(Shapes.pill).background(Color(0x66080B14)).padding(horizontal = Space.md, vertical = 8.dp),
+            Modifier.clip(Pulse.shapes.pill).background(Color(0x66080B14)).padding(horizontal = Pulse.dimens.md, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             PulseIcon(Glyphs.Eye, colors.textPrimary, size = 16.dp, contentDescription = "Simulated viewers")
             Spacer(Modifier.width(6.dp))
             AnimatedCount(viewers, Pulse.type.label, colors.textPrimary)
         }
-        Spacer(Modifier.width(Space.sm))
+        Spacer(Modifier.width(Pulse.dimens.sm))
         GlassIconButton(Glyphs.Close, contentDescription = "End live", onClick = onClose, size = 40.dp)
     }
 }
@@ -334,9 +331,9 @@ private fun LiveControls(
 ) {
     val colors = Pulse.colors
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Space.lg, vertical = Space.md),
+        Modifier.fillMaxWidth().padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.md),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm),
     ) {
         GlassIconButton(if (micMuted) Glyphs.MicOff else Glyphs.Mic, if (micMuted) "Unmute microphone" else "Mute microphone", onMic, active = !micMuted)
         if (canFlip) GlassIconButton(Glyphs.FlipCamera, "Flip camera", onFlip)
@@ -346,9 +343,9 @@ private fun LiveControls(
             Modifier
                 .height(44.dp)
                 .pressable(onClick = onEnd)
-                .clip(Shapes.pill)
+                .clip(Pulse.shapes.pill)
                 .background(colors.liveGradient)
-                .padding(horizontal = Space.xl),
+                .padding(horizontal = Pulse.dimens.xl),
             contentAlignment = Alignment.Center,
         ) {
             Text("End", style = Pulse.type.label, color = Color.White)
@@ -360,12 +357,12 @@ private fun LiveControls(
 private fun PausedOverlay(onResume: () -> Unit) {
     val colors = Pulse.colors
     Box(Modifier.fillMaxSize().background(Color(0xCC080B14)), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(Space.xxl)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(Pulse.dimens.xxl)) {
             PulseIcon(Glyphs.Pause, colors.textPrimary, size = 40.dp)
-            Spacer(Modifier.height(Space.md))
+            Spacer(Modifier.height(Pulse.dimens.md))
             Text("Live paused", style = Pulse.type.headline, color = colors.textPrimary)
             Text("The audience is waiting. The mic is off while paused.", style = Pulse.type.body, color = colors.textSecondary)
-            Spacer(Modifier.height(Space.xl))
+            Spacer(Modifier.height(Pulse.dimens.xl))
             PrimaryButton("Resume", onClick = onResume, leading = Glyphs.Play, modifier = Modifier.size(width = 200.dp, height = 54.dp))
         }
     }

@@ -51,7 +51,6 @@ import org.mayad.fame_life.app.Route
 import org.mayad.fame_life.core.analytics.AnalyticsEvent
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.ListRow
-import org.mayad.fame_life.core.designsystem.components.LocalReduceMotion
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.ScreenHeader
 import org.mayad.fame_life.core.designsystem.components.SimulatedTag
@@ -60,8 +59,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.domain.entitlement.Plan
 import org.mayad.fame_life.domain.entitlement.PlanLimits
 
@@ -69,7 +66,7 @@ import org.mayad.fame_life.domain.entitlement.PlanLimits
 fun SettingsScreen(navigator: Navigator) {
     val container = LocalAppContainer.current
     val entitlements by container.entitlements.entitlements.collectAsState()
-    val reduceMotion = LocalReduceMotion.current
+    val reduceMotion = Pulse.reducedMotion
     var showSimulation by rememberSaveable { mutableStateOf(false) }
     var showData by rememberSaveable { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
@@ -83,7 +80,7 @@ fun SettingsScreen(navigator: Navigator) {
     AtmosphereBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ScreenHeader("Settings", onBack = { navigator.pop() })
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Space.screen)) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Pulse.dimens.gutter)) {
                 SettingsGroup("Account") {
                     ListRow(
                         "Edit profile",
@@ -166,7 +163,7 @@ fun SettingsScreen(navigator: Navigator) {
                         leading = { GlossyIcon(Glyphs.Star, Gloss.Violet, size = 36.dp) },
                     )
                 }
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Pulse.dimens.xxl))
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         }
@@ -217,7 +214,7 @@ private fun DeleteAccountDialog(onDismiss: () -> Unit) {
                     color = colors.textSecondary,
                 )
                 if (failure != null) {
-                    Spacer(Modifier.height(Space.md))
+                    Spacer(Modifier.height(Pulse.dimens.md))
                     Text(failure!!, style = Pulse.type.bodySmall, color = colors.error)
                 }
             }
@@ -249,16 +246,16 @@ private fun DeleteAccountDialog(onDismiss: () -> Unit) {
 @Composable
 private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
     val colors = Pulse.colors
-    Spacer(Modifier.height(Space.lg))
+    Spacer(Modifier.height(Pulse.dimens.lg))
     Text(title.uppercase(), style = Pulse.type.overline, color = colors.textMuted)
-    Spacer(Modifier.height(Space.sm))
+    Spacer(Modifier.height(Pulse.dimens.sm))
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(Shapes.panel)
+            .clip(Pulse.shapes.panel)
             .background(colors.surface.copy(alpha = 0.85f))
-            .border(1.dp, colors.border, Shapes.panel)
-            .padding(horizontal = Space.lg, vertical = Space.xs),
+            .border(1.dp, colors.border, Pulse.shapes.panel)
+            .padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.xs),
         content = content,
     )
 }
@@ -275,7 +272,7 @@ private fun Explainer(text: String) {
         text,
         style = Pulse.type.bodySmall,
         color = Pulse.colors.textSecondary,
-        modifier = Modifier.padding(start = 48.dp, bottom = Space.md),
+        modifier = Modifier.padding(start = 48.dp, bottom = Pulse.dimens.md),
     )
 }
 
@@ -291,34 +288,34 @@ fun PaywallScreen(navigator: Navigator) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ScreenHeader("", onBack = { navigator.pop() })
             Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Space.screen),
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Pulse.dimens.gutter),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 GlossyIcon(Glyphs.Crown, Gloss.Gold, size = 96.dp, glyphSize = 46.dp)
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 Text("${AppConfig.APP_NAME} Pro", style = Pulse.type.display, color = colors.textPrimary, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(Space.xs))
+                Spacer(Modifier.height(Pulse.dimens.xs))
                 Text(
                     "Bigger crowds, longer lives and every audience mood.",
                     style = Pulse.type.body,
                     color = colors.textSecondary,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(Shapes.panel)
+                        .clip(Pulse.shapes.panel)
                         .background(colors.surface.copy(alpha = 0.9f))
-                        .border(1.dp, colors.border, Shapes.panel)
-                        .padding(Space.lg),
+                        .border(1.dp, colors.border, Pulse.shapes.panel)
+                        .padding(Pulse.dimens.lg),
                 ) {
                     Row(Modifier.fillMaxWidth()) {
                         Spacer(Modifier.weight(1.4f))
                         Text("Free", style = Pulse.type.label, color = colors.textSecondary, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                         Text("Pro", style = Pulse.type.label, color = colors.gold, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                     }
-                    Spacer(Modifier.height(Space.sm))
+                    Spacer(Modifier.height(Pulse.dimens.sm))
                     CompareRow("Live length", "${free.maxSessionSeconds / 60} min", "${pro.maxSessionSeconds / 60} min")
                     CompareRow("Lives per day", "${free.sessionsPerDay}", "${pro.sessionsPerDay}")
                     CompareRow("Audience sizes", "${free.presets.size} of 4", "All 4")
@@ -328,22 +325,22 @@ fun PaywallScreen(navigator: Navigator) {
                     CompareRow("Live styles", "${free.liveStyles.size}", "${pro.liveStyles.size}")
                     CompareRow("Saved lives", "${free.historySize}", "${pro.historySize}")
                 }
-                Spacer(Modifier.height(Space.xl))
+                Spacer(Modifier.height(Pulse.dimens.xl))
                 PrimaryButton("Pro isn't available yet", onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth(), brush = colors.goldGradient)
-                Spacer(Modifier.height(Space.sm))
+                Spacer(Modifier.height(Pulse.dimens.sm))
                 Text(
                     "Store billing isn't set up in this build, so nothing can be bought and no price is shown. You're on Free.",
                     style = Pulse.type.meta,
                     color = colors.textMuted,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(Space.lg))
+                Spacer(Modifier.height(Pulse.dimens.lg))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SimulatedTag(text = "Gifts are simulated")
-                    Spacer(Modifier.width(Space.sm))
+                    Spacer(Modifier.width(Pulse.dimens.sm))
                     Text("They're never bought or paid out.", style = Pulse.type.meta, color = colors.textMuted)
                 }
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Pulse.dimens.xxl))
             }
         }
     }

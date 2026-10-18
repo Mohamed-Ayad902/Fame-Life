@@ -60,8 +60,6 @@ import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.core.format.hoursAgoLabel
 import org.mayad.fame_life.core.platform.shareText
@@ -89,7 +87,7 @@ fun PostDetailScreen(postId: String, navigator: Navigator) {
     val colors = Pulse.colors
 
     Box(Modifier.fillMaxSize().background(colors.background)) {
-        LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.xxxl)) {
+        LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Pulse.dimens.xxxl)) {
             item(key = "art") {
                 Box(Modifier.fillMaxWidth().aspectRatio(1f / post.aspect.coerceIn(1f, 1.35f))) {
                     Artwork(
@@ -103,32 +101,32 @@ fun PostDetailScreen(postId: String, navigator: Navigator) {
                 }
             }
             item(key = "body") {
-                Column(Modifier.padding(horizontal = Space.screen)) {
+                Column(Modifier.padding(horizontal = Pulse.dimens.gutter)) {
                     Row(
                         Modifier.fillMaxWidth().pressable(pressedScale = 0.98f) { navigator.push(Route.CreatorProfile(creator.id)) },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CreatorAvatar(creator.avatar, 44.dp)
-                        Spacer(Modifier.width(Space.md))
+                        Spacer(Modifier.width(Pulse.dimens.md))
                         Column(Modifier.weight(1f)) {
                             Text(creator.displayName, style = Pulse.type.titleSmall, color = colors.textPrimary)
                             Text("@${creator.handle} · ${hoursAgoLabel(post.hoursAgo)}", style = Pulse.type.meta, color = colors.textMuted)
                         }
                         SimulatedTag()
                     }
-                    Spacer(Modifier.height(Space.lg))
+                    Spacer(Modifier.height(Pulse.dimens.lg))
                     Text(post.caption, style = Pulse.type.headline, color = colors.textPrimary)
-                    Spacer(Modifier.height(Space.sm))
+                    Spacer(Modifier.height(Pulse.dimens.sm))
                     Text(post.tags.joinToString("  ") { "#$it" }, style = Pulse.type.label, color = colors.cyan)
-                    Spacer(Modifier.height(Space.xl))
-                    Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Spacer(Modifier.height(Pulse.dimens.xl))
+                    Row(horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
                         Row(
                             Modifier
-                                .clip(Shapes.pill)
+                                .clip(Pulse.shapes.pill)
                                 .background(if (liked) colors.live.copy(alpha = 0.16f) else colors.surface)
                                 .pressable(role = Role.Switch) { liked = !liked }
                                 .semantics { stateDescription = if (liked) "Liked" else "Not liked" }
-                                .padding(horizontal = Space.lg, vertical = Space.sm),
+                                .padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             PulseIcon(
@@ -138,34 +136,34 @@ fun PostDetailScreen(postId: String, navigator: Navigator) {
                                 size = 20.dp,
                                 contentDescription = "Like",
                             )
-                            Spacer(Modifier.width(Space.sm))
+                            Spacer(Modifier.width(Pulse.dimens.sm))
                             Text(compactCount(post.likes + if (liked) 1 else 0), style = Pulse.type.label, color = colors.textPrimary)
                         }
                         StatPill(Glyphs.Comment, compactCount(post.comments))
                         Row(
                             Modifier
-                                .clip(Shapes.pill)
+                                .clip(Pulse.shapes.pill)
                                 .background(colors.surface)
                                 .pressable {
                                     shareText("\"${post.caption}\" by @${creator.handle} — a simulated post in Pulse")
                                 }
-                                .padding(horizontal = Space.lg, vertical = Space.sm),
+                                .padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             PulseIcon(Glyphs.Share, colors.textPrimary, size = 20.dp, contentDescription = "Share")
-                            Spacer(Modifier.width(Space.sm))
+                            Spacer(Modifier.width(Pulse.dimens.sm))
                             Text(compactCount(post.shares), style = Pulse.type.label, color = colors.textPrimary)
                         }
                     }
-                    Spacer(Modifier.height(Space.xxl))
+                    Spacer(Modifier.height(Pulse.dimens.xxl))
                     SectionHeader("Comments", eyebrow = "${compactCount(post.comments)} simulated")
-                    Spacer(Modifier.height(Space.sm))
+                    Spacer(Modifier.height(Pulse.dimens.sm))
                 }
             }
             items(comments, key = { it.id }) { comment ->
-                Row(Modifier.padding(horizontal = Space.screen, vertical = Space.sm)) {
+                Row(Modifier.padding(horizontal = Pulse.dimens.gutter, vertical = Pulse.dimens.sm)) {
                     CreatorAvatar(org.mayad.fame_life.data.content.ArtSpec(SeedContent.stableHash(comment.author).mod(8), org.mayad.fame_life.data.content.ArtMotif.PORTRAIT, SeedContent.stableHash(comment.author)), 34.dp)
-                    Spacer(Modifier.width(Space.md))
+                    Spacer(Modifier.width(Pulse.dimens.md))
                     Column(Modifier.weight(1f)) {
                         Text("${comment.author} · ${hoursAgoLabel(comment.hoursAgo)}", style = Pulse.type.meta, color = colors.textMuted)
                         Text(comment.text, style = Pulse.type.body, color = colors.textPrimary)
@@ -178,10 +176,10 @@ fun PostDetailScreen(postId: String, navigator: Navigator) {
             }
             if (more.isNotEmpty()) {
                 item(key = "more") {
-                    Column(Modifier.padding(start = Space.screen, end = Space.screen, top = Space.xxl)) {
+                    Column(Modifier.padding(start = Pulse.dimens.gutter, end = Pulse.dimens.gutter, top = Pulse.dimens.xxl)) {
                         SectionHeader("More from ${creator.displayName.substringBefore(' ')}")
-                        Spacer(Modifier.height(Space.md))
-                        LazyRow(Modifier.bleed(Space.screen), contentPadding = PaddingValues(horizontal = Space.screen), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                        Spacer(Modifier.height(Pulse.dimens.md))
+                        LazyRow(Modifier.bleed(Pulse.dimens.gutter), contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.md)) {
                             items(more, key = { it.id }) { other ->
                                 PostTile(other, 0, onOpen = { navigator.push(Route.PostDetail(other.id)) }, modifier = Modifier.width(160.dp))
                             }
@@ -195,7 +193,7 @@ fun PostDetailScreen(postId: String, navigator: Navigator) {
             Glyphs.ChevronLeft,
             contentDescription = "Back",
             onClick = { navigator.pop() },
-            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).padding(Space.lg),
+            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).padding(Pulse.dimens.lg),
         )
     }
 }
@@ -205,13 +203,13 @@ private fun StatPill(glyph: androidx.compose.ui.graphics.vector.ImageVector, val
     val colors = Pulse.colors
     Row(
         Modifier
-            .clip(Shapes.pill)
+            .clip(Pulse.shapes.pill)
             .background(colors.surface)
-            .padding(horizontal = Space.lg, vertical = Space.sm),
+            .padding(horizontal = Pulse.dimens.lg, vertical = Pulse.dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PulseIcon(glyph, colors.textPrimary, size = 20.dp)
-        Spacer(Modifier.width(Space.sm))
+        Spacer(Modifier.width(Pulse.dimens.sm))
         Text(value, style = Pulse.type.label, color = colors.textPrimary)
     }
 }

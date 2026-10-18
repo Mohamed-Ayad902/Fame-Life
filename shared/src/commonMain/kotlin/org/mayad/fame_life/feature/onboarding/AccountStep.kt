@@ -41,8 +41,6 @@ import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.domain.account.AuthErrorKind
 import org.mayad.fame_life.domain.account.AuthException
 import org.mayad.fame_life.domain.account.AuthRules
@@ -84,14 +82,14 @@ internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .verticalScroll(rememberScrollState())
-            .padding(Space.screen),
+            .padding(Pulse.dimens.gutter),
     ) {
         StepDots(step, total)
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         GlossyIcon(Glyphs.Shield, Gloss.Blue, size = 64.dp)
-        Spacer(Modifier.height(Space.lg))
+        Spacer(Modifier.height(Pulse.dimens.lg))
         Text(if (returning) "Welcome back" else "Save your creator life", style = Pulse.type.display, color = colors.textPrimary)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text(
             if (returning) {
                 "Sign in with the Google account you used before to pick up your profile, lives and fame level."
@@ -101,15 +99,15 @@ internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
             style = Pulse.type.body,
             color = colors.textSecondary,
         )
-        Spacer(Modifier.height(Space.xl))
+        Spacer(Modifier.height(Pulse.dimens.xl))
         Column(
             Modifier
                 .fillMaxWidth()
-                .clip(Shapes.card)
+                .clip(Pulse.shapes.card)
                 .background(colors.surface.copy(alpha = 0.72f))
-                .border(1.dp, colors.border, Shapes.card)
-                .padding(Space.lg),
-            verticalArrangement = Arrangement.spacedBy(Space.sm),
+                .border(1.dp, colors.border, Pulse.shapes.card)
+                .padding(Pulse.dimens.lg),
+            verticalArrangement = Arrangement.spacedBy(Pulse.dimens.sm),
         ) {
             Text("What we use", style = Pulse.type.titleSmall, color = colors.textPrimary)
             Text(
@@ -121,7 +119,7 @@ internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
         }
         val message = failure ?: if (!configured) AuthRules.message(AuthErrorKind.NOT_CONFIGURED) else null
         if (message != null) {
-            Spacer(Modifier.height(Space.lg))
+            Spacer(Modifier.height(Pulse.dimens.lg))
             Text(
                 message,
                 style = Pulse.type.bodySmall,
@@ -129,7 +127,7 @@ internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
-        Spacer(Modifier.height(Space.xxl))
+        Spacer(Modifier.height(Pulse.dimens.xxl))
         PrimaryButton(
             if (busy) "Opening Google…" else "Continue with Google",
             onClick = ::signIn,
@@ -137,7 +135,7 @@ internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
             leading = Glyphs.User,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
     }
 }
 
@@ -147,23 +145,23 @@ internal fun SyncErrorScreen(onRetry: () -> Unit, onSignOut: () -> Unit, modifie
     val colors = Pulse.colors
     AtmosphereBackground(modifier) {
         Column(
-            Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Space.screen),
+            Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Pulse.dimens.gutter),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             GlossyIcon(Glyphs.Globe, Gloss.Slate, size = 84.dp)
-            Spacer(Modifier.height(Space.lg))
+            Spacer(Modifier.height(Pulse.dimens.lg))
             Text("Can't reach your account", style = Pulse.type.headline, color = colors.textPrimary, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(Space.sm))
+            Spacer(Modifier.height(Pulse.dimens.sm))
             Text(
                 "You're signed in, but your profile couldn't load. Check your connection and try again.",
                 style = Pulse.type.body,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(Space.xl))
+            Spacer(Modifier.height(Pulse.dimens.xl))
             PrimaryButton("Try again", onRetry, Modifier.fillMaxWidth())
-            Spacer(Modifier.height(Space.sm))
+            Spacer(Modifier.height(Pulse.dimens.sm))
             SecondaryButton("Sign out", onSignOut, Modifier.fillMaxWidth())
         }
     }

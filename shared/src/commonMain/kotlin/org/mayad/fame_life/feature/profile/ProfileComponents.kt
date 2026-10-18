@@ -41,8 +41,6 @@ import org.mayad.fame_life.core.designsystem.icons.GlossyIcon
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.data.content.ArtSpec
 import org.mayad.fame_life.domain.progression.LevelProgress
 
@@ -62,7 +60,7 @@ fun ProfileCover(cover: ArtSpec, avatar: ArtSpec, scroll: Float, ring: AvatarRin
         CreatorAvatar(
             avatar,
             112.dp,
-            Modifier.align(Alignment.BottomStart).padding(start = Space.screen).offset(y = (-4).dp),
+            Modifier.align(Alignment.BottomStart).padding(start = Pulse.dimens.gutter).offset(y = (-4).dp),
             ring = ring,
         )
         overlay()
@@ -77,10 +75,10 @@ fun LevelCard(progress: LevelProgress, modifier: Modifier = Modifier) {
     Row(
         modifier
             .fillMaxWidth()
-            .clip(Shapes.panel)
+            .clip(Pulse.shapes.panel)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.panel)
-            .padding(Space.lg)
+            .border(1.dp, colors.border, Pulse.shapes.panel)
+            .padding(Pulse.dimens.lg)
             .semantics(mergeDescendants = true) {
                 contentDescription = "Fame level ${progress.level.title}, ${progress.points} points" +
                     (progress.pointsToNext?.let { ", $it to next level" } ?: "")
@@ -88,13 +86,13 @@ fun LevelCard(progress: LevelProgress, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         GlossyIcon(Glyphs.Crown, Gloss.Gold, size = 52.dp)
-        Spacer(Modifier.width(Space.lg))
+        Spacer(Modifier.width(Pulse.dimens.lg))
         Column(Modifier.weight(1f)) {
             Text("FAME LEVEL", style = Pulse.type.overline, color = colors.gold)
             Text(progress.level.title, style = Pulse.type.title, color = colors.textPrimary)
-            Spacer(Modifier.height(Space.sm))
-            Box(Modifier.fillMaxWidth().height(8.dp).clip(Shapes.pill).background(colors.surfaceElevated)) {
-                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.02f)).clip(Shapes.pill).background(colors.goldGradient))
+            Spacer(Modifier.height(Pulse.dimens.sm))
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(Pulse.shapes.pill).background(colors.surfaceElevated)) {
+                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.02f)).clip(Pulse.shapes.pill).background(colors.goldGradient))
             }
             Spacer(Modifier.height(6.dp))
             Text(
@@ -113,10 +111,10 @@ fun BadgeTile(badge: Badge, modifier: Modifier = Modifier) {
     val colors = Pulse.colors
     Column(
         modifier
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .background(colors.surface)
-            .border(1.dp, colors.border, Shapes.card)
-            .padding(Space.md)
+            .border(1.dp, colors.border, Pulse.shapes.card)
+            .padding(Pulse.dimens.md)
             .graphicsLayer { alpha = if (badge.unlocked) 1f else 0.45f }
             .semantics(mergeDescendants = true) {
                 contentDescription = "${badge.title}, ${if (badge.unlocked) "unlocked" else "locked"}. ${badge.detail}"
@@ -124,7 +122,7 @@ fun BadgeTile(badge: Badge, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         GlossyIcon(if (badge.unlocked) badge.glyph else Glyphs.Lock, if (badge.unlocked) badge.gloss else Gloss.Slate, size = 52.dp)
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text(badge.title, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 1)
         Text(badge.detail, style = Pulse.type.meta, color = colors.textMuted, maxLines = 2)
     }

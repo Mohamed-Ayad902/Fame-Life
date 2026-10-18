@@ -40,8 +40,6 @@ import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.icons.PulseIcon
 import org.mayad.fame_life.core.designsystem.theme.Pulse
-import org.mayad.fame_life.core.designsystem.theme.Shapes
-import org.mayad.fame_life.core.designsystem.theme.Space
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.core.format.hoursAgoLabel
 import org.mayad.fame_life.data.content.Category
@@ -77,7 +75,7 @@ fun Category.gloss() = when (this) {
 fun CreatorStoryRail(onCreator: (Creator) -> Unit, modifier: Modifier = Modifier) {
     val liveIds = SeedContent.liveRooms.map { it.creatorId }.toSet()
     val ordered = SeedContent.creators.sortedByDescending { it.id in liveIds }
-    LazyRow(modifier, contentPadding = PaddingValues(horizontal = Space.screen), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyRow(modifier, contentPadding = PaddingValues(horizontal = Pulse.dimens.gutter), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         items(ordered, key = { it.id }) { creator ->
             val live = creator.id in liveIds
             Column(
@@ -111,8 +109,8 @@ fun FeaturedLiveHero(room: LiveRoom, parallax: Float, onOpen: () -> Unit, modifi
             .fillMaxWidth()
             .aspectRatio(0.86f)
             .pressable(pressedScale = 0.98f, onClick = onOpen)
-            .clip(Shapes.hero)
-            .border(1.dp, colors.border, Shapes.hero)
+            .clip(Pulse.shapes.hero)
+            .border(1.dp, colors.border, Pulse.shapes.hero)
             .semantics(mergeDescendants = true) { contentDescription = "${creator.displayName}, simulated live: ${room.title}" },
     ) {
         Artwork(
@@ -126,18 +124,18 @@ fun FeaturedLiveHero(room: LiveRoom, parallax: Float, onOpen: () -> Unit, modifi
                 },
         )
         Box(Modifier.fillMaxSize().background(scrimBrush))
-        Row(Modifier.padding(Space.lg), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Row(Modifier.padding(Pulse.dimens.lg), horizontalArrangement = Arrangement.spacedBy(Pulse.dimens.sm)) {
             LiveBadge()
             ViewerPill(room.viewers)
         }
-        Column(Modifier.align(Alignment.BottomStart).padding(Space.xl)) {
+        Column(Modifier.align(Alignment.BottomStart).padding(Pulse.dimens.xl)) {
             Text("FEATURED LIVE", style = Pulse.type.overline, color = colors.cyan)
-            Spacer(Modifier.height(Space.xs))
+            Spacer(Modifier.height(Pulse.dimens.xs))
             Text(room.title, style = Pulse.type.headline, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(Space.md))
+            Spacer(Modifier.height(Pulse.dimens.md))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CreatorAvatar(creator.avatar, 32.dp)
-                Spacer(Modifier.width(Space.sm))
+                Spacer(Modifier.width(Pulse.dimens.sm))
                 Column(Modifier.weight(1f)) {
                     Text(creator.displayName, style = Pulse.type.titleSmall, color = Color.White, maxLines = 1)
                     Text("@${creator.handle} · ${creator.category.label}", style = Pulse.type.meta, color = colors.textSecondary, maxLines = 1)
@@ -160,15 +158,15 @@ fun LiveRoomCard(room: LiveRoom, onOpen: () -> Unit, modifier: Modifier = Modifi
             .width(148.dp)
             .aspectRatio(0.68f)
             .pressable(onClick = onOpen)
-            .clip(Shapes.card)
+            .clip(Pulse.shapes.card)
             .semantics(mergeDescendants = true) { contentDescription = "${creator.displayName}, simulated live: ${room.title}" },
     ) {
         Artwork(room.art, Modifier.fillMaxSize())
         Box(Modifier.fillMaxSize().background(scrimBrush))
-        Row(Modifier.padding(Space.sm), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.padding(Pulse.dimens.sm), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             LiveBadge()
         }
-        Column(Modifier.align(Alignment.BottomStart).padding(Space.md)) {
+        Column(Modifier.align(Alignment.BottomStart).padding(Pulse.dimens.md)) {
             ViewerPill(room.viewers)
             Spacer(Modifier.height(6.dp))
             Text(room.title, style = Pulse.type.titleSmall, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -185,7 +183,7 @@ fun LiveRoomCard(room: LiveRoom, onOpen: () -> Unit, modifier: Modifier = Modifi
 fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val creator = SeedContent.creator(post.creatorId) ?: return
     val colors = Pulse.colors
-    val shape = if (index % 3 == 1) RoundedCornerShape(28.dp, 10.dp, 28.dp, 28.dp) else Shapes.card
+    val shape = if (index % 3 == 1) RoundedCornerShape(28.dp, 10.dp, 28.dp, 28.dp) else Pulse.shapes.card
     Column(modifier.pressable(pressedScale = 0.97f, onClick = onOpen)) {
         Box(
             Modifier
@@ -198,8 +196,8 @@ fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Mo
             Row(
                 Modifier
                     .align(Alignment.BottomStart)
-                    .padding(Space.sm)
-                    .clip(Shapes.tag)
+                    .padding(Pulse.dimens.sm)
+                    .clip(Pulse.shapes.tag)
                     .background(Color(0x8C080B14))
                     .padding(horizontal = 7.dp, vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -209,7 +207,7 @@ fun PostTile(post: Post, index: Int, onOpen: () -> Unit, modifier: Modifier = Mo
                 Text(compactCount(post.likes), style = Pulse.type.meta, color = Color.White)
             }
         }
-        Spacer(Modifier.height(Space.sm))
+        Spacer(Modifier.height(Pulse.dimens.sm))
         Text(post.caption, style = Pulse.type.titleSmall, color = colors.textPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
