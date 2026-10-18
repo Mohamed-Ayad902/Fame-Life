@@ -62,7 +62,7 @@ Icons on feature surfaces are glossy 3D tiles (`GlossyIcon`), not flat glyphs; s
 - Firebase project `live-fame`. Auth is **Google sign-in only** (no email/password). Android: Credential Manager +
   `googleid`, using `default_web_client_id` from `google-services.json`; the debug keystore SHA-1 is registered.
   iOS: GoogleSignIn (SPM) through `iosApp/iosApp/GoogleSignInBridge.swift` → `PulseIos.googleSignIn`; URL scheme =
-  `REVERSED_CLIENT_ID`. iOS bundle id is `org.mayad.famelife.FameLife` (no underscores allowed on iOS).
+  `REVERSED_CLIENT_ID`. iOS bundle id is `org.mayad.famelife` (no underscores allowed on iOS).
   A release keystore needs its own SHA-1 added (`firebase apps:android:sha:create`) before Google sign-in works there.
   Analytics, Crashlytics, App Check, Apple sign-in: not yet.
 - Firestore rules: `firestore.rules`; deployed. Redeploy after changes with `firebase deploy --only firestore --project live-fame`.

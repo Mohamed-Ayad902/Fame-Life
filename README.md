@@ -34,7 +34,7 @@ Firebase is already connected on Android through `androidApp/google-services.jso
 
 ### iOS
 
-1. `iosApp/iosApp/GoogleService-Info.plist` is already in the repo (iOS bundle id `org.mayad.famelife.FameLife`;
+1. `iosApp/iosApp/GoogleService-Info.plist` is already in the repo (iOS bundle id `org.mayad.famelife`;
    iOS bundle ids can't contain underscores, so it differs from the Android package `org.mayad.fame_life`).
 2. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK and GoogleSignIn (Swift
    Package Manager); give it a minute.
@@ -226,5 +226,5 @@ the iOS test binary needs the Firebase frameworks on its search path. The same t
 - Google sign-in provider: enabled in the console.
 - Firestore rules and indexes: deployed.
 - Android app: debug SHA-1 registered, `google-services.json` includes the web client id.
-- iOS app `org.mayad.famelife.FameLife`: registered, `GoogleService-Info.plist` committed.
+- iOS app `org.mayad.famelife`: registered, `GoogleService-Info.plist` committed.
 - Still to do before a store release: register the release keystore SHA-1; add Apple sign-in for iOS.
