@@ -116,7 +116,7 @@ fun OnboardingFlow(modifier: Modifier = Modifier) {
                 )
                 IntroStep.HOW_IT_WORKS -> HowItWorksStep(current.ordinal, total) { stepName = IntroStep.HONESTY.name }
                 IntroStep.HONESTY -> HonestyStep(current.ordinal, total) { stepName = IntroStep.ACCOUNT.name }
-                IntroStep.ACCOUNT -> AccountStep(current.ordinal, total, startInSignIn)
+                IntroStep.ACCOUNT -> AccountStep(current.ordinal, total, returning = startInSignIn)
             }
         }
     }

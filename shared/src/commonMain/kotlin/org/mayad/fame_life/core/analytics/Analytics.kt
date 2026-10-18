@@ -29,10 +29,9 @@ sealed class AnalyticsEvent(val name: String, val params: Map<String, Any> = emp
     data class PermissionResult(val camera: Boolean, val mic: Boolean) : AnalyticsEvent("live_permissions", mapOf("camera" to camera, "mic" to mic))
     data object PaywallViewed : AnalyticsEvent("paywall_viewed")
     data object SignupStarted : AnalyticsEvent("signup_started")
-    data object SignupCompleted : AnalyticsEvent("sign_up", mapOf("method" to "password"))
-    data object SignInCompleted : AnalyticsEvent("login", mapOf("method" to "password"))
+    data object SignupCompleted : AnalyticsEvent("sign_up", mapOf("method" to "google"))
+    data object SignInCompleted : AnalyticsEvent("login", mapOf("method" to "google"))
     data class AuthFailed(val kind: String) : AnalyticsEvent("auth_failed", mapOf("error_category" to kind))
-    data object PasswordResetRequested : AnalyticsEvent("password_reset_requested")
     data object SignedOut : AnalyticsEvent("signed_out")
     data object AccountDeleted : AnalyticsEvent("account_deleted")
 }

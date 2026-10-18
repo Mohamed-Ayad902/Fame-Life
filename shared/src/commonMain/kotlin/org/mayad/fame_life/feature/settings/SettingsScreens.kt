@@ -37,14 +37,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.launch
 import org.mayad.fame_life.data.cloud.SyncState
 import org.mayad.fame_life.domain.account.AuthException
 import org.mayad.fame_life.domain.account.AuthRules
 import org.mayad.fame_life.domain.account.AuthState
-import org.mayad.fame_life.core.designsystem.components.PulseTextField
 import androidx.compose.ui.unit.dp
 import org.mayad.fame_life.app.AppConfig
 import org.mayad.fame_life.app.LocalAppContainer
@@ -198,13 +196,12 @@ fun SettingsScreen(navigator: Navigator) {
     if (confirmDelete) DeleteAccountDialog(onDismiss = { confirmDelete = false })
 }
 
-/** Account deletion needs the password again: Firebase only deletes accounts with a recent sign-in. */
+/** Account deletion re-confirms the Google account: Firebase only deletes accounts with a recent sign-in. */
 @Composable
 private fun DeleteAccountDialog(onDismiss: () -> Unit) {
     val container = LocalAppContainer.current
     val colors = Pulse.colors
     val scope = rememberCoroutineScope()
-    var password by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
     AlertDialog(
@@ -214,39 +211,34 @@ private fun DeleteAccountDialog(onDismiss: () -> Unit) {
         text = {
             Column {
                 Text(
-                    "This permanently removes your account, profile, live history and inbox from our servers and this device. It can't be undone.",
+                    "This permanently removes your account, profile, live history and inbox from our servers and this device. " +
+                        "It can't be undone. You'll pick your Google account once more to confirm.",
                     style = Pulse.type.body,
                     color = colors.textSecondary,
                 )
-                Spacer(Modifier.height(Space.lg))
-                PulseTextField(
-                    password,
-                    { password = it },
-                    "Confirm with your password",
-                    keyboardType = KeyboardType.Password,
-                    secret = true,
-                    maxLength = 128,
-                    error = failure,
-                )
+                if (failure != null) {
+                    Spacer(Modifier.height(Space.md))
+                    Text(failure!!, style = Pulse.type.bodySmall, color = colors.error)
+                }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = password.isNotEmpty() && !busy,
+                enabled = !busy,
                 onClick = {
                     busy = true
                     failure = null
                     scope.launch {
                         try {
                             // On success the auth state flips to signed out and the app returns to the welcome screens.
-                            container.deleteAccount(password)
+                            container.deleteAccount()
                         } catch (e: AuthException) {
                             failure = AuthRules.message(e.kind)
                             busy = false
                         }
                     }
                 },
-            ) { Text(if (busy) "Deleting…" else "Delete forever", style = Pulse.type.label, color = colors.error) }
+            ) { Text(if (busy) "Deleting…" else "Confirm with Google", style = Pulse.type.label, color = colors.error) }
         },
         dismissButton = {
             TextButton(enabled = !busy, onClick = onDismiss) { Text("Keep", style = Pulse.type.label, color = colors.textPrimary) }

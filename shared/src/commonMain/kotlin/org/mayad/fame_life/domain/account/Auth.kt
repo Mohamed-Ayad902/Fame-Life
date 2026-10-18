@@ -16,10 +16,12 @@ sealed interface AuthState {
 
 /** Why an account operation failed, independent of the SDK's exception types. */
 enum class AuthErrorKind {
-    INVALID_EMAIL,
-    WEAK_PASSWORD,
-    EMAIL_IN_USE,
-    WRONG_CREDENTIALS,
+    /** The user closed the Google account picker. Not an error worth shouting about. */
+    CANCELLED,
+    /** No Google account on the device (Android) or Google sign-in is unavailable. */
+    NO_GOOGLE_ACCOUNT,
+    /** Re-confirmation used a different Google account than the signed-in one. */
+    WRONG_ACCOUNT,
     TOO_MANY_REQUESTS,
     NETWORK,
     REQUIRES_RECENT_LOGIN,
@@ -29,67 +31,58 @@ enum class AuthErrorKind {
 
 class AuthException(val kind: AuthErrorKind, cause: Throwable? = null) : Exception(kind.name, cause)
 
+/** What Google returns after the user picks an account. Passed straight to Firebase, never stored. */
+data class GoogleTokens(val idToken: String, val accessToken: String? = null)
+
 /**
- * Account identity. Screens and sync code depend on this interface only; [FirebaseAuthService] is the real one and
- * tests use a fake. Every suspend function throws [AuthException] on failure.
+ * Shows the platform's Google account picker and returns tokens. Android uses Credential Manager; iOS uses the
+ * GoogleSignIn SDK through a small Swift bridge. Throws [AuthException] ([AuthErrorKind.CANCELLED] when dismissed).
+ */
+fun interface GoogleTokenProvider {
+    suspend fun requestTokens(): GoogleTokens
+}
+
+/**
+ * Account identity: Google accounts only. Screens and sync code depend on this interface; [FirebaseAuthService]
+ * is the real one and tests use a fake. Every suspend function throws [AuthException] on failure.
  */
 interface AuthService {
     val state: StateFlow<AuthState>
 
-    suspend fun signUp(email: String, password: String): AccountUser
-    suspend fun signIn(email: String, password: String): AccountUser
-    suspend fun sendPasswordReset(email: String)
+    /** Picks a Google account and signs in to Firebase with it. New accounts are created on first sign-in. */
+    suspend fun signInWithGoogle(): AccountUser
     suspend fun signOut()
 
-    /** Confirms the password again. Firebase refuses to delete an account whose sign-in is not recent. */
-    suspend fun reauthenticate(password: String)
+    /** Confirms the same Google account again. Firebase refuses to delete an account whose sign-in is not recent. */
+    suspend fun reauthenticateWithGoogle()
 
-    /** Deletes the signed-in account itself. Call [reauthenticate] first. */
+    /** Deletes the signed-in account itself. Call [reauthenticateWithGoogle] first. */
     suspend fun deleteCurrentUser()
 }
 
 /**
- * Used when the build has no Firebase configuration (for example iOS before `GoogleService-Info.plist` is added).
- * The welcome screens still work; the account step explains that sign-in is unavailable on this build.
+ * Used when the build has no Firebase configuration. The welcome screens still work; the account step explains
+ * that sign-in is unavailable on this build.
  */
 class UnavailableAuthService : AuthService {
     override val state: StateFlow<AuthState> = MutableStateFlow<AuthState>(AuthState.SignedOut).asStateFlow()
     private fun unavailable(): Nothing = throw AuthException(AuthErrorKind.NOT_CONFIGURED)
-    override suspend fun signUp(email: String, password: String): AccountUser = unavailable()
-    override suspend fun signIn(email: String, password: String): AccountUser = unavailable()
-    override suspend fun sendPasswordReset(email: String) = unavailable()
+    override suspend fun signInWithGoogle(): AccountUser = unavailable()
     override suspend fun signOut() = Unit
-    override suspend fun reauthenticate(password: String) = unavailable()
+    override suspend fun reauthenticateWithGoogle() = unavailable()
     override suspend fun deleteCurrentUser() = unavailable()
 }
 
-/** Client-side checks and user-facing copy. Firebase still validates everything on its side. */
+/** User-facing copy for account failures. */
 object AuthRules {
-    const val PASSWORD_MIN = 8
-    private val emailShape = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
-
-    fun normalizeEmail(email: String): String = email.trim().lowercase()
-
-    fun emailError(email: String): String? = when {
-        email.isBlank() -> "Enter your email"
-        !emailShape.matches(normalizeEmail(email)) -> "That doesn't look like an email address"
-        else -> null
-    }
-
-    fun passwordError(password: String): String? = when {
-        password.length < PASSWORD_MIN -> "Use at least $PASSWORD_MIN characters"
-        password.none { it.isLetter() } || password.none { it.isDigit() } -> "Mix letters and numbers"
-        else -> null
-    }
-
-    fun message(kind: AuthErrorKind): String = when (kind) {
-        AuthErrorKind.INVALID_EMAIL -> "That email address isn't valid."
-        AuthErrorKind.WEAK_PASSWORD -> "That password is too weak. Try a longer one."
-        AuthErrorKind.EMAIL_IN_USE -> "An account already uses this email. Sign in instead."
-        AuthErrorKind.WRONG_CREDENTIALS -> "Email or password is incorrect."
+    /** Null for failures the user caused on purpose (closing the picker), which need no message. */
+    fun message(kind: AuthErrorKind): String? = when (kind) {
+        AuthErrorKind.CANCELLED -> null
+        AuthErrorKind.NO_GOOGLE_ACCOUNT -> "Add a Google account to this device, then try again."
+        AuthErrorKind.WRONG_ACCOUNT -> "Pick the same Google account you're signed in with."
         AuthErrorKind.TOO_MANY_REQUESTS -> "Too many attempts. Wait a minute and try again."
         AuthErrorKind.NETWORK -> "You're offline. Check your connection and try again."
-        AuthErrorKind.REQUIRES_RECENT_LOGIN -> "For your security, confirm your password and try again."
+        AuthErrorKind.REQUIRES_RECENT_LOGIN -> "For your security, confirm your Google account and try again."
         AuthErrorKind.NOT_CONFIGURED -> "Accounts aren't set up in this build yet. The developer needs to add the Firebase configuration."
         AuthErrorKind.UNKNOWN -> "Something went wrong. Please try again."
     }

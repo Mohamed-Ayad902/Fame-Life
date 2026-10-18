@@ -10,6 +10,7 @@
 		A1F1000000000000000000B1 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1F1000000000000000000C1 /* FirebaseCore */; };
 		A1F1000000000000000000B2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1F1000000000000000000C2 /* FirebaseAuth */; };
 		A1F1000000000000000000B3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A1F1000000000000000000C3 /* FirebaseFirestore */; };
+		A1F1000000000000000000B4 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A1F1000000000000000000C4 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 				A1F1000000000000000000B1 /* FirebaseCore in Frameworks */,
 				A1F1000000000000000000B2 /* FirebaseAuth in Frameworks */,
 				A1F1000000000000000000B3 /* FirebaseFirestore in Frameworks */,
+				A1F1000000000000000000B4 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 				A1F1000000000000000000C1 /* FirebaseCore */,
 				A1F1000000000000000000C2 /* FirebaseAuth */,
 				A1F1000000000000000000C3 /* FirebaseFirestore */,
+				A1F1000000000000000000C4 /* GoogleSignIn */,
 			);
 			productName = iosApp;
 			productReference = 480C76ED99B1CDFD77E4CA84 /* Fame Life.app */;
@@ -128,6 +131,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A1F1000000000000000000A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				A1F1000000000000000000A1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0F69599390D06D6533A33C91 /* Products */;
@@ -393,6 +397,14 @@
 				minimumVersion = 11.8.0;
 			};
 		};
+		A1F1000000000000000000A1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -410,6 +422,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1F1000000000000000000A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		A1F1000000000000000000C4 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1F1000000000000000000A1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

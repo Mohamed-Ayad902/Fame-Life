@@ -39,7 +39,8 @@ Configured project: `live-fame`. Library: GitLive `firebase-kotlin-sdk` (`dev.gi
 `iosApp.xcodeproj`, as GitLive requires.
 
 ```
-AuthService (domain/account)  ← FirebaseAuthService (data/cloud), UnavailableAuthService when Firebase isn't configured
+AuthService (domain/account)  ← FirebaseAuthService (data/cloud, Google only), UnavailableAuthService when Firebase isn't configured
+GoogleTokenProvider           ← Credential Manager (Android) / GoogleSignIn via Swift bridge (iOS)
 CloudStore (data/cloud)       ← FirestoreCloudStore
 AccountSync (data/cloud)      — pulls on sign-in, mirrors local changes up, wipes the cache on sign-out
 Profile/SessionHistory/NotificationRepository (data/local) — the device cache screens read (StateFlow)
@@ -51,7 +52,7 @@ Profile/SessionHistory/NotificationRepository (data/local) — the device cache 
 - The cache is tagged with its owner uid (`account.owner.v1`). A different account signing in, or a sign-out, clears it.
 - `App.kt` gates the root on `AuthState` + `SyncState`: splash → welcome/onboarding (signed out) → profile setup (signed
   in, no profile) → main. Offline with a cached profile still opens the app; offline with nothing cached shows a retry.
-- Account deletion (Settings): re-authenticate with the password → delete Firestore docs → delete the Firebase user →
+- Account deletion (Settings): re-confirm the same Google account → delete Firestore docs → delete the Firebase user →
   clear the device. Nothing local is removed if the cloud step fails.
 
 | Path | Contents | Who writes |
@@ -65,8 +66,9 @@ Profile/SessionHistory/NotificationRepository (data/local) — the device cache 
 Rules live in `firestore.rules` (owner-only, field validation, server-only entitlements and usage); deploy with
 `firebase deploy --only firestore --project live-fame`. No per-tick live data and no transcripts are written.
 
-Still planned: Functions/Run (audience generation, purchase verification, entitlement and quota writes), App Check,
-Analytics forwarding (`AnalyticsEvent` names already follow Firebase rules), Crashlytics, Google/Apple sign-in.
+Rules are deployed. Still planned: Functions/Run (audience generation, purchase verification, entitlement and quota
+writes), App Check, Analytics forwarding (`AnalyticsEvent` names already follow Firebase rules), Crashlytics, Apple
+sign-in.
 
 ## Entitlements
 

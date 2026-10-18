@@ -56,7 +56,7 @@ class AccountSyncTest {
     @Test
     fun newAccountIsReadyWithoutAProfileAndItsFirstProfileIsSavedUnderItsUid() = runTest {
         val rig = rig()
-        val user = rig.auth.signUp("Mo@Example.com", "secret123")
+        val user = rig.auth.signInAs("mo@example.com")
         runCurrent()
         assertEquals(SyncState.Ready(), rig.sync.state.value)
         assertNull(rig.profiles.profile.value)
@@ -69,14 +69,14 @@ class AccountSyncTest {
     @Test
     fun signInPullsProfileHistoryAndInboxNewestFirst() = runTest {
         val rig = rig()
-        val user = rig.auth.signUp("mo@example.com", "secret123")
+        val user = rig.auth.signInAs("mo@example.com")
         rig.auth.signOut()
         rig.cloud.profiles[user.uid] = profile("Cloud")
         rig.cloud.sessions[user.uid] = (1..5).associate { "s$it" to summary("s$it", it.toLong()) }.toMutableMap()
         rig.cloud.notifications[user.uid] = mutableMapOf("n1" to InAppNotification("n1", "k", "t", "b", 5))
         runCurrent()
 
-        rig.auth.signIn("mo@example.com", "secret123")
+        rig.auth.signInAs("mo@example.com")
         runCurrent()
         assertEquals("Cloud", rig.profiles.profile.value?.displayName)
         assertEquals(listOf("s5", "s4", "s3"), rig.history.sessions.value.map { it.id }, "bounded to the plan's history size")
@@ -87,7 +87,7 @@ class AccountSyncTest {
     @Test
     fun signOutWipesTheDeviceCache() = runTest {
         val rig = rig()
-        rig.auth.signUp("mo@example.com", "secret123")
+        rig.auth.signInAs("mo@example.com")
         runCurrent()
         rig.profiles.save(profile())
         rig.history.save(summary("a", 1), keep = 3)
@@ -143,7 +143,7 @@ class AccountSyncTest {
     @Test
     fun sessionsTrimmedFromHistoryAreDeletedInTheCloud() = runTest {
         val rig = rig()
-        val user = rig.auth.signUp("mo@example.com", "secret123")
+        val user = rig.auth.signInAs("mo@example.com")
         runCurrent()
         listOf("a", "b", "c").forEachIndexed { i, id -> rig.history.save(summary(id, i.toLong()), keep = 2) }
         runCurrent()
@@ -153,7 +153,7 @@ class AccountSyncTest {
     @Test
     fun readingTheInboxMirrorsOnlyChangedNotifications() = runTest {
         val rig = rig()
-        val user = rig.auth.signUp("mo@example.com", "secret123")
+        val user = rig.auth.signInAs("mo@example.com")
         runCurrent()
         rig.notifications.add(InAppNotification("n1", "k", "t", "b", 1))
         runCurrent()
@@ -166,19 +166,21 @@ class AccountSyncTest {
     }
 
     @Test
-    fun deletingTheAccountNeedsThePasswordAndRemovesEverything() = runTest {
+    fun deletingTheAccountNeedsTheSameGoogleAccountAndRemovesEverything() = runTest {
         val rig = rig()
-        val user = rig.auth.signUp("mo@example.com", "secret123")
+        val user = rig.auth.signInAs("mo@example.com")
         runCurrent()
         rig.profiles.save(profile())
         rig.history.save(summary("a", 1), keep = 3)
         runCurrent()
 
-        val wrong = assertFailsWith<AuthException> { rig.sync.deleteAccount("nope") }
-        assertEquals(AuthErrorKind.WRONG_CREDENTIALS, wrong.kind)
-        assertNotNull(rig.cloud.profiles[user.uid], "nothing is deleted when the password is wrong")
+        rig.auth.picked = "someone-else@example.com"
+        val wrong = assertFailsWith<AuthException> { rig.sync.deleteAccount() }
+        assertEquals(AuthErrorKind.WRONG_ACCOUNT, wrong.kind)
+        assertNotNull(rig.cloud.profiles[user.uid], "nothing is deleted when a different Google account confirms")
 
-        rig.sync.deleteAccount("secret123")
+        rig.auth.picked = "mo@example.com"
+        rig.sync.deleteAccount()
         runCurrent()
         assertNull(rig.cloud.profiles[user.uid])
         assertNull(rig.cloud.sessions[user.uid])
@@ -189,12 +191,12 @@ class AccountSyncTest {
     @Test
     fun accountIsKeptWhenCloudDeletionFails() = runTest {
         val rig = rig()
-        rig.auth.signUp("mo@example.com", "secret123")
+        rig.auth.signInAs("mo@example.com")
         runCurrent()
         rig.profiles.save(profile())
         runCurrent()
         rig.cloud.offline = true
-        assertFailsWith<AuthException> { rig.sync.deleteAccount("secret123") }
+        assertFailsWith<AuthException> { rig.sync.deleteAccount() }
         assertTrue(rig.auth.deleted.isEmpty())
         assertNotNull(rig.profiles.profile.value)
     }

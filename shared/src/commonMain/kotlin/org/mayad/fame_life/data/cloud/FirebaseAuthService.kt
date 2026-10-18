@@ -3,14 +3,10 @@ package org.mayad.fame_life.data.cloud
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseNetworkException
 import dev.gitlive.firebase.FirebaseTooManyRequestsException
-import dev.gitlive.firebase.auth.EmailAuthProvider
-import dev.gitlive.firebase.auth.FirebaseAuthException
-import dev.gitlive.firebase.auth.FirebaseAuthInvalidCredentialsException
 import dev.gitlive.firebase.auth.FirebaseAuthInvalidUserException
 import dev.gitlive.firebase.auth.FirebaseAuthRecentLoginRequiredException
-import dev.gitlive.firebase.auth.FirebaseAuthUserCollisionException
-import dev.gitlive.firebase.auth.FirebaseAuthWeakPasswordException
 import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.GoogleAuthProvider
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -21,12 +17,12 @@ import kotlinx.coroutines.flow.stateIn
 import org.mayad.fame_life.domain.account.AccountUser
 import org.mayad.fame_life.domain.account.AuthErrorKind
 import org.mayad.fame_life.domain.account.AuthException
-import org.mayad.fame_life.domain.account.AuthRules
 import org.mayad.fame_life.domain.account.AuthService
 import org.mayad.fame_life.domain.account.AuthState
+import org.mayad.fame_life.domain.account.GoogleTokenProvider
 
-/** Email and password accounts through Firebase Authentication (GitLive Kotlin Multiplatform SDK). */
-class FirebaseAuthService(scope: CoroutineScope) : AuthService {
+/** Google accounts through Firebase Authentication (GitLive Kotlin Multiplatform SDK). */
+class FirebaseAuthService(scope: CoroutineScope, private val google: GoogleTokenProvider) : AuthService {
     private val auth = Firebase.auth
 
     // Firebase restores the persisted user before the first listener callback, so the initial value is usually final.
@@ -34,28 +30,24 @@ class FirebaseAuthService(scope: CoroutineScope) : AuthService {
         .map { it.toState() }
         .stateIn(scope, SharingStarted.Eagerly, auth.currentUser.toState())
 
-    override suspend fun signUp(email: String, password: String): AccountUser = mapped {
-        auth.createUserWithEmailAndPassword(AuthRules.normalizeEmail(email), password).user?.toAccount()
-            ?: throw AuthException(AuthErrorKind.UNKNOWN)
+    override suspend fun signInWithGoogle(): AccountUser {
+        val tokens = google.requestTokens()
+        return mapped {
+            auth.signInWithCredential(GoogleAuthProvider.credential(tokens.idToken, tokens.accessToken)).user?.toAccount()
+                ?: throw AuthException(AuthErrorKind.UNKNOWN)
+        }
     }
-
-    override suspend fun signIn(email: String, password: String): AccountUser = mapped {
-        auth.signInWithEmailAndPassword(AuthRules.normalizeEmail(email), password).user?.toAccount()
-            ?: throw AuthException(AuthErrorKind.UNKNOWN)
-    }
-
-    override suspend fun sendPasswordReset(email: String) = mapped { auth.sendPasswordResetEmail(AuthRules.normalizeEmail(email)) }
 
     override suspend fun signOut() = mapped { auth.signOut() }
 
-    override suspend fun reauthenticate(password: String) = mapped {
-        val user = auth.currentUser ?: throw AuthException(AuthErrorKind.WRONG_CREDENTIALS)
-        val email = user.email ?: throw AuthException(AuthErrorKind.UNKNOWN)
-        user.reauthenticate(EmailAuthProvider.credential(email, password))
+    override suspend fun reauthenticateWithGoogle() {
+        val user = auth.currentUser ?: throw AuthException(AuthErrorKind.WRONG_ACCOUNT)
+        val tokens = google.requestTokens()
+        mapped { user.reauthenticate(GoogleAuthProvider.credential(tokens.idToken, tokens.accessToken)) }
     }
 
     override suspend fun deleteCurrentUser() = mapped {
-        (auth.currentUser ?: throw AuthException(AuthErrorKind.WRONG_CREDENTIALS)).delete()
+        (auth.currentUser ?: throw AuthException(AuthErrorKind.WRONG_ACCOUNT)).delete()
     }
 
     private fun FirebaseUser?.toState(): AuthState = if (this == null) AuthState.SignedOut else AuthState.SignedIn(toAccount())
@@ -74,18 +66,9 @@ class FirebaseAuthService(scope: CoroutineScope) : AuthService {
     private fun classify(e: Exception): AuthErrorKind = when (e) {
         is FirebaseNetworkException -> AuthErrorKind.NETWORK
         is FirebaseTooManyRequestsException -> AuthErrorKind.TOO_MANY_REQUESTS
-        is FirebaseAuthWeakPasswordException -> AuthErrorKind.WEAK_PASSWORD
-        is FirebaseAuthUserCollisionException -> AuthErrorKind.EMAIL_IN_USE
         is FirebaseAuthRecentLoginRequiredException -> AuthErrorKind.REQUIRES_RECENT_LOGIN
-        is FirebaseAuthInvalidUserException -> AuthErrorKind.WRONG_CREDENTIALS
-        // Firebase reports bad emails and wrong passwords with the same exception type; the message tells them apart.
-        is FirebaseAuthInvalidCredentialsException ->
-            if (e.message.orEmpty().contains("email", ignoreCase = true) && e.message.orEmpty().contains("badly formatted", ignoreCase = true)) {
-                AuthErrorKind.INVALID_EMAIL
-            } else {
-                AuthErrorKind.WRONG_CREDENTIALS
-            }
-        is FirebaseAuthException -> AuthErrorKind.UNKNOWN
-        else -> AuthErrorKind.UNKNOWN
+        // Re-authenticating with a different Google account reports a user mismatch.
+        is FirebaseAuthInvalidUserException -> AuthErrorKind.WRONG_ACCOUNT
+        else -> if (e.message.orEmpty().contains("mismatch", ignoreCase = true)) AuthErrorKind.WRONG_ACCOUNT else AuthErrorKind.UNKNOWN
     }
 }

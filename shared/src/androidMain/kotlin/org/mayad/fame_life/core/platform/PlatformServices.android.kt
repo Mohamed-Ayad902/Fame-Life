@@ -1,7 +1,9 @@
 package org.mayad.fame_life.core.platform
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import java.lang.ref.WeakReference
 import android.content.Intent
 import android.content.SharedPreferences
 import android.provider.Settings
@@ -16,8 +18,13 @@ object PulseAndroid {
     internal lateinit var appContext: Context
         private set
 
-    fun init(context: Context) {
-        appContext = context.applicationContext
+    // The account picker needs an Activity; held weakly so a destroyed Activity is never leaked.
+    private var activityRef: WeakReference<Activity>? = null
+    internal val activity: Activity? get() = activityRef?.get()
+
+    fun init(activity: Activity) {
+        activityRef = WeakReference(activity)
+        appContext = activity.applicationContext
         // Firebase's content provider normally does this from google-services.json; calling it again is a no-op,
         // and it makes start-up order explicit. Returns null (and accounts stay unavailable) without that file.
         if (Firebase.apps(appContext).isEmpty()) Firebase.initialize(appContext)

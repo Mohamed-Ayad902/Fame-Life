@@ -10,6 +10,7 @@ import org.mayad.fame_life.core.analytics.AnalyticsEvent
 import org.mayad.fame_life.core.analytics.InMemoryAnalytics
 import org.mayad.fame_life.core.platform.TextStore
 import org.mayad.fame_life.core.platform.createSpeechInput
+import org.mayad.fame_life.core.platform.createGoogleTokenProvider
 import org.mayad.fame_life.core.platform.createTextStore
 import org.mayad.fame_life.core.platform.isFirebaseConfigured
 import org.mayad.fame_life.data.cloud.AccountSync
@@ -40,7 +41,7 @@ class AppContainer(
     store: TextStore = createTextStore(),
     val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
     firebase: Boolean = isFirebaseConfigured(),
-    val auth: AuthService = if (firebase) FirebaseAuthService(scope) else UnavailableAuthService(),
+    val auth: AuthService = if (firebase) FirebaseAuthService(scope, createGoogleTokenProvider()) else UnavailableAuthService(),
     cloud: CloudStore? = if (firebase) FirestoreCloudStore() else null,
 ) {
     private val reportCorruption: (String, Throwable) -> Unit = { key, error ->
@@ -78,8 +79,8 @@ class AppContainer(
     val speechInput: SpeechInput? by lazy { createSpeechInput() }
 
     /** Deletes the account, its cloud documents and this device's cache. Throws AuthException. */
-    suspend fun deleteAccount(password: String) {
-        account.deleteAccount(password)
+    suspend fun deleteAccount() {
+        account.deleteAccount()
         analytics.log(AnalyticsEvent.AccountDeleted)
     }
 

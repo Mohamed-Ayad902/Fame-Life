@@ -1,9 +1,13 @@
 package org.mayad.fame_life.core.platform
 
+import org.mayad.fame_life.domain.account.GoogleTokenProvider
 import org.mayad.fame_life.domain.ai.SpeechInput
 import kotlin.time.TimeSource
 
 expect fun createTextStore(): TextStore
+
+/** The platform's Google account picker (Credential Manager on Android, GoogleSignIn on iOS). */
+expect fun createGoogleTokenProvider(): GoogleTokenProvider
 
 /** True when the host app initialized Firebase (Android: google-services.json; iOS: GoogleService-Info.plist). */
 expect fun isFirebaseConfigured(): Boolean

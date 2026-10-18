@@ -12,7 +12,20 @@
           "package_name": "org.mayad.fame_life"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "381658086645-8114ocr5qhvp2ss5fpiet2rlkg393gdk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.mayad.fame_life",
+            "certificate_hash": "0db41b8685c133a102e1d135164177d1432650a5"
+          }
+        },
+        {
+          "client_id": "381658086645-i8078miogqjnu8rk0nd96akfjd9lpcuc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBKOYOf08Y-8RS9zReEX302cZf2Uh2TXes"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381658086645-i8078miogqjnu8rk0nd96akfjd9lpcuc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "381658086645-65chc0vg9vi4ekbam0rp8jsd0j43b0to.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.mayad.famelife.FameLife"
+              }
+            }
+          ]
         }
       }
     }

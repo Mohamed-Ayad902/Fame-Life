@@ -122,12 +122,13 @@ class AccountSync(
     suspend fun signOut() = auth.signOut()
 
     /**
-     * Deletes the account: confirms the password, removes every cloud document, deletes the Firebase user, then wipes
-     * this device. Throws [AuthException]; nothing on the device is removed unless the cloud deletion succeeded.
+     * Deletes the account: confirms the Google account again, removes every cloud document, deletes the Firebase
+     * user, then wipes this device. Throws [AuthException]; nothing on the device is removed unless the cloud
+     * deletion succeeded.
      */
-    suspend fun deleteAccount(password: String) {
-        val uid = uid ?: throw AuthException(AuthErrorKind.WRONG_CREDENTIALS)
-        auth.reauthenticate(password)
+    suspend fun deleteAccount() {
+        val uid = uid ?: throw AuthException(AuthErrorKind.WRONG_ACCOUNT)
+        auth.reauthenticateWithGoogle()
         try {
             cloud?.deleteEverything(uid)
         } catch (e: CancellationException) {

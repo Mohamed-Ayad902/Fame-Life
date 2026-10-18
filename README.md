@@ -9,7 +9,7 @@ number could be mistaken for real reach. Keep it that way. The rules every contr
 [`CLAUDE.md`](CLAUDE.md); the deeper design notes are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 - **Platforms:** Android and iOS from one Kotlin codebase (Kotlin Multiplatform + Compose Multiplatform).
-- **Accounts and data:** Firebase Authentication (email and password) and Cloud Firestore, project `live-fame`.
+- **Accounts and data:** Firebase Authentication with Google sign-in, and Cloud Firestore, project `live-fame`.
 - **Working name:** "Pulse". Brand strings live in `AppConfig` (`shared/.../app/AppContainer.kt`).
 
 ---
@@ -34,12 +34,10 @@ Firebase is already connected on Android through `androidApp/google-services.jso
 
 ### iOS
 
-1. Add the Firebase config file (only once): download `GoogleService-Info.plist` for the iOS app with bundle id
-   `org.mayad.fame_life.FameLife` from the Firebase console (project `live-fame`) and drop it into `iosApp/iosApp/`.
-   The Xcode project picks up every file in that folder automatically. Without this file the app still runs, but
-   the sign-in step says accounts aren't set up in this build.
-2. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK (Swift Package Manager);
-   give it a minute.
+1. `iosApp/iosApp/GoogleService-Info.plist` is already in the repo (iOS bundle id `org.mayad.famelife.FameLife`;
+   iOS bundle ids can't contain underscores, so it differs from the Android package `org.mayad.fame_life`).
+2. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK and GoogleSignIn (Swift
+   Package Manager); give it a minute.
 3. Pick an iPhone simulator and press Run. Xcode runs Gradle for you to build the shared Kotlin code.
 
 From the terminal instead:
@@ -56,8 +54,9 @@ If `xcodebuild` says it "requires Xcode", your Mac points at the Command Line To
 
 ### First launch
 
-Splash → welcome → "How a live works" → "Before you start" (what's simulated) → create an account → pick your
-name and look → interests → home. Next time you open the app you go straight home.
+Splash → welcome → "How a live works" → "Before you start" (what's simulated) → Continue with Google → pick your
+name and look → interests → home. On Android, Google sign-in needs a Google account on the device or emulator
+(an emulator image "with Google Play"). Next time you open the app you go straight home.
 
 ---
 
@@ -139,9 +138,14 @@ decides if and when it shows, and what the totals are.
   `iosApp/iosApp/iOSApp.swift` when `GoogleService-Info.plist` is bundled.
 - **Choosing real or "not configured":** `AppContainer` checks `isFirebaseConfigured()`. If false it uses
   `UnavailableAuthService`, so the app runs and says plainly that sign-in isn't set up.
-- **Accounts:** `domain/account/Auth.kt` defines `AuthService` (sign up, sign in, password reset, sign out,
-  re-authenticate, delete). `data/cloud/FirebaseAuthService.kt` implements it with GitLive's Firebase SDK and turns
-  Firebase errors into `AuthErrorKind`, which `AuthRules.message` turns into friendly copy.
+- **Accounts (Google only):** `domain/account/Auth.kt` defines `AuthService` (sign in with Google, sign out,
+  re-confirm, delete) and `GoogleTokenProvider` (shows the platform account picker). `FirebaseAuthService` turns the
+  Google token into a Firebase credential. The picker is `GoogleSignIn.android.kt` (Credential Manager) on Android
+  and `GoogleSignInBridge.swift` (GoogleSignIn SDK) on iOS, handed to Kotlin through `PulseIos.googleSignIn`.
+  Errors become `AuthErrorKind`, which `AuthRules.message` turns into friendly copy (closing the picker shows none).
+- **Google sign-in keys:** Android needs each signing key's SHA-1 registered in Firebase (debug is done; add the
+  release key with `firebase apps:android:sha:create <appId> <sha1> --project live-fame`, then re-download
+  `google-services.json`). iOS needs the `REVERSED_CLIENT_ID` URL scheme in `Info.plist` (done).
 - **Data:** screens never talk to Firestore. They read the repositories in `data/local/` (plain `StateFlow`s).
   `AccountSync` (`data/cloud/AccountSync.kt`):
   - on sign-in, loads `users/{uid}`, the newest sessions and the inbox into those repositories;
@@ -149,7 +153,7 @@ decides if and when it shows, and what the totals are.
   - on sign-out (or a different account), wipes the device cache.
 - **Firestore layout:** `users/{uid}` (profile), `users/{uid}/sessions/{id}`, `users/{uid}/notifications/{id}`.
   `entitlements/{uid}` and `usage/{uid}` are reserved for the server; the app never writes them.
-- **Rules:** `firestore.rules`. Deploy them with the Firebase CLI:
+- **Rules:** `firestore.rules`, already deployed. After editing, redeploy with
   `firebase deploy --only firestore --project live-fame`.
 - **Library:** [GitLive firebase-kotlin-sdk](https://github.com/GitLiveApp/firebase-kotlin-sdk) 2.7.0 in
   `commonMain`. On iOS it needs the real Firebase iOS SDK linked, which the Xcode project does through Swift Package
@@ -210,18 +214,17 @@ the iOS test binary needs the Firebase frameworks on its search path. The same t
 - **Billing.** Everyone is on Free. Pro must come from a server-verified purchase written to `entitlements/{uid}`.
 - **iOS camera and speech.** The iOS live screen shows honest fallbacks; AVFoundation and SFSpeechRecognizer aren't
   wired.
-- **iOS Firebase config.** `GoogleService-Info.plist` isn't in the repo yet (see "Run it").
-- **Sign-in options.** Email and password only. Google and Apple sign-in, email verification and unique usernames
-  are not done.
+- **Sign-in options.** Google only. Apple sign-in (required by App Store rules when other social logins exist)
+  and unique usernames are not done.
 - **Firebase extras.** Analytics forwarding, Crashlytics, App Check, Remote Config.
 - **iOS unit tests** (see Tests).
 
 ---
 
-## 8. Firebase console checklist (one-time)
+## 8. Firebase setup status
 
-1. Authentication → Sign-in method → enable **Email/Password**.
-2. Firestore Database → create the database (production mode) if it doesn't exist.
-3. Deploy the rules: `npm i -g firebase-tools`, `firebase login`, then
-   `firebase deploy --only firestore --project live-fame`.
-4. Add the iOS app (bundle id `org.mayad.fame_life.FameLife`) and put its `GoogleService-Info.plist` in `iosApp/iosApp/`.
+- Google sign-in provider: enabled in the console.
+- Firestore rules and indexes: deployed.
+- Android app: debug SHA-1 registered, `google-services.json` includes the web client id.
+- iOS app `org.mayad.famelife.FameLife`: registered, `GoogleService-Info.plist` committed.
+- Still to do before a store release: register the release keystore SHA-1; add Apple sign-in for iOS.

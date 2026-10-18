@@ -59,10 +59,13 @@ Icons on feature surfaces are glossy 3D tiles (`GlossyIcon`), not flat glyphs; s
 
 ## Status of integrations
 
-- Firebase project `live-fame`. Auth (email/password) and Firestore are wired on Android (`androidApp/google-services.json`).
-  iOS links the SDK via SPM but needs `iosApp/iosApp/GoogleService-Info.plist`; without it, sign-in shows an honest "not set up" state.
-  Analytics, Crashlytics, App Check, Google/Apple sign-in: not yet.
-- Firestore rules: `firestore.rules`; deploy with `firebase deploy --only firestore --project live-fame`.
+- Firebase project `live-fame`. Auth is **Google sign-in only** (no email/password). Android: Credential Manager +
+  `googleid`, using `default_web_client_id` from `google-services.json`; the debug keystore SHA-1 is registered.
+  iOS: GoogleSignIn (SPM) through `iosApp/iosApp/GoogleSignInBridge.swift` → `PulseIos.googleSignIn`; URL scheme =
+  `REVERSED_CLIENT_ID`. iOS bundle id is `org.mayad.famelife.FameLife` (no underscores allowed on iOS).
+  A release keystore needs its own SHA-1 added (`firebase apps:android:sha:create`) before Google sign-in works there.
+  Analytics, Crashlytics, App Check, Apple sign-in: not yet.
+- Firestore rules: `firestore.rules`; deployed. Redeploy after changes with `firebase deploy --only firestore --project live-fame`.
 - Audience backend (LLM): protocol defined (`AudienceProtocol.kt`), server not built. The on-device generator runs instead.
 - Billing: not wired. Everyone is on Free; the paywall says so.
 - iOS: camera preview and speech recognition are not implemented yet (honest fallbacks are shown).

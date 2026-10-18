@@ -12,5 +12,15 @@
 		<key>UIImageName</key>
 		<string>LaunchMark</string>
 	</dict>
+	<!-- Lets Google sign-in return to the app. The scheme is REVERSED_CLIENT_ID from GoogleService-Info.plist. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.381658086645-65chc0vg9vi4ekbam0rp8jsd0j43b0to</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
