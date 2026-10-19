@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
-        PulseAndroid.init(this) // Also initializes Firebase from google-services.json.
+        PulseAndroid.attach(this)
 
         setContent {
             App()

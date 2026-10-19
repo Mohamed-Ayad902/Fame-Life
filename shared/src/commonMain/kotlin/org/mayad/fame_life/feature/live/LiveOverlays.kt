@@ -1,5 +1,7 @@
 package org.mayad.fame_life.feature.live
 
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -99,7 +101,7 @@ fun AudienceMember.color(): Color = Color.hsv(hue, AVATAR_SATURATION, 1f)
  * over the creator's face. Each comment animates in once, keyed by its id.
  */
 @Composable
-fun LiveCommentStream(comments: List<AudienceEvent.Comment>, modifier: Modifier = Modifier) {
+fun LiveCommentStream(comments: ImmutableList<AudienceEvent.Comment>, modifier: Modifier = Modifier) {
     val fade = Pulse.colors.shadow
     Column(
         modifier
@@ -277,7 +279,7 @@ private fun ReactionKind.visual(): Pair<ImageVector, Color> {
  * Each particle runs one finite animation and leaves with its reaction, so nothing animates forever or offscreen.
  */
 @Composable
-fun LiveReactions(reactions: List<AudienceEvent.Reaction>, modifier: Modifier = Modifier) {
+fun LiveReactions(reactions: ImmutableList<AudienceEvent.Reaction>, modifier: Modifier = Modifier) {
     val dimens = Pulse.dimens
     if (Pulse.reducedMotion) {
         Column(modifier, verticalArrangement = Arrangement.spacedBy(dimens.xs), horizontalAlignment = Alignment.End) {
@@ -414,7 +416,7 @@ fun TranscriptCaption(text: String, modifier: Modifier = Modifier) {
 @Composable
 private fun CommentStreamPreview() = PreviewContainer {
     Column(Modifier.padding(Pulse.dimens.gutter)) {
-        LiveCommentStream(SampleData.comments)
+        LiveCommentStream(SampleData.comments.toImmutableList())
         Spacer(Modifier.height(Pulse.dimens.sm))
         TranscriptCaption(SampleData.liveState.livePartial.orEmpty())
         Spacer(Modifier.height(Pulse.dimens.sm))

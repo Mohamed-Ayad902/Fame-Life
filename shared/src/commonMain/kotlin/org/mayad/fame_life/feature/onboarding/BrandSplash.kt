@@ -24,9 +24,6 @@ import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
 import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 
-/** How long the in-app splash stays at least, so it reads as a moment rather than a flicker. */
-const val BRAND_SPLASH_MIN_MS = 900L
-
 /**
  * The in-app brand moment that follows the system splash. It stays up while the saved sign-in is restored and the
  * account's data is fetched, so onboarding never flashes for someone who is already signed in.

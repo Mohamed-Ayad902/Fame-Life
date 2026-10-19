@@ -7,7 +7,10 @@ camera, talk, and a **simulated** audience reacts. Nothing is broadcast. Read th
 
 - Kotlin Multiplatform + Compose Multiplatform. `shared` holds all UI and logic; `androidApp` and `iosApp` only host it.
 - One shared module, organised by feature under `shared/src/commonMain/kotlin/org/mayad/fame_life/`:
-  - `app/` — `AppContainer` (manual DI), typed `Navigator` + `Route`, `AppConfig` brand strings.
+  - `app/` — `RootViewModel` (splash/welcome/setup/main gate), `AppConfig` brand strings.
+  - `app/navigation/` — Navigation 3: `AppRoute` (`@Serializable` `NavKey`s), `AppNavigator`/`BackStackNavigator`, `AppNavHost`.
+  - `di/` — Koin: `dataModule` (platform, Firebase, repositories, `AccountSync`, `LiveServices`), `viewModelModule`.
+  - `core/presentation/` — `MviViewModel<State, Intent, Event>` and `CollectEvents`.
   - `core/designsystem/` — `theme/` (`Pulse`, colors, dimens/shapes, type, `Motion`), `motion/` (cascade, scroll-linked), `preview/`, glyphs, 3D `GlossyIcon`, `GiftArt`, procedural `Artwork`, shared components (incl. `SplitPanes`).
   - `core/ui/Labels.kt` — domain enums and error codes to localized strings. `core/preview/SampleData.kt` — preview data.
   - `core/platform/` — `expect` boundaries: storage, share, reduce motion, speech, camera, permissions.
@@ -15,7 +18,23 @@ camera, talk, and a **simulated** audience reacts. Nothing is broadcast. Read th
   - `data/` — fictional seed content (`content/`), the device-cache repositories (`local/`), and Firebase (`cloud/`: `FirebaseAuthService`, `FirestoreCloudStore`, `AccountSync`).
   - `feature/` — screens: shell, home, discover, post, profile, onboarding (splash, intro, account, profile setup), notifications, settings, live.
 - Platform code lives in `androidMain` / `iosMain` (`core/platform/*.android.kt`, `*.ios.kt`).
-- No DI or navigation library on purpose. Add one only when the current approach demonstrably hurts.
+- Navigation is **Navigation 3** (`NavDisplay` + a `NavBackStack` of `AppRoute`s). Screens never see the back stack:
+  they take plain callbacks (`onBack`, `onPost(id)`) and `AppNavHost` maps them. Tabs inside `MainShell` use `MainNavigation`.
+- DI is **Koin**. Started once from `PulseApplication` (Android) and `MainViewController` (iOS) via `initKoin()`.
+  Every screen ViewModel is registered in `di/ViewModelModule.kt`; `KoinGraphTest` fails if one can't be resolved.
+
+## Screens and ViewModels
+
+- One folder per feature; each screen is `XViewModel.kt` (state, intents, events), `XScreen.kt` (tier 1: `koinViewModel()`,
+  collects state, maps events to navigation) and `XContent.kt` (tier 2: stateless, plus previews).
+- ViewModels extend `MviViewModel`: one `@Immutable` `UiState`, `onIntent(intent)`, and `events` for one-time results
+  (saved → leave, live finished → summary). Route arguments come in through `parametersOf(...)`.
+- Screen state lives in the ViewModel, **not** `rememberSaveable`. `remember` is only for UI-only objects
+  (scroll, cascade, animation).
+- Composable parameters must be stable. Use `ImmutableList`/`ImmutableSet` (`kotlinx-collections-immutable`), never
+  `List`/`Set`, in UI state and composable signatures. Pure-Kotlin models from `domain/` and `data/content/` are declared
+  stable in `compose-stability.conf`; add a class there only if it is truly immutable.
+- Logic that touches several repositories goes in its own class (e.g. `SessionRecorder`), not in a composable.
 
 ## Skills
 
@@ -25,12 +44,12 @@ Consult these when they apply:
 
 ## Non-negotiable rules
 
-- **Never put provider secrets or API keys in the app.** LLM calls go through a trusted backend (see `docs/ARCHITECTURE.md`). `AppContainer.audienceGenerator` stays null until that backend exists.
+- **Never put provider secrets or API keys in the app.** LLM calls go through a trusted backend (see `docs/ARCHITECTURE.md`). `LiveServices.audience` stays null until that backend exists.
 - **Never imply simulated viewers, followers, comments or gifts are real.** Keep `SimulatedTag` / disclosure copy wherever numbers could be mistaken for real reach, including shared text.
 - **The AI proposes, the engine decides.** Viewer counts, gift timing, cooldowns and totals come from `LiveSessionEngine` / `EventPolicy`. AI output always passes `ResponseValidator` first.
 - **Never trust client-side plan flags, counters or viewer numbers** for anything that costs money. Only a server-verified entitlement (`EntitlementSource.VERIFIED`) may unlock paid AI limits, and the server must re-check.
 - **The client never writes entitlements or usage counters.** `firestore.rules` makes `entitlements/` and `usage/` server-write-only; keep it that way and keep `users/{uid}` owner-only.
-- Screens never call Firebase directly. Go through `AuthService`, the repositories and `AccountSync`; tests use `FakeAuthService` / `FakeCloudStore`.
+- Screens and ViewModels never call Firebase directly. Go through `AuthService`, the repositories and `AccountSync`; tests use `FakeAuthService` / `FakeCloudStore`.
 - Do not upload camera frames. Do not store raw audio. Speech text is the only thing that may leave the device, and only to our backend.
 - Ask for camera/mic only from the live setup screen, and keep the app usable when they are denied.
 - No dead buttons. A control either works, or is visibly disabled with an explanation.
@@ -47,7 +66,7 @@ Consult these when they apply:
   shortest side). Colors: `Pulse.colors.*` (media scrims, glass and on-media ink included). Copy: string resources in
   `composeResources/values/strings_*.xml` with the Arabic in `values-ar/`; enum and error labels go through
   `core/ui/Labels.kt`. Domain code returns codes, never display text.
-- Screens follow three tiers: a stateful `XScreen` (reads the container, logs analytics, navigates), a stateless
+- Screens follow three tiers: a stateful `XScreen` (gets its ViewModel, navigates), a stateless
   `XContent(state, callbacks)`, and portrait vs split layouts chosen with `Pulse.width.split` (`SplitPanes` helps).
 - Every screen and component file ends with previews: `@ScreenPreviews` / `@ComponentPreviews` inside
   `PreviewContainer`, fed from `core/preview/SampleData.kt` only.

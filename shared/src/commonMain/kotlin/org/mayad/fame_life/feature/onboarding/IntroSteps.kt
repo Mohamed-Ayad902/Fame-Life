@@ -1,5 +1,8 @@
 package org.mayad.fame_life.feature.onboarding
 
+import androidx.compose.runtime.Immutable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -66,12 +69,13 @@ import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
 import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 
+@Immutable
 private data class Beat(val glyph: ImageVector, val gloss: Gloss, val title: String, val body: String)
 
 /** Step 2: what actually happens in a live, as three linked beats. */
 @Composable
 internal fun HowItWorksStep(step: Int, total: Int, onContinue: () -> Unit) {
-    val beats = listOf(
+    val beats = persistentListOf(
         Beat(Glyphs.Mic, Gloss.Violet, stringResource(Res.string.how_talk_title), stringResource(Res.string.how_talk_body)),
         Beat(Glyphs.Sparkles, Gloss.Cyan, stringResource(Res.string.how_listen_title), stringResource(Res.string.how_listen_body)),
         Beat(Glyphs.Gift, Gloss.Gold, stringResource(Res.string.how_react_title), stringResource(Res.string.how_react_body)),
@@ -91,7 +95,7 @@ internal fun HowItWorksStep(step: Int, total: Int, onContinue: () -> Unit) {
 /** Step 3: the honest part, said plainly before an account exists. */
 @Composable
 internal fun HonestyStep(step: Int, total: Int, onContinue: () -> Unit) {
-    val points = listOf(
+    val points = persistentListOf(
         Beat(Glyphs.Users, Gloss.Violet, stringResource(Res.string.honesty_audience_title), stringResource(Res.string.honesty_audience_body, AppConfig.APP_NAME)),
         Beat(Glyphs.Eye, Gloss.Blue, stringResource(Res.string.honesty_camera_title), stringResource(Res.string.honesty_camera_body)),
         Beat(Glyphs.Comment, Gloss.Cyan, stringResource(Res.string.honesty_speech_title), stringResource(Res.string.honesty_speech_body)),
@@ -117,7 +121,7 @@ private fun IntroScaffold(
     eyebrow: String,
     title: String,
     button: String,
-    beats: List<Beat>,
+    beats: ImmutableList<Beat>,
     connected: Boolean,
     onContinue: () -> Unit,
 ) {

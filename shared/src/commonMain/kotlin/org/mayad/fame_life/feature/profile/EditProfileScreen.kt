@@ -17,9 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import famelife.shared.generated.resources.Res
@@ -31,8 +28,9 @@ import famelife.shared.generated.resources.edit_title
 import famelife.shared.generated.resources.setup_display_name
 import famelife.shared.generated.resources.setup_username
 import org.jetbrains.compose.resources.stringResource
-import org.mayad.fame_life.app.LocalAppContainer
-import org.mayad.fame_life.app.Navigator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
+import org.mayad.fame_life.core.presentation.CollectEvents
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.AvatarRing
 import org.mayad.fame_life.core.designsystem.components.CreatorAvatar
@@ -45,48 +43,34 @@ import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.preview.SampleData
 import org.mayad.fame_life.core.ui.message
-import org.mayad.fame_life.data.local.CreatorProfile
 import org.mayad.fame_life.domain.profile.ProfileRules
 
-/** Tier 1: holds the draft and saves it through the profile repository (which mirrors it to the account). */
+/** Tier 1: connects the edit form to its ViewModel and leaves once the profile is saved. */
 @Composable
-fun EditProfileScreen(navigator: Navigator) {
-    val container = LocalAppContainer.current
+fun EditProfileScreen(onDone: () -> Unit, viewModel: EditProfileViewModel = koinViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    CollectEvents(viewModel.events) { event ->
+        when (event) {
+            EditProfileEvent.Saved -> onDone()
+        }
+    }
     // Without a profile the app shows onboarding instead of this screen, so there is nothing to edit here.
-    val profile = container.profiles.profile.value ?: return
-    var displayName by rememberSaveable { mutableStateOf(profile.displayName) }
-    var username by rememberSaveable { mutableStateOf(profile.username) }
-    var bio by rememberSaveable { mutableStateOf(profile.bio) }
-    var palette by rememberSaveable { mutableStateOf(profile.avatarPalette) }
+    if (state.original == null) return
     EditProfileContent(
-        original = profile,
-        draft = EditDraft(displayName, username, bio, palette),
-        onName = { displayName = it },
-        onUsername = { username = it.trim().lowercase() },
-        onBio = { bio = it },
-        onPalette = { palette = it },
-        onBack = { navigator.pop() },
-        onSave = {
-            container.profiles.save(
-                profile.copy(
-                    displayName = displayName.trim(),
-                    username = ProfileRules.normalizeUsername(username),
-                    bio = bio.trim(),
-                    avatarPalette = palette,
-                ),
-            )
-            navigator.pop()
-        },
+        state = state,
+        onName = { viewModel.onIntent(EditProfileIntent.Name(it)) },
+        onUsername = { viewModel.onIntent(EditProfileIntent.Username(it)) },
+        onBio = { viewModel.onIntent(EditProfileIntent.Bio(it)) },
+        onPalette = { viewModel.onIntent(EditProfileIntent.Palette(it)) },
+        onBack = onDone,
+        onSave = { viewModel.onIntent(EditProfileIntent.Save) },
     )
 }
-
-data class EditDraft(val displayName: String, val username: String, val bio: String, val palette: Int)
 
 /** Tier 2: stateless form. Wide windows show the avatar picker beside the fields. */
 @Composable
 fun EditProfileContent(
-    original: CreatorProfile,
-    draft: EditDraft,
+    state: EditProfileUiState,
     onName: (String) -> Unit,
     onUsername: (String) -> Unit,
     onBio: (String) -> Unit,
@@ -95,12 +79,7 @@ fun EditProfileContent(
     onSave: () -> Unit,
 ) {
     val dimens = Pulse.dimens
-    val nameError = ProfileRules.displayNameError(draft.displayName)
-    val usernameError = ProfileRules.usernameError(draft.username)
-    val changed = draft.displayName.trim() != original.displayName ||
-        ProfileRules.normalizeUsername(draft.username) != original.username ||
-        draft.bio.trim() != original.bio ||
-        draft.palette != original.avatarPalette
+    val draft = state
     val look: @Composable ColumnScope.() -> Unit = {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             CreatorAvatar(selfAvatar(draft.palette), dimens.avatarXl, ring = AvatarRing.SELF)
@@ -113,7 +92,7 @@ fun EditProfileContent(
             draft.displayName,
             onName,
             stringResource(Res.string.setup_display_name),
-            error = nameError?.message(ProfileRules.DISPLAY_NAME_MAX),
+            error = state.nameError?.message(ProfileRules.DISPLAY_NAME_MAX),
             maxLength = ProfileRules.DISPLAY_NAME_MAX,
         )
         Spacer(Modifier.height(dimens.lg))
@@ -122,7 +101,7 @@ fun EditProfileContent(
             onUsername,
             stringResource(Res.string.setup_username),
             prefix = "@",
-            error = usernameError?.message(ProfileRules.USERNAME_MAX),
+            error = state.usernameError?.message(ProfileRules.USERNAME_MAX),
             maxLength = ProfileRules.USERNAME_MAX + 1,
         )
         Spacer(Modifier.height(dimens.lg))
@@ -139,7 +118,7 @@ fun EditProfileContent(
         Spacer(Modifier.height(dimens.xxl))
         PrimaryButton(
             stringResource(Res.string.edit_save),
-            enabled = changed && nameError == null && usernameError == null,
+            enabled = state.canSave,
             onClick = onSave,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -172,6 +151,5 @@ fun EditProfileContent(
 @ScreenPreviews
 @Composable
 private fun EditProfilePreview() = PreviewContainer {
-    val p = SampleData.profile
-    EditProfileContent(p, EditDraft(p.displayName, "a", p.bio, 5), {}, {}, {}, {}, {}, {})
+    EditProfileContent(EditProfileUiState(SampleData.profile, username = "a", palette = 5), {}, {}, {}, {}, {}, {})
 }

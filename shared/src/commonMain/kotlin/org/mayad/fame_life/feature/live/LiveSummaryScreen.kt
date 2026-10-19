@@ -21,13 +21,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import org.mayad.fame_life.core.presentation.CollectEvents
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
@@ -55,10 +57,6 @@ import famelife.shared.generated.resources.summary_wrap
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.app.AppConfig
-import org.mayad.fame_life.app.LocalAppContainer
-import org.mayad.fame_life.app.Navigator
-import org.mayad.fame_life.app.Route
-import org.mayad.fame_life.core.analytics.AnalyticsEvent
 import org.mayad.fame_life.core.designsystem.components.AnimatedCount
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.EmptyState
@@ -71,13 +69,13 @@ import org.mayad.fame_life.core.designsystem.icons.GiftArt
 import org.mayad.fame_life.core.designsystem.icons.Gloss
 import org.mayad.fame_life.core.designsystem.icons.Glyphs
 import org.mayad.fame_life.core.designsystem.motion.cascadeIn
+import org.mayad.fame_life.core.designsystem.motion.CascadeState
 import org.mayad.fame_life.core.designsystem.motion.rememberCascadeState
 import org.mayad.fame_life.core.designsystem.preview.PreviewContainer
 import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Motion
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.format.compactCount
-import org.mayad.fame_life.core.platform.shareText
 import org.mayad.fame_life.core.preview.SampleData
 import org.mayad.fame_life.core.ui.durationText
 import org.mayad.fame_life.data.local.CreatorProfile
@@ -89,33 +87,30 @@ import org.mayad.fame_life.feature.profile.LevelCard
 private const val STATS_PER_ROW = 3
 private const val HERO_START_SCALE = 0.92f
 
-/** Tier 1: finds the recap, logs the view, shares and navigates. Back always returns home, never into the live. */
-@OptIn(ExperimentalComposeUiApi::class)
+/** Tier 1: connects the recap to its ViewModel. Back pops to home; the live itself is no longer on the stack. */
 @Composable
-fun LiveSummaryScreen(sessionId: String, navigator: Navigator) {
-    val container = LocalAppContainer.current
-    val sessions = container.history.sessions.collectAsState().value
-    val summary = remember(sessions, sessionId) { sessions.firstOrNull { it.id == sessionId } }
-    val profile = container.profiles.profile.collectAsState().value
-    LaunchedEffect(sessionId) { container.analytics.log(AnalyticsEvent.LiveSummaryViewed) }
-    BackHandler { navigator.popToMain() }
+fun LiveSummaryScreen(
+    sessionId: String,
+    onDone: () -> Unit,
+    onGoLiveAgain: (title: String) -> Unit,
+    viewModel: LiveSummaryViewModel = koinViewModel(key = sessionId) { parametersOf(sessionId) },
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    CollectEvents(viewModel.events) { event ->
+        when (event) {
+            is LiveSummaryEvent.OpenSetup -> onGoLiveAgain(event.title)
+        }
+    }
     // Shared text always says the audience was simulated, so it can't be passed off as real reach.
-    val shareMessage = summary?.let {
+    val shareMessage = state.summary?.let {
         stringResource(Res.string.summary_share_text, AppConfig.APP_NAME, durationText(it.durationSeconds), compactCount(it.peakViewers), it.comments)
     }
     LiveSummaryContent(
-        summary = summary,
-        profile = profile,
-        onDone = { navigator.popToMain() },
-        onAgain = {
-            container.analytics.log(AnalyticsEvent.LiveRestarted)
-            navigator.popToMain()
-            navigator.push(Route.LiveSetup(summary?.title.orEmpty()))
-        },
-        onShare = {
-            container.analytics.log(AnalyticsEvent.SummaryShared)
-            shareMessage?.let(::shareText)
-        },
+        summary = state.summary,
+        profile = state.profile,
+        onDone = onDone,
+        onAgain = { viewModel.onIntent(LiveSummaryIntent.GoLiveAgain) },
+        onShare = { shareMessage?.let { viewModel.onIntent(LiveSummaryIntent.Share(it)) } },
     )
 }
 
@@ -255,7 +250,7 @@ private fun SummaryHero(summary: SessionSummary) {
 }
 
 @Composable
-private fun StatGrid(summary: SessionSummary, cascade: org.mayad.fame_life.core.designsystem.motion.CascadeState) {
+private fun StatGrid(summary: SessionSummary, cascade: CascadeState) {
     val stats: List<Pair<String, StringResource>> = listOf(
         durationText(summary.durationSeconds) to Res.string.summary_duration,
         compactCount(summary.comments) to Res.string.summary_comments,

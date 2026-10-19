@@ -30,7 +30,7 @@ The app must never hold an LLM key. Planned shape:
 4. The app validates the response again (`ResponseValidator`) and the engine still decides events.
 
 To plug it in: implement `AudienceTransport.post(requestJson)` with the HTTP client, wrap it in
-`RemoteAudienceGenerator`, and set `AppContainer.audienceGenerator`.
+`RemoteAudienceGenerator`, and pass it as `LiveServices.audience` in `di/KoinModules.kt`.
 
 ## Accounts and cloud data (Firebase)
 

@@ -10,7 +10,7 @@ number could be mistaken for real reach. Keep it that way. The rules every contr
 
 - **Platforms:** Android and iOS from one Kotlin codebase (Kotlin Multiplatform + Compose Multiplatform).
 - **Accounts and data:** Firebase Authentication with Google sign-in, and Cloud Firestore, project `live-fame`.
-- **Working name:** "Pulse". Brand strings live in `AppConfig` (`shared/.../app/AppContainer.kt`).
+- **Working name:** "Pulse". Brand strings live in `AppConfig` (`shared/.../app/AppConfig.kt`).
 
 ---
 
@@ -68,8 +68,11 @@ iosApp/                     iOS host: iOSApp.swift (configures Firebase), launch
 shared/src/
   commonMain/composeResources/  Fonts and strings (values/ English, values-ar/ Arabic)
   commonMain/kotlin/org/mayad/fame_life/
-    App.kt                  Root: splash → onboarding → profile setup → main, based on sign-in state
-    app/                    AppContainer (creates everything), Navigator + Route (screen stack), AppConfig
+    App.kt                  Root: splash → onboarding → profile setup → main, picked by RootViewModel
+    app/                    RootViewModel (which gate to show), AppConfig
+      navigation/           AppRoute (typed Navigation 3 keys), AppNavigator, AppNavHost (NavDisplay + transitions)
+    di/                     Koin: dataModule (platform, Firebase, repositories), viewModelModule (one per screen)
+    core/presentation/      MviViewModel base (state, intents, one-time events) + CollectEvents
     core/designsystem/      Pulse theme (colors, type, adaptive dimens, shapes, motion), cascade + scroll motion,
                             previews, glossy 3D icons, shared components
     core/ui/                Domain values to localized labels
@@ -86,7 +89,8 @@ shared/src/
       content/              Fictional seed feed: creators, posts, lives (stable ids, no randomness per render)
       local/                Repositories screens read from (profile, sessions, inbox) = the device cache
       cloud/                FirebaseAuthService, FirestoreCloudStore, AccountSync (keeps cache and cloud in step)
-    feature/                One folder per area: onboarding, home, discover, post, profile, live, notifications, settings, shell
+    feature/                One folder per area: onboarding, home, discover, post, profile, live, notifications, settings, shell.
+                            Each screen = XViewModel.kt + XScreen.kt (tier 1) + XContent.kt (tier 2 + previews)
   androidMain/ iosMain/     The platform implementations of core/platform
   commonTest/               Tests, shared by both platforms
 docs/ARCHITECTURE.md        Data flow, backend boundary, Firestore layout, entitlements
@@ -100,8 +104,8 @@ _removed_template/          Old template files, not built, not committed
 ## 3. How a live session flows through the code
 
 ```
-LiveSetupScreen ──(navigator.push(Route.Live))──▶ LiveSessionScreen
-                                                    │ creates
+LiveSetupViewModel ──(LiveSetupEvent.Start → AppRoute.Live)──▶ LiveSessionViewModel
+                                                                │ creates (in viewModelScope)
                                                     ▼
 Microphone ─▶ SpeechInput (platform) ─▶ LiveSessionController ─▶ AudienceGenerator ─▶ ResponseValidator
                                           │  (every 200 ms tick)     (on-device today;      (rejects bad output)
@@ -123,8 +127,10 @@ Where to look:
 
 | Step | File |
 | --- | --- |
-| Setup (title, audience size, mood, camera/mic permission) | `feature/live/LiveSetupScreen.kt` |
-| The live screen and saving the result | `feature/live/LiveSessionScreen.kt` (`recordSession`) |
+| Setup (title, audience size, mood, plan locks, lives left) | `feature/live/LiveSetupViewModel.kt`, `LiveSetupContent.kt` |
+| Camera/mic permission (asked only here) | `feature/live/LiveSetupScreen.kt` |
+| Owning the session, countdown, pause on background | `feature/live/LiveSessionViewModel.kt` |
+| Saving the result (history, points, inbox, analytics) | `feature/live/SessionRecorder.kt` |
 | Coroutines, speech, AI requests, start/pause/end | `domain/simulation/LiveSessionController.kt` |
 | Viewer counts, comment pacing, gifts, totals | `domain/simulation/LiveSessionEngine.kt`, `EventPolicy.kt`, `ViewerCountEngine.kt` |
 | What the audience says | `domain/ai/LocalAudienceGenerator.kt` (on device), `AudienceProtocol.kt` (future backend) |
@@ -140,7 +146,7 @@ decides if and when it shows, and what the totals are.
 - **Start-up:** Android initializes Firebase from `google-services.json` (`PulseAndroid.init` in
   `shared/src/androidMain/.../PlatformServices.android.kt`). iOS calls `FirebaseApp.configure()` in
   `iosApp/iosApp/iOSApp.swift` when `GoogleService-Info.plist` is bundled.
-- **Choosing real or "not configured":** `AppContainer` checks `isFirebaseConfigured()`. If false it uses
+- **Choosing real or "not configured":** `di/KoinModules.kt` checks `isFirebaseConfigured()`. If false it uses
   `UnavailableAuthService`, so the app runs and says plainly that sign-in isn't set up.
 - **Accounts (Google only):** `domain/account/Auth.kt` defines `AuthService` (sign in with Google, sign out,
   re-confirm, delete) and `GoogleTokenProvider` (shows the platform account picker). `FirebaseAuthService` turns the
@@ -167,21 +173,29 @@ decides if and when it shows, and what the totals are.
 
 ## 5. How to add a screen
 
-Every screen has three tiers, its strings in resources, and previews. Example `feature/badges/BadgesScreen.kt`:
+Every screen has a ViewModel, three composable tiers, its strings in resources, and previews. Example
+`feature/badges/`:
 
 ```kotlin
-// Tier 1: stateful. Reads the container, logs analytics, navigates.
-@Composable
-fun BadgesScreen(navigator: Navigator) {
-    val container = LocalAppContainer.current
-    val profile = container.profiles.profile.collectAsState().value ?: return
-    BadgesContent(points = profile.famePoints, onBack = { navigator.pop() })
+// BadgesViewModel.kt: state, intents and events. Plain Kotlin collections become ImmutableList/ImmutableSet.
+@Immutable
+data class BadgesUiState(val points: Int = 0, val badges: ImmutableList<Badge> = persistentListOf())
+
+class BadgesViewModel(profiles: ProfileRepository) : MviViewModel<BadgesUiState, Nothing, NoEvent>(BadgesUiState()) {
+    init { viewModelScope.launch { profiles.profile.collect { p -> setState { copy(points = p?.famePoints ?: 0) } } } }
+    override fun onIntent(intent: Nothing) = Unit
 }
 
-// Tier 2: stateless. Only parameters in, callbacks out, so it previews in any state.
+// BadgesScreen.kt, tier 1: gets the ViewModel from Koin, collects state, turns callbacks into navigation.
 @Composable
-fun BadgesContent(points: Int, onBack: () -> Unit) {
-    val cascade = rememberCascadeState()
+fun BadgesScreen(onBack: () -> Unit, viewModel: BadgesViewModel = koinViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    BadgesContent(state, onBack)
+}
+
+// BadgesContent.kt, tier 2: stateless. Only parameters in, callbacks out, so it previews in any state.
+@Composable
+fun BadgesContent(state: BadgesUiState, onBack: () -> Unit) {
     AtmosphereBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ScreenHeader(stringResource(Res.string.badges_title), onBack = onBack)
@@ -193,12 +207,20 @@ fun BadgesContent(points: Int, onBack: () -> Unit) {
 
 @ScreenPreviews
 @Composable
-private fun BadgesPreview() = PreviewContainer { BadgesContent(points = SampleData.profile.famePoints, onBack = {}) }
+private fun BadgesPreview() = PreviewContainer { BadgesContent(BadgesUiState(points = 640), onBack = {}) }
 ```
 
 Then:
 1. Add the strings to `composeResources/values/strings_<feature>.xml` **and** the Arabic to `values-ar/`.
-2. Add a route in `app/Navigation.kt` and map it in `PulseNavHost` (`App.kt`); open it with `navigator.push(...)`.
+2. Register the ViewModel in `di/ViewModelModule.kt` (`viewModelOf(::BadgesViewModel)`, or
+   `viewModel { (id: String) -> ... }` when it takes a route argument passed with `parametersOf(id)`).
+3. Add a `@Serializable data object Badges : AppRoute` in `app/navigation/AppRoute.kt`, register it in
+   `AppRouteSavedState`, and add an `entry<AppRoute.Badges> { BadgesScreen(onBack = navigator::pop) }` in
+   `AppNavHost`. Each entry gets its own ViewModel store, cleared when the screen is popped.
+
+Keep screen state in the ViewModel, not in `rememberSaveable`. Composable parameters must be stable: use
+`ImmutableList`/`ImmutableSet` (kotlinx-collections-immutable) and `@Immutable` state classes. Pure-Kotlin domain
+and content models are declared stable in `compose-stability.conf`.
 
 Rules (from `CLAUDE.md`): sizes from `Pulse.dimens`, colors from `Pulse.colors`, shapes from `Pulse.shapes`, no
 literal dp/sp/colors/strings; glossy `GlossyIcon` tiles on feature surfaces; every button works or is visibly
@@ -212,9 +234,10 @@ disabled with a reason; respect `Pulse.reducedMotion`; label simulated numbers w
 ```
 
 Tests live in `shared/src/commonTest/`. They cover the simulation engine, AI pipeline, progression, local
-repositories, auth validation and account sync. Firebase is never called in tests: `FakeAuthService` and
+repositories, auth validation, account sync, the back stack, the root gate, screen ViewModels (inbox, live setup,
+edit profile) and that every ViewModel resolves from the Koin graph. Firebase is never called in tests: `FakeAuthService` and
 `FakeCloudStore` stand in for it. To test new logic, put it in `domain/` or `data/` (not in a composable) and use
-these fakes.
+these fakes. ViewModel tests extend `ViewModelTest`, which swaps `Dispatchers.Main` for a test dispatcher.
 
 `./gradlew :shared:iosSimulatorArm64Test` currently **fails to link** (`framework 'FirebaseCore' not found`) because
 the iOS test binary needs the Firebase frameworks on its search path. The same tests run on the Android host above.

@@ -18,11 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,11 +38,8 @@ import famelife.shared.generated.resources.common_sign_out
 import famelife.shared.generated.resources.common_try_again
 import famelife.shared.generated.resources.sync_error_body
 import famelife.shared.generated.resources.sync_error_title
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.mayad.fame_life.app.LocalAppContainer
-import org.mayad.fame_life.core.analytics.AnalyticsEvent
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.components.PrimaryButton
 import org.mayad.fame_life.core.designsystem.components.SecondaryButton
@@ -62,53 +54,10 @@ import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.ui.messageRes
 import org.mayad.fame_life.domain.account.AuthErrorKind
-import org.mayad.fame_life.domain.account.AuthException
-import org.mayad.fame_life.domain.account.UnavailableAuthService
-
-/**
- * Sign in with Google. A first sign-in creates the account. Success changes the auth state and the app root moves on
- * by itself (to profile setup for a new account, or straight home for one that already has a profile).
- */
-@Composable
-internal fun AccountStep(step: Int, total: Int, returning: Boolean) {
-    val container = LocalAppContainer.current
-    val scope = rememberCoroutineScope()
-    val configured = container.auth !is UnavailableAuthService
-    var busy by rememberSaveable { mutableStateOf(false) }
-    var failure by rememberSaveable { mutableStateOf<AuthErrorKind?>(null) }
-
-    fun signIn() {
-        if (busy) return
-        busy = true
-        failure = null
-        container.analytics.log(AnalyticsEvent.SignupStarted)
-        scope.launch {
-            try {
-                container.auth.signInWithGoogle()
-                container.analytics.log(AnalyticsEvent.SignInCompleted)
-            } catch (e: AuthException) {
-                if (e.kind != AuthErrorKind.CANCELLED) container.analytics.log(AnalyticsEvent.AuthFailed(e.kind.name.lowercase()))
-                failure = e.kind
-            } finally {
-                busy = false
-            }
-        }
-    }
-
-    AccountStepContent(
-        step = step,
-        total = total,
-        returning = returning,
-        busy = busy,
-        message = (failure ?: AuthErrorKind.NOT_CONFIGURED.takeIf { !configured })?.messageRes,
-        enabled = configured,
-        onContinue = ::signIn,
-    )
-}
 
 /** Stateless: everything the account step shows comes in as parameters, so it previews in any state. */
 @Composable
-internal fun AccountStepContent(
+fun AccountStepContent(
     step: Int,
     total: Int,
     returning: Boolean,

@@ -12,22 +12,28 @@ import dev.gitlive.firebase.apps
 import dev.gitlive.firebase.initialize
 import org.mayad.fame_life.domain.ai.SpeechInput
 
-/** Holds the application context for platform services. Call [init] from the Activity before composing. */
+/**
+ * Platform context for the shared code. [init] runs once per process from the Application; [attach] runs from the
+ * Activity, because the Google account picker needs one.
+ */
 @SuppressLint("StaticFieldLeak") // Application context only, which lives as long as the process.
 object PulseAndroid {
     internal lateinit var appContext: Context
         private set
 
-    // The account picker needs an Activity; held weakly so a destroyed Activity is never leaked.
+    // Held weakly so a destroyed Activity is never leaked.
     private var activityRef: WeakReference<Activity>? = null
     internal val activity: Activity? get() = activityRef?.get()
 
-    fun init(activity: Activity) {
-        activityRef = WeakReference(activity)
-        appContext = activity.applicationContext
+    fun init(context: Context) {
+        appContext = context.applicationContext
         // Firebase's content provider normally does this from google-services.json; calling it again is a no-op,
         // and it makes start-up order explicit. Returns null (and accounts stay unavailable) without that file.
         if (Firebase.apps(appContext).isEmpty()) Firebase.initialize(appContext)
+    }
+
+    fun attach(activity: Activity) {
+        activityRef = WeakReference(activity)
     }
 }
 
