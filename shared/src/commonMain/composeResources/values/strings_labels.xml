@@ -42,17 +42,17 @@
     <string name="time_days">%1$dd</string>
 
     <string name="auth_error_no_account">Add a Google account to this device, then try again.</string>
-    <string name="auth_error_wrong_account">Pick the same Google account you\'re signed in with.</string>
+    <string name="auth_error_wrong_account">Pick the same Google account you're signed in with.</string>
     <string name="auth_error_too_many">Too many attempts. Wait a minute and try again.</string>
-    <string name="auth_error_network">You\'re offline. Check your connection and try again.</string>
+    <string name="auth_error_network">You're offline. Check your connection and try again.</string>
     <string name="auth_error_recent_login">For your security, confirm your Google account and try again.</string>
-    <string name="auth_error_not_configured">Accounts aren\'t set up in this build yet. The developer needs to add the Firebase configuration.</string>
+    <string name="auth_error_not_configured">Accounts aren't set up in this build yet. The developer needs to add the Firebase configuration.</string>
     <string name="auth_error_unknown">Something went wrong. Please try again.</string>
 
     <string name="profile_error_name_empty">Add the name people will see</string>
     <string name="profile_error_too_short">Use at least %1$d characters</string>
     <string name="profile_error_too_long">Use at most %1$d characters</string>
     <string name="profile_error_characters">Use letters, numbers, dots and underscores</string>
-    <string name="profile_error_dots">Dots can\'t start, end or repeat</string>
+    <string name="profile_error_dots">Dots can't start, end or repeat</string>
     <string name="profile_error_reserved">That username is reserved</string>
 </resources>

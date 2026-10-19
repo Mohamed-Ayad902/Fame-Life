@@ -4,7 +4,7 @@
     <string name="live_preview">PREVIEW</string>
     <string name="live_studio">Creator studio</string>
     <string name="live_set_room">Set the room</string>
-    <string name="live_title_label">What\'s your live about?</string>
+    <string name="live_title_label">What's your live about?</string>
     <string name="live_title_hint">Q&amp;A, cooking, a game, a story…</string>
     <string name="live_audience_size">Audience size</string>
     <string name="live_size_hint">%1$s · simulated viewers</string>
@@ -31,10 +31,10 @@
     <string name="live_lives_left">%1$d of %2$d lives left today</string>
     <string name="live_see_pro">See Pro</string>
     <string name="live_dismiss">Dismiss</string>
-    <string name="perm_unsupported_title">Camera and mic aren\'t ready on this device yet</string>
+    <string name="perm_unsupported_title">Camera and mic aren't ready on this device yet</string>
     <string name="perm_title">Let your audience see and hear you</string>
     <string name="perm_unsupported_body">You can still go live; the simulated audience will react to the room instead of your words.</string>
-    <string name="perm_denied_body">Without them the audience can\'t react to what you say. You can still go live, or allow access in system settings.</string>
+    <string name="perm_denied_body">Without them the audience can't react to what you say. You can still go live, or allow access in system settings.</string>
     <string name="perm_body">Your camera stays on your phone. Speech becomes text so the simulated audience can respond to it.</string>
     <string name="perm_allow">Allow camera and mic</string>
 
@@ -45,8 +45,8 @@
     <string name="live_listening">Listening</string>
     <string name="live_starting_mic">Starting mic…</string>
     <string name="live_mic_denied">Mic not allowed · audience reacts to the room</string>
-    <string name="live_speech_unavailable">Speech recognition isn\'t available here</string>
-    <string name="live_cant_hear">Couldn\'t hear you, retrying</string>
+    <string name="live_speech_unavailable">Speech recognition isn't available here</string>
+    <string name="live_cant_hear">Couldn't hear you, retrying</string>
     <string name="live_mic_off">Mic off</string>
     <string name="live_camera_off">Camera off</string>
     <string name="live_time_left">%1$s left</string>
@@ -67,14 +67,14 @@
     <string name="live_recap_title">Live recap ready</string>
     <string name="live_recap_body">%1$s peaked at %2$s simulated viewers. +%3$d fame points.</string>
     <string name="live_your_live">Your live</string>
-    <string name="live_level_title">You\'re now a %1$s</string>
+    <string name="live_level_title">You're now a %1$s</string>
     <string name="live_level_body">Your lives earned enough fame points to reach the next level.</string>
 
     <string name="live_watching">%1$s watching</string>
     <string name="live_new_high">A new high for this live (simulated)</string>
     <string name="live_joined">%1$s joined</string>
     <string name="live_vip">A VIP regular is here</string>
-    <string name="live_trending">You\'re trending</string>
+    <string name="live_trending">You're trending</string>
     <string name="live_trending_default">Your live is trending</string>
     <string name="live_gift_sent">%1$s sent %2$s</string>
     <string name="live_gift_detail">Simulated gift · +%1$d fame</string>
@@ -89,7 +89,7 @@
     <string name="gift_galaxy">Galaxy</string>
 
     <string name="summary_done">Done</string>
-    <string name="summary_missing_title">This recap isn\'t here anymore</string>
+    <string name="summary_missing_title">This recap isn't here anymore</string>
     <string name="summary_missing_body">Older lives are removed when your history is full.</string>
     <string name="summary_back_home">Back to home</string>
     <string name="summary_top_gift">Top gift</string>
@@ -99,7 +99,7 @@
     <string name="summary_share">Share recap</string>
     <string name="summary_share_text">I just went live in %1$s for %2$s: %3$s peak viewers and %4$d comments in a simulated live. (The audience is AI-simulated, not real people.)</string>
     <string name="summary_simulated_results">Simulated results</string>
-    <string name="summary_wrap">That\'s a wrap</string>
+    <string name="summary_wrap">That's a wrap</string>
     <string name="summary_peak">PEAK VIEWERS</string>
     <string name="summary_points">+%1$d fame points</string>
     <string name="summary_duration">Duration</string>

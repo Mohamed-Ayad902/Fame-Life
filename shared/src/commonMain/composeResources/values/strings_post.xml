@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="post_unavailable_title">This post isn\'t available</string>
+    <string name="post_unavailable_title">This post isn't available</string>
     <string name="post_unavailable_body">It may have been removed from the feed.</string>
     <string name="post_go_back">Go back</string>
     <string name="post_like">Like</string>

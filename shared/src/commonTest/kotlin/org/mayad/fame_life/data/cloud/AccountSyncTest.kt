@@ -141,6 +141,20 @@ class AccountSyncTest {
     }
 
     @Test
+    fun sessionsDeletedInTheCloudLeaveTheDeviceOnNextLoad() = runTest {
+        val rig = rig()
+        val user = rig.auth.signInAs("mo@example.com")
+        runCurrent()
+        rig.history.save(summary("a", 1), keep = 3)
+        rig.history.save(summary("b", 2), keep = 3)
+        runCurrent()
+        rig.cloud.sessions[user.uid]!!.remove("a") // e.g. deleted from the Firebase console
+        rig.sync.retry()
+        runCurrent()
+        assertEquals(listOf("b"), rig.history.sessions.value.map { it.id })
+    }
+
+    @Test
     fun sessionsTrimmedFromHistoryAreDeletedInTheCloud() = runTest {
         val rig = rig()
         val user = rig.auth.signInAs("mo@example.com")

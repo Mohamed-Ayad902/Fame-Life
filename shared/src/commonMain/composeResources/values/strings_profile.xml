@@ -13,7 +13,7 @@
     <string name="profile_untitled_live">Untitled live</string>
     <string name="profile_session_meta">%1$s · %2$s peak · +%3$d pts</string>
     <string name="profile_creator_not_found">Creator not found</string>
-    <string name="profile_unavailable">This profile isn\'t available.</string>
+    <string name="profile_unavailable">This profile isn't available.</string>
     <string name="profile_simulated_creator">Simulated creator</string>
     <string name="profile_followers">Followers</string>
     <string name="profile_likes">Likes</string>

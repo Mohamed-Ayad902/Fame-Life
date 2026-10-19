@@ -107,8 +107,10 @@ class AccountSync(
                 } else {
                     profiles.replace(remoteProfile)
                 }
-                history.replace(mergeById(remoteSessions, history.sessions.value) { it.id }.sortedByDescending { it.startedAtEpochMs }.take(historyLimit()))
-                notifications.replace(mergeById(remoteInbox, notifications.notifications.value) { it.id }.sortedByDescending { it.createdAtEpochMs })
+                // The cloud is the truth: Firestore's own cache already includes writes still waiting to upload, so
+                // anything missing here was deleted (by the user, another device or the console) and must go.
+                history.replace(remoteSessions)
+                notifications.replace(remoteInbox)
                 mutableState.value = SyncState.Ready()
             } catch (e: CancellationException) {
                 throw e
@@ -171,11 +173,6 @@ class AccountSync(
         history.clear()
         notifications.clear()
         store.remove(OWNER_KEY)
-    }
-
-    private fun <T> mergeById(remote: List<T>, local: List<T>, id: (T) -> String): List<T> {
-        val remoteIds = remote.mapTo(HashSet(), id)
-        return remote + local.filterNot { id(it) in remoteIds }
     }
 
     private companion object {
