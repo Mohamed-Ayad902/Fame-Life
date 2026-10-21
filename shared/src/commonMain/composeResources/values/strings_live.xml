@@ -35,7 +35,7 @@
     <string name="perm_title">Let your audience see and hear you</string>
     <string name="perm_unsupported_body">You can still go live; the simulated audience will react to the room instead of your words.</string>
     <string name="perm_denied_body">Without them the audience can't react to what you say. You can still go live, or allow access in system settings.</string>
-    <string name="perm_body">Your camera stays on your phone. Speech becomes text so the simulated audience can respond to it.</string>
+    <string name="perm_body">Your camera stays on your phone. What you say is sent to our server in short clips so the simulated audience can respond to it.</string>
     <string name="perm_allow">Allow camera and mic</string>
 
     <string name="live_ai_reacting">Audience reacting…</string>

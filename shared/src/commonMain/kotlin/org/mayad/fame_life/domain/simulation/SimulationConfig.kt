@@ -20,6 +20,7 @@ enum class EventFrequency(val commentGapMs: LongRange, val eventCooldownMs: Long
     WILD(commentGapMs = 450L..1_200L, eventCooldownMs = 9_000L),
 }
 
+/** The audience's language. [MIXED] (shown as "Auto") follows whatever language the creator is speaking. */
 enum class AudienceLanguage { ENGLISH, ARABIC, MIXED }
 
 @Serializable
@@ -30,7 +31,7 @@ data class SimulationConfig(
     val hatersMode: Boolean = false,
     val giftsEnabled: Boolean = true,
     val frequency: EventFrequency = EventFrequency.LIVELY,
-    val language: AudienceLanguage = AudienceLanguage.ENGLISH,
+    val language: AudienceLanguage = AudienceLanguage.MIXED,
     val liveStyleId: String = "aurora",
     val maxDurationSeconds: Int = 10 * 60,
     val seed: Long = 0L,

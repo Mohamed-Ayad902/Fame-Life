@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.apps
+import org.mayad.fame_life.data.remote.PulseBackend
 import org.mayad.fame_life.domain.ai.SpeechInput
 import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIAccessibilityIsReduceMotionEnabled
@@ -36,8 +37,11 @@ actual fun shareText(text: String) {
     top.presentViewController(sheet, animated = true, completion = null)
 }
 
-/** iOS speech recognition (SFSpeechRecognizer) is not built yet; the live screen says so and uses the room's vibe. */
-actual fun createSpeechInput(): SpeechInput? = null
+/** The iOS HTTP client (URLSession) is not built yet, so iOS lives use the on-device audience. */
+actual fun createPulseBackend(): PulseBackend? = null
+
+/** iOS microphone capture is not built yet; the live screen says so and uses the room's vibe. */
+actual fun createSpeechInput(backend: PulseBackend?): SpeechInput? = null
 
 private object UnsupportedLivePermissions : LivePermissions {
     override val camera = false

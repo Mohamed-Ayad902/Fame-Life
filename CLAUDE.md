@@ -44,13 +44,13 @@ Consult these when they apply:
 
 ## Non-negotiable rules
 
-- **Never put provider secrets or API keys in the app.** LLM calls go through a trusted backend (see `docs/ARCHITECTURE.md`). `LiveServices.audience` stays null until that backend exists.
+- **Never put provider secrets or API keys in the app.** Transcription and LLM calls go through the trusted backend in `backend/` (see `docs/ARCHITECTURE.md`); keys live only in `/etc/pulse/env` on the server.
 - **Never imply simulated viewers, followers, comments or gifts are real.** Keep `SimulatedTag` / disclosure copy wherever numbers could be mistaken for real reach, including shared text.
 - **The AI proposes, the engine decides.** Viewer counts, gift timing, cooldowns and totals come from `LiveSessionEngine` / `EventPolicy`. AI output always passes `ResponseValidator` first.
 - **Never trust client-side plan flags, counters or viewer numbers** for anything that costs money. Only a server-verified entitlement (`EntitlementSource.VERIFIED`) may unlock paid AI limits, and the server must re-check.
 - **The client never writes entitlements or usage counters.** `firestore.rules` makes `entitlements/` and `usage/` server-write-only; keep it that way and keep `users/{uid}` owner-only.
 - Screens and ViewModels never call Firebase directly. Go through `AuthService`, the repositories and `AccountSync`; tests use `FakeAuthService` / `FakeCloudStore`.
-- Do not upload camera frames. Do not store raw audio. Speech text is the only thing that may leave the device, and only to our backend.
+- Do not upload camera frames. Do not store raw audio anywhere (device or server). While live, spoken sentences go only to our backend, which forwards them to the transcription provider and keeps nothing.
 - Ask for camera/mic only from the live setup screen, and keep the app usable when they are denied.
 - No dead buttons. A control either works, or is visibly disabled with an explanation.
 - No invented prices, fake urgency, fabricated analytics, testimonials or test results.
@@ -99,6 +99,6 @@ Consult these when they apply:
   A release keystore needs its own SHA-1 added (`firebase apps:android:sha:create`) before Google sign-in works there.
   Analytics, Crashlytics, App Check, Apple sign-in: not yet.
 - Firestore rules: `firestore.rules`; deployed. Redeploy after changes with `firebase deploy --only firestore --project live-fame`.
-- Audience backend (LLM): protocol defined (`AudienceProtocol.kt`), server not built. The on-device generator runs instead.
+- Audience backend: `backend/` (Node, Groq Whisper + Gemini, free tiers). Enabled in the app by `pulse.backendUrl` in `local.properties`; the on-device generator is the fallback.
 - Billing: not wired. Everyone is on Free; the paywall says so.
 - iOS: camera preview and speech recognition are not implemented yet (honest fallbacks are shown).

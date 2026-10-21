@@ -33,7 +33,7 @@ data class SetupDraft(
     val vibes: Set<AudienceVibe> = setOf(AudienceVibe.SUPPORTIVE, AudienceVibe.CURIOUS, AudienceVibe.FUNNY),
     val gifts: Boolean = true,
     val frequency: EventFrequency = EventFrequency.LIVELY,
-    val language: AudienceLanguage = AudienceLanguage.ENGLISH,
+    val language: AudienceLanguage = AudienceLanguage.MIXED,
     val styleId: String = LiveStyles.Aurora.id,
     val minutes: Int = LENGTH_OPTIONS[1],
 )

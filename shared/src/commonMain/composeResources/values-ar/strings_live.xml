@@ -35,7 +35,7 @@
     <string name="perm_title">دع جمهورك يراك ويسمعك</string>
     <string name="perm_unsupported_body">يمكنك البث مع ذلك؛ سيتفاعل الجمهور الافتراضي مع أجواء الغرفة بدل كلامك.</string>
     <string name="perm_denied_body">بدونهما لن يتفاعل الجمهور مع ما تقوله. يمكنك البث مع ذلك، أو السماح بالوصول من إعدادات النظام.</string>
-    <string name="perm_body">الكاميرا تبقى على هاتفك. يتحوّل الكلام إلى نص ليتمكن الجمهور الافتراضي من الرد عليه.</string>
+    <string name="perm_body">الكاميرا تبقى على هاتفك. يُرسل كلامك إلى خادمنا في مقاطع قصيرة ليتمكن الجمهور الافتراضي من الرد عليه.</string>
     <string name="perm_allow">السماح بالكاميرا والميكروفون</string>
 
     <string name="live_ai_reacting">الجمهور يتفاعل…</string>

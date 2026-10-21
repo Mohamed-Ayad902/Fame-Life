@@ -19,6 +19,7 @@ import org.mayad.fame_life.core.platform.SystemEpochClock
 import org.mayad.fame_life.core.platform.SystemMotionPreference
 import org.mayad.fame_life.core.platform.TextStore
 import org.mayad.fame_life.core.platform.createGoogleTokenProvider
+import org.mayad.fame_life.core.platform.createPulseBackend
 import org.mayad.fame_life.core.platform.createSpeechInput
 import org.mayad.fame_life.core.platform.createTextStore
 import org.mayad.fame_life.core.platform.isFirebaseConfigured
@@ -30,15 +31,17 @@ import org.mayad.fame_life.data.local.EntitlementRepository
 import org.mayad.fame_life.data.local.NotificationRepository
 import org.mayad.fame_life.data.local.ProfileRepository
 import org.mayad.fame_life.data.local.SessionHistoryRepository
+import org.mayad.fame_life.data.remote.audienceTransport
 import org.mayad.fame_life.domain.account.AuthService
 import org.mayad.fame_life.domain.account.UnavailableAuthService
 import org.mayad.fame_life.domain.ai.AudienceGenerator
+import org.mayad.fame_life.domain.ai.RemoteAudienceGenerator
 import org.mayad.fame_life.domain.ai.SpeechInput
 
 /**
- * Optional services for a live session. [audience] is the backend generator: null until the trusted backend exists
- * (see docs/ARCHITECTURE.md), and the session then uses the on-device audience and shows that. [speech] is null on
- * platforms without speech recognition yet.
+ * Optional services for a live session. [audience] is the backend generator: null when the build has no backend URL
+ * or Firebase isn't configured (the backend needs the user's ID token), and the session then uses the on-device
+ * audience and shows that. [speech] is null on platforms without speech recognition yet.
  */
 class LiveServices(val speech: SpeechInput?, val audience: AudienceGenerator?)
 
@@ -85,7 +88,10 @@ val dataModule = module {
         ).also { get<DeferredCloudSink>().target = it }
     }
 
-    single { LiveServices(speech = createSpeechInput(), audience = null) }
+    single {
+        val backend = if (isFirebaseConfigured()) createPulseBackend() else null
+        LiveServices(speech = createSpeechInput(backend), audience = backend?.let { RemoteAudienceGenerator(it.audienceTransport()) })
+    }
 }
 
 /** Every module the app needs. Tests can start Koin with [dataModule] swapped for fakes. */

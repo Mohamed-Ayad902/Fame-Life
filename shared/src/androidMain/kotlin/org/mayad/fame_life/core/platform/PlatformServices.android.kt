@@ -10,6 +10,9 @@ import android.provider.Settings
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.apps
 import dev.gitlive.firebase.initialize
+import org.mayad.fame_life.data.remote.PulseBackend
+import org.mayad.fame_life.data.remote.firebaseIdToken
+import org.mayad.fame_life.data.remote.transcribe
 import org.mayad.fame_life.domain.ai.SpeechInput
 
 /**
@@ -21,12 +24,17 @@ object PulseAndroid {
     internal lateinit var appContext: Context
         private set
 
+    /** The backend base URL from the app's build config; blank when none is configured. */
+    internal var backendUrl: String = ""
+        private set
+
     // Held weakly so a destroyed Activity is never leaked.
     private var activityRef: WeakReference<Activity>? = null
     internal val activity: Activity? get() = activityRef?.get()
 
-    fun init(context: Context) {
+    fun init(context: Context, backendUrl: String = "") {
         appContext = context.applicationContext
+        this.backendUrl = backendUrl
         // Firebase's content provider normally does this from google-services.json; calling it again is a no-op,
         // and it makes start-up order explicit. Returns null (and accounts stay unavailable) without that file.
         if (Firebase.apps(appContext).isEmpty()) Firebase.initialize(appContext)
@@ -64,4 +72,9 @@ actual fun shareText(text: String) {
     PulseAndroid.appContext.startActivity(chooser)
 }
 
-actual fun createSpeechInput(): SpeechInput? = AndroidSpeechInput(PulseAndroid.appContext)
+actual fun createPulseBackend(): PulseBackend? =
+    PulseAndroid.backendUrl.takeIf { it.startsWith("https://") }?.let { HttpPulseBackend(it, ::firebaseIdToken) }
+
+actual fun createSpeechInput(backend: PulseBackend?): SpeechInput? =
+    if (backend != null) CloudSpeechInput(PulseAndroid.appContext) { samples -> backend.transcribe(samples) }
+    else AndroidSpeechInput(PulseAndroid.appContext)

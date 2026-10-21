@@ -1,0 +1,12 @@
+{
+  "name": "pulse-backend",
+  "private": true,
+  "type": "module",
+  "description": "Trusted backend for the Pulse app: speech transcription (Groq Whisper) and audience comments (Gemini).",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "check": "node src/check.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -32,6 +33,14 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        // The Pulse backend (backend/README.md). Set pulse.backendUrl in local.properties; without it the app uses
+        // the phone's speech recognizer and the on-device audience.
+        val localProperties = Properties().apply {
+            rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+        }
+        val backendUrl = localProperties.getProperty("pulse.backendUrl", "").trim()
+        buildConfigField("String", "PULSE_BACKEND_URL", "\"$backendUrl\"")
     }
     packaging {
         resources {
@@ -53,5 +62,6 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }

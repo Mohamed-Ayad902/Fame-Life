@@ -1,5 +1,6 @@
 package org.mayad.fame_life.core.platform
 
+import org.mayad.fame_life.data.remote.PulseBackend
 import org.mayad.fame_life.domain.account.GoogleTokenProvider
 import org.mayad.fame_life.domain.ai.SpeechInput
 import kotlin.time.TimeSource
@@ -18,8 +19,14 @@ expect fun isReduceMotionEnabled(): Boolean
 /** Opens the platform share sheet. Never posts anywhere by itself. */
 expect fun shareText(text: String)
 
-/** Platform speech recognition, or null where it is not implemented yet. */
-expect fun createSpeechInput(): SpeechInput?
+/** The trusted backend, or null when the build has no backend URL or the platform has no client yet. */
+expect fun createPulseBackend(): PulseBackend?
+
+/**
+ * Speech recognition: through the backend's Whisper route when there is a [backend] (it detects the language),
+ * otherwise the platform recognizer. Null where neither is implemented yet.
+ */
+expect fun createSpeechInput(backend: PulseBackend?): SpeechInput?
 
 private val processStart = TimeSource.Monotonic.markNow()
 

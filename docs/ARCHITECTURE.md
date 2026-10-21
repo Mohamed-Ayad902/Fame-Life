@@ -17,20 +17,27 @@ Microphone → platform SpeechInput (Flow<SpeechEvent>) → TranscriptBuffer (de
   never goes silent. The live screen shows which one is running.
 - The engine is deterministic for a given seed and clock, which is what the tests rely on.
 
-## Trusted backend boundary (to build)
+## Trusted backend (`backend/`)
 
-The app must never hold an LLM key. Planned shape:
+The app never holds an AI provider key. A small Node server (no npm dependencies) runs on EC2 behind Caddy (HTTPS
+via Let's Encrypt on an `sslip.io` hostname); `backend/README.md` covers deploy, limits and costs.
 
-1. Firebase Auth (now wired) issues the user's ID token; App Check attests the app (not yet configured).
-2. The app calls one HTTPS endpoint (Cloud Functions or Cloud Run) with `AudienceRequest` JSON (`PROTOCOL_VERSION = 1`).
-   It contains recent speech text and session settings, never audio or images.
-3. The server verifies the token and App Check, looks up the **server-side** entitlement and usage counters,
-   enforces per-minute and per-session limits, calls the model with a versioned prompt, and returns
-   `AudienceResponseDto` JSON.
-4. The app validates the response again (`ResponseValidator`) and the engine still decides events.
+```
+Mic → CloudSpeechInput (AudioRecord, 16 kHz) → UtteranceDetector (cuts sentences by loudness) → WAV
+  → POST /v1/transcribe → Groq Whisper (detects Arabic/English itself) → {text, language} → TranscriptBuffer …
+AudienceContext → AudienceRequest JSON → POST /v1/audience → Gemini (JSON schema output) → AudienceResponseDto
+  → ResponseValidator (again, on device) → engine
+```
 
-To plug it in: implement `AudienceTransport.post(requestJson)` with the HTTP client, wrap it in
-`RemoteAudienceGenerator`, and pass it as `LiveServices.audience` in `di/KoinModules.kt`.
+1. Every call carries the user's Firebase ID token; the server verifies it against Google's certificates for
+   `live-fame`, then applies per-user per-minute and per-day limits (in memory) before calling a provider.
+2. Audio is held in memory until uploaded and is never stored; logs hold the route, status and a hashed uid only.
+3. The app is wired in `di/KoinModules.kt`: when `pulse.backendUrl` is set in `local.properties` (read into
+   `BuildConfig.PULSE_BACKEND_URL`) and Firebase is configured, `LiveServices` gets `CloudSpeechInput` and a
+   `RemoteAudienceGenerator`. Without it the app falls back to the platform recognizer and the on-device audience.
+4. If the backend fails or times out (6 s), the on-device generator answers for that turn, so chat never stalls.
+5. Still planned: App Check, server-side entitlements and usage counters in Firestore (limits are in memory today),
+   and an iOS client (URLSession + AVAudioEngine).
 
 ## Accounts and cloud data (Firebase)
 

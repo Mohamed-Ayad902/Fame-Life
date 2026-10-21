@@ -30,7 +30,7 @@
     <string name="frequency_wild">Wild</string>
     <string name="language_english">English</string>
     <string name="language_arabic">العربية</string>
-    <string name="language_mixed">Mixed</string>
+    <string name="language_mixed">Auto</string>
     <string name="style_aurora">Aurora</string>
     <string name="style_noir">Noir</string>
 

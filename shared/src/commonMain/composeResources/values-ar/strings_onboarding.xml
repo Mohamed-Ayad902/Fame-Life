@@ -26,8 +26,8 @@
     <string name="honesty_audience_body">لا يشاهدك أشخاص حقيقيون. المشاهدون والتعليقات والهدايا والمتابعون يصنعهم %1$s.</string>
     <string name="honesty_camera_title">الكاميرا تبقى على هاتفك</string>
     <string name="honesty_camera_body">الفيديو يظهر لك فقط. لا يُسجَّل ولا يُرفع ولا يُبث أبدًا.</string>
-    <string name="honesty_speech_title">النص المنطوق فقط قد يُرسل</string>
-    <string name="honesty_speech_body">الصوت الخام لا يُحفظ أبدًا. عند تفعيل الجمهور السحابي تُرسل مقاطع نصية قصيرة إلى خادمنا فقط.</string>
+    <string name="honesty_speech_title">كلامك يُرسل في مقاطع قصيرة</string>
+    <string name="honesty_speech_body">أثناء البث تُرسل كل جملة تقولها إلى خادمنا لتحويلها إلى نص ويرد عليها الجمهور. لا يُحفظ الصوت، ولا تُحفظ النصوص في حسابك.</string>
     <string name="honesty_numbers_title">الأرقام للمتعة</string>
     <string name="honesty_numbers_body">مستويات الشهرة والأرقام تعيش داخل التطبيق. ليست انتشارًا حقيقيًا، ولن ننشر أي شيء باسمك.</string>
 

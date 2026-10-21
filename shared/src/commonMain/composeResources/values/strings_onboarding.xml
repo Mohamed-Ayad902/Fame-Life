@@ -26,8 +26,8 @@
     <string name="honesty_audience_body">No real people watch. Viewers, comments, gifts and followers are made by %1$s.</string>
     <string name="honesty_camera_title">Your camera stays on your phone</string>
     <string name="honesty_camera_body">Video is shown only to you. It's never recorded, uploaded or broadcast.</string>
-    <string name="honesty_speech_title">Only speech text may leave</string>
-    <string name="honesty_speech_body">Raw audio is never stored. When the cloud audience is on, short bits of text go to our server, nowhere else.</string>
+    <string name="honesty_speech_title">Your speech is sent as short clips</string>
+    <string name="honesty_speech_body">While you\'re live, each sentence you say goes to our server to be turned into text and answered by the audience. Audio isn\'t stored, and transcripts aren\'t saved to your account.</string>
     <string name="honesty_numbers_title">Numbers are for fun</string>
     <string name="honesty_numbers_body">Fame levels and counts live inside the app. They aren't real reach, and we never post for you.</string>
 
