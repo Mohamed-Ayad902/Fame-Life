@@ -110,6 +110,17 @@ data class PulseDimens(
     val reactionDrift: Dp,
     val endButtonWidth: Dp,
 
+    // Game HUD
+    val hudPill: Dp,
+    val emblem: Dp,
+    val emblemLarge: Dp,
+    val medal: Dp,
+    val panelTabHeight: Dp,
+    val levelBadge: Dp,
+    val topicCard: Dp,
+    /** Backdrop blur radius behind pinned glass (the Home HUD). */
+    val hudBlur: Dp,
+
     /** Max width for reading and forms on wide windows. */
     val contentMaxWidth: Dp,
 
@@ -187,6 +198,8 @@ internal fun pulseDimens(scale: PulseScale, width: PulseWidth): PulseDimens {
         liveChatMaxWidth = d(300f), liveChatMaxHeight = d(300f),
         liveControlsClearance = d(140f), liveChatClearance = d(120f),
         giftSmall = d(72f), giftMedium = d(104f), giftMajor = d(148f), reactionLane = d(72f), reactionSway = d(16f), reactionDrift = d(28f), endButtonWidth = d(72f),
+        hudPill = d(34f), emblem = d(24f), emblemLarge = d(64f), medal = d(48f), panelTabHeight = d(26f),
+        levelBadge = d(20f), topicCard = d(168f), hudBlur = 24.dp,
         contentMaxWidth = d(560f),
         radiusTag = d(8f), radiusControl = d(16f), radiusCard = d(20f), radiusPanel = d(24f), radiusHero = d(32f),
         radiusSheet = d(28f), radiusBubbleTail = d(6f), radiusBubble = d(18f),

@@ -17,4 +17,17 @@
     <string name="home_featured_live">FEATURED LIVE</string>
     <string name="room_description">%1$s, simulated live: %2$s</string>
     <string name="post_likes">%1$s likes</string>
+    <string name="hud_points">%1$s fame points</string>
+    <string name="hud_level_short">LV %1$d</string>
+    <string name="hud_level_description">Level %1$d, %2$s</string>
+    <string name="hud_streak">%1$d-day streak</string>
+    <string name="home_status_title">CREATOR STATUS</string>
+    <string name="home_badges_count">%1$d/%2$d</string>
+    <string name="home_mission">DAILY MISSION</string>
+    <string name="home_mission_goal">%1$d min goal</string>
+    <string name="home_mission_start">Start</string>
+    <string name="home_top_room">#1 most watched</string>
+    <string name="home_view_creator">View</string>
+    <string name="home_story_you">You</string>
+    <string name="hud_wallet">%1$s points</string>
 </resources>

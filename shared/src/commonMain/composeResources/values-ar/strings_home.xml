@@ -17,4 +17,17 @@
     <string name="home_featured_live">بث مميز</string>
     <string name="room_description">%1$s، بث افتراضي: %2$s</string>
     <string name="post_likes">%1$s إعجاب</string>
+    <string name="hud_points">%1$s نقطة شهرة</string>
+    <string name="hud_level_short">مستوى %1$d</string>
+    <string name="hud_level_description">المستوى %1$d، %2$s</string>
+    <string name="hud_streak">سلسلة %1$d أيام</string>
+    <string name="home_status_title">حالة صانع المحتوى</string>
+    <string name="home_badges_count">%1$d/%2$d</string>
+    <string name="home_mission">مهمة اليوم</string>
+    <string name="home_mission_goal">الهدف %1$d دقيقة</string>
+    <string name="home_mission_start">ابدأ</string>
+    <string name="home_top_room">الأكثر مشاهدة</string>
+    <string name="home_view_creator">عرض</string>
+    <string name="home_story_you">أنت</string>
+    <string name="hud_wallet">%1$s نقطة</string>
 </resources>
