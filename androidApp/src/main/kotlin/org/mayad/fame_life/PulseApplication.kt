@@ -9,7 +9,7 @@ import org.mayad.fame_life.di.initKoin
 class PulseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        PulseAndroid.init(this, BuildConfig.PULSE_BACKEND_URL)
+        PulseAndroid.init(this, BuildConfig.PULSE_BACKEND_URL, BuildConfig.PULSE_REWARDED_AD_UNIT)
         initKoin { androidContext(this@PulseApplication) }
     }
 }

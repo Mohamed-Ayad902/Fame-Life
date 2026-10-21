@@ -3,6 +3,7 @@ package org.mayad.fame_life.core.platform
 import org.mayad.fame_life.data.remote.PulseBackend
 import org.mayad.fame_life.domain.account.GoogleTokenProvider
 import org.mayad.fame_life.domain.ai.SpeechInput
+import org.mayad.fame_life.domain.economy.RewardedAds
 import kotlin.time.TimeSource
 
 expect fun createTextStore(): TextStore
@@ -27,6 +28,12 @@ expect fun createPulseBackend(): PulseBackend?
  * otherwise the platform recognizer. Null where neither is implemented yet.
  */
 expect fun createSpeechInput(backend: PulseBackend?): SpeechInput?
+
+/** The device time zone's offset from UTC at [epochMs], in minutes. Decides when the daily streak rolls over. */
+expect fun utcOffsetMinutes(epochMs: Long): Int
+
+/** Rewarded video ads: AdMob on Android once its ids are in local.properties, otherwise [org.mayad.fame_life.domain.economy.NoRewardedAds]. */
+expect fun createRewardedAds(): RewardedAds
 
 private val processStart = TimeSource.Monotonic.markNow()
 

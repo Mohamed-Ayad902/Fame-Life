@@ -7,6 +7,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.data.content.Category
 import org.mayad.fame_life.domain.account.AuthErrorKind
+import org.mayad.fame_life.domain.economy.PointsError
 import org.mayad.fame_life.domain.profile.ProfileFieldError
 import org.mayad.fame_life.domain.profile.ProfileRules
 import org.mayad.fame_life.domain.progression.FameLevel
@@ -109,6 +110,13 @@ fun timeAgoText(hours: Int): String = when {
     hours < HOURS_PER_DAY -> stringResource(Res.string.time_hours, hours)
     else -> stringResource(Res.string.time_days, hours / HOURS_PER_DAY)
 }
+
+val PointsError.messageRes: StringResource
+    get() = when (this) {
+        PointsError.NETWORK -> Res.string.points_error_network
+        PointsError.UNAVAILABLE -> Res.string.points_error_unavailable
+        PointsError.SERVER -> Res.string.points_error_server
+    }
 
 /** Null for failures the user caused on purpose (closing the picker), which need no message. */
 val AuthErrorKind.messageRes: StringResource?

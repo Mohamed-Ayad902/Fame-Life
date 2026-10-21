@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Points are an in-app simulation currency, never money and never real reach. -->
+    <string name="points_amount">%1$d نقطة</string>
+    <string name="points_balance_description">%1$d نقطة</string>
+
+    <!-- Daily streak dialog -->
+    <string name="streak_eyebrow">تسجيل الحضور اليومي</string>
+    <string name="streak_title">مكافأتك اليومية</string>
+    <string name="streak_title_claimed">تم استلام المكافأة</string>
+    <string name="streak_body">ارجع كل يوم لتطيل سلسلتك. إذا فاتك يوم تبدأ السلسلة من اليوم الأول.</string>
+    <string name="streak_days">سلسلة %1$d أيام</string>
+    <string name="streak_day">اليوم %1$d</string>
+    <string name="streak_day_claimed">اليوم %1$d، %2$d نقطة، تم الاستلام</string>
+    <string name="streak_day_today">اليوم %1$d، %2$d نقطة، جاهزة للاستلام</string>
+    <string name="streak_day_upcoming">اليوم %1$d، %2$d نقطة، قادمة</string>
+    <string name="streak_claim">استلم %1$d نقطة</string>
+    <string name="streak_claimed">أُضيفت %1$d نقطة. نراك غدًا.</string>
+    <string name="streak_later">لاحقًا</string>
+    <string name="streak_done">رائع</string>
+
+    <!-- Live studio -->
+    <string name="points_go_live_cost">ابدأ البث · %1$d نقطة</string>
+    <string name="points_style_cost">%1$d نقطة</string>
+    <string name="points_paying">جارٍ بدء البث…</string>
+    <string name="points_short_title">تحتاج %1$d نقطة إضافية</string>
+    <string name="points_short_body">هذه الغرفة تكلّف %1$d نقطة ولديك %2$d.</string>
+    <string name="points_watch_ad">شاهد إعلانًا بمكافأة · +%1$d</string>
+    <string name="points_ads_left">تبقّى %1$d إعلانات بمكافأة اليوم</string>
+    <string name="points_ads_used_up">استخدمت إعلانات اليوم. مكافأة الغد أو نمط أرخص يمكن أن يوصلك للبث.</string>
+    <string name="points_ads_unavailable">الإعلانات بمكافأة غير مفعّلة في هذا الإصدار بعد.</string>
+    <string name="points_claim_today">استلم مكافأة اليوم · +%1$d</string>
+    <string name="points_ad_showing">جارٍ فتح الإعلان…</string>
+    <string name="points_ad_verifying">جارٍ التحقق من مكافأتك…</string>
+    <string name="points_ad_credited">أُضيفت %1$d نقطة.</string>
+    <string name="points_ad_pending">نقاطك في الطريق. ستظهر هنا فور تأكيد شبكة الإعلانات.</string>
+    <string name="points_ad_dismissed">شاهد الإعلان حتى النهاية لتحصل على النقاط.</string>
+    <string name="points_ad_failed">لا يتوفر إعلان الآن. حاول مرة أخرى بعد قليل.</string>
+    <string name="points_error_network">تعذّر الوصول إلى Pulse. تحقق من اتصالك وحاول مرة أخرى.</string>
+    <string name="points_error_unavailable">النقاط غير متاحة مؤقتًا. حاول بعد قليل.</string>
+    <string name="points_error_server">حدث خطأ من جهتنا. لم تتغير نقاطك.</string>
+    <string name="points_close">إغلاق</string>
+</resources>

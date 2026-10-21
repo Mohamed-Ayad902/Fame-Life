@@ -2,6 +2,7 @@
 # Installs or updates the Pulse backend on an Amazon Linux 2023 EC2 instance.
 #   sudo bash deploy/setup.sh            # first install: asks for the API keys
 #   sudo bash deploy/setup.sh --keys     # replace the API keys
+#   sudo bash deploy/setup.sh --service-account ~/live-fame-sa.json   # enable the points economy (wallets in Firestore)
 #   sudo bash deploy/setup.sh            # later runs: updates the code and restarts
 # HTTPS comes from Caddy with a free Let's Encrypt certificate for <ip-with-dashes>.sslip.io.
 set -euo pipefail
@@ -49,6 +50,17 @@ EOF
 fi
 
 echo "== App code"
+id pulse >/dev/null 2>&1 || useradd --system --no-create-home --shell /sbin/nologin pulse
+
+# The points economy writes wallets with a Firebase service account. Readable by the service user only.
+SA_FILE=/etc/pulse/service-account.json
+if [[ "${1:-}" == "--service-account" ]]; then
+  [[ -s "${2:-}" ]] || { echo "Usage: sudo bash deploy/setup.sh --service-account <key.json>"; exit 1; }
+  install -m 640 -o root -g pulse "$2" "$SA_FILE"
+  shred -u "$2" 2>/dev/null || rm -f "$2"
+  grep -q '^GOOGLE_APPLICATION_CREDENTIALS=' "$ENV_FILE" || echo "GOOGLE_APPLICATION_CREDENTIALS=$SA_FILE" >> "$ENV_FILE"
+  echo "service account installed; the points economy is on"
+fi
 id pulse >/dev/null 2>&1 || useradd --system --no-create-home --shell /sbin/nologin pulse
 mkdir -p "$APP"
 cp -r "$SRC/src" "$SRC/package.json" "$APP/"

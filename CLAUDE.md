@@ -14,9 +14,9 @@ camera, talk, and a **simulated** audience reacts. Nothing is broadcast. Read th
   - `core/designsystem/` — `theme/` (`Pulse`, colors, dimens/shapes, type, `Motion`), `motion/` (cascade, scroll-linked), `preview/`, glyphs, 3D `GlossyIcon`, `GiftArt`, procedural `Artwork`, shared components (incl. `SplitPanes`).
   - `core/ui/Labels.kt` — domain enums and error codes to localized strings. `core/preview/SampleData.kt` — preview data.
   - `core/platform/` — `expect` boundaries: storage, share, reduce motion, speech, camera, permissions.
-  - `domain/` — pure Kotlin: `simulation/` (engine, controller, event policy), `ai/` (transcript, protocol, validator, generators), `account/` (`AuthService`, `AuthRules`), `entitlement/`, `progression/`, `profile/`.
-  - `data/` — fictional seed content (`content/`), the device-cache repositories (`local/`), and Firebase (`cloud/`: `FirebaseAuthService`, `FirestoreCloudStore`, `AccountSync`).
-  - `feature/` — screens: shell, home, discover, post, profile, onboarding (splash, intro, account, profile setup), notifications, settings, live.
+  - `domain/` — pure Kotlin: `simulation/` (engine, controller, event policy), `ai/` (transcript, protocol, validator, generators), `account/` (`AuthService`, `AuthRules`), `entitlement/`, `economy/` (points: `PointsService`, `StreakRules`, `EconomyConfig`), `progression/`, `profile/`.
+  - `data/` — fictional seed content (`content/`), the device-cache repositories (`local/`), and Firebase (`cloud/`: `FirebaseAuthService`, `FirestoreCloudStore`, `AccountSync`), and the points wallet (`economy/`: `CloudPointsService`).
+  - `feature/` — screens: shell, home, discover, post, profile, onboarding (splash, intro, account, profile setup), notifications, settings, live, points (daily streak dialog, balance pill, short-of-points panel).
 - Platform code lives in `androidMain` / `iosMain` (`core/platform/*.android.kt`, `*.ios.kt`).
 - Navigation is **Navigation 3** (`NavDisplay` + a `NavBackStack` of `AppRoute`s). Screens never see the back stack:
   they take plain callbacks (`onBack`, `onPost(id)`) and `AppNavHost` maps them. Tabs inside `MainShell` use `MainNavigation`.
@@ -48,7 +48,7 @@ Consult these when they apply:
 - **Never imply simulated viewers, followers, comments or gifts are real.** Keep `SimulatedTag` / disclosure copy wherever numbers could be mistaken for real reach, including shared text.
 - **The AI proposes, the engine decides.** Viewer counts, gift timing, cooldowns and totals come from `LiveSessionEngine` / `EventPolicy`. AI output always passes `ResponseValidator` first.
 - **Never trust client-side plan flags, counters or viewer numbers** for anything that costs money. Only a server-verified entitlement (`EntitlementSource.VERIFIED`) may unlock paid AI limits, and the server must re-check.
-- **The client never writes entitlements or usage counters.** `firestore.rules` makes `entitlements/` and `usage/` server-write-only; keep it that way and keep `users/{uid}` owner-only.
+- **The client never writes entitlements, usage counters or points.** `firestore.rules` makes `entitlements/`, `usage/`, `wallets/` and `config/` server-write-only; keep it that way and keep `users/{uid}` owner-only. Points are granted and spent only by the backend; reward-ad points only after AdMob's signed callback.
 - Screens and ViewModels never call Firebase directly. Go through `AuthService`, the repositories and `AccountSync`; tests use `FakeAuthService` / `FakeCloudStore`.
 - Do not upload camera frames. Do not store raw audio anywhere (device or server). While live, spoken sentences go only to our backend, which forwards them to the transcription provider and keeps nothing.
 - Ask for camera/mic only from the live setup screen, and keep the app usable when they are denied.
@@ -101,4 +101,8 @@ Consult these when they apply:
 - Firestore rules: `firestore.rules`; deployed. Redeploy after changes with `firebase deploy --only firestore --project live-fame`.
 - Audience backend: `backend/` (Node, Groq Whisper + Gemini, free tiers). Enabled in the app by `pulse.backendUrl` in `local.properties`; the on-device generator is the fallback.
 - Billing: not wired. Everyone is on Free; the paywall says so.
+- Points economy: server-owned wallets (`backend/src/economy.mjs`), admin values in Firestore `config/economy`
+  (docs/ARCHITECTURE.md, "Points economy"). Needs the backend's service account; reward ads need AdMob ids in
+  `local.properties` (`pulse.admobAppId`, `pulse.admobRewardedUnitId`) and the SSV callback set in AdMob. iOS: no ads,
+  no economy yet (no backend client).
 - iOS: camera preview and speech recognition are not implemented yet (honest fallbacks are shown).

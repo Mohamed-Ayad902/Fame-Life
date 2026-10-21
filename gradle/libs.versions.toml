@@ -18,6 +18,8 @@ core-splashscreen = "1.2.0"
 gitlive-firebase = "2.7.0"
 androidx-credentials = "1.6.0"
 googleid = "1.2.1"
+play-services-ads = "25.5.0"
+ump = "4.0.0"
 navigation3 = "1.1.2"
 koin = "4.2.2"
 collections-immutable = "0.5.2"
@@ -36,6 +38,8 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
 androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
+ump = { module = "com.google.android.ump:user-messaging-platform", version.ref = "ump" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }

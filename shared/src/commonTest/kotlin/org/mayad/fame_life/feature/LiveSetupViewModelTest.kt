@@ -8,6 +8,8 @@ import org.mayad.fame_life.data.local.CreatorProfile
 import org.mayad.fame_life.data.local.EntitlementRepository
 import org.mayad.fame_life.data.local.ProfileRepository
 import org.mayad.fame_life.data.local.SessionHistoryRepository
+import org.mayad.fame_life.domain.economy.NoRewardedAds
+import org.mayad.fame_life.domain.economy.UnavailablePointsService
 import org.mayad.fame_life.domain.entitlement.PlanLimits
 import org.mayad.fame_life.domain.simulation.AudiencePreset
 import org.mayad.fame_life.domain.simulation.AudienceVibe
@@ -36,7 +38,7 @@ class LiveSetupViewModelTest : ViewModelTest() {
         save(CreatorProfile(displayName = "Mo", username = "mo", createdAtEpochMs = 1))
     }
 
-    private fun viewModel() = LiveSetupViewModel("", profiles, history, EntitlementRepository(), InMemoryAnalytics()) { now }
+    private fun viewModel() = LiveSetupViewModel("", profiles, history, EntitlementRepository(), UnavailablePointsService(), NoRewardedAds, InMemoryAnalytics()) { now }
 
     @Test
     fun livesLeftCountsOnlyTheLast24Hours() {

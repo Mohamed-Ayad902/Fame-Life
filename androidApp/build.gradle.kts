@@ -41,6 +41,14 @@ android {
         }
         val backendUrl = localProperties.getProperty("pulse.backendUrl", "").trim()
         buildConfigField("String", "PULSE_BACKEND_URL", "\"$backendUrl\"")
+
+        // AdMob rewarded ads for earning points (docs/ARCHITECTURE.md, "Points economy"). Set pulse.admobAppId and
+        // pulse.admobRewardedUnitId in local.properties once the AdMob app exists. Without a unit id the ad offer is
+        // hidden; the SDK still needs an app id at start-up, so Google's published sample app id stands in.
+        val admobAppId = localProperties.getProperty("pulse.admobAppId", "").trim().ifEmpty { "ca-app-pub-3940256099942544~3347511713" }
+        manifestPlaceholders["admobAppId"] = admobAppId
+        val rewardedUnitId = localProperties.getProperty("pulse.admobRewardedUnitId", "").trim()
+        buildConfigField("String", "PULSE_REWARDED_AD_UNIT", "\"$rewardedUnitId\"")
     }
     packaging {
         resources {

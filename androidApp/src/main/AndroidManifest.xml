@@ -25,6 +25,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Pulse.Starting">
+        <!-- AdMob app id (from local.properties, see androidApp/build.gradle.kts). Ads are only ever shown when the
+             user asks for a reward ad to earn points. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
         <!-- Compose handles rotation and resizing itself, so a running live session is never recreated. -->
         <activity
             android:exported="true"

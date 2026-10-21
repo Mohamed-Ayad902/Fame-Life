@@ -13,6 +13,7 @@ import org.mayad.fame_life.feature.live.SessionRecorder
 import org.mayad.fame_life.feature.notifications.InboxViewModel
 import org.mayad.fame_life.feature.onboarding.OnboardingViewModel
 import org.mayad.fame_life.feature.onboarding.ProfileSetupViewModel
+import org.mayad.fame_life.feature.points.DailyRewardViewModel
 import org.mayad.fame_life.feature.post.PostDetailViewModel
 import org.mayad.fame_life.feature.profile.CreatorProfileViewModel
 import org.mayad.fame_life.feature.profile.EditProfileViewModel
@@ -41,10 +42,11 @@ val viewModelModule = module {
     viewModelOf(::EditProfileViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::PaywallViewModel)
+    viewModelOf(::DailyRewardViewModel)
 
     viewModel { (postId: String) -> PostDetailViewModel(postId, get(), get()) }
     viewModel { (creatorId: String) -> CreatorProfileViewModel(creatorId, get()) }
-    viewModel { (title: String) -> LiveSetupViewModel(title, get(), get(), get(), get(), get()) }
+    viewModel { (title: String) -> LiveSetupViewModel(title, get(), get(), get(), get(), get(), get(), get()) }
     viewModel { (sessionId: String, config: SimulationConfig) ->
         LiveSessionViewModel(sessionId, config, get(), get(), get(), get(), get(), get())
     }
