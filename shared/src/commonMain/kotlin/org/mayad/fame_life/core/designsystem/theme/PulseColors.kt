@@ -79,6 +79,8 @@ data class PulseColors(
     /** Tint over the blurred, pinned HUD; [hudGlassFallback] where the platform can't blur. */
     val hudGlass: Color,
     val hudGlassFallback: Color,
+    /** Tint over the blurred tab bar; [navSurface] stays the opaque fallback. */
+    val navGlass: Color,
     /** Metallic coin and medal faces. */
     val coinRim: Color,
     val coinFace: Color,
@@ -138,6 +140,7 @@ val DarkPulseColors = PulseColors(
     hudRimBright = Color(0x997FA2FF),
     hudGlass = Color(0xB30A1024),
     hudGlassFallback = Color(0xF20A1024),
+    navGlass = Color(0x8C0D1220),
     coinRim = Color(0xFFB86B12),
     coinFace = Color(0xFFFFD36B),
 )

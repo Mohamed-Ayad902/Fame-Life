@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import org.koin.compose.viewmodel.koinViewModel
 import org.mayad.fame_life.core.designsystem.components.AtmosphereBackground
 import org.mayad.fame_life.core.designsystem.theme.Motion
@@ -38,6 +40,12 @@ fun MainShell(navigation: MainNavigation, viewModel: ShellViewModel = koinViewMo
     }
     val select = { tab: Tab -> viewModel.onIntent(ShellIntent.Select(tab)) }
     val create = { viewModel.onIntent(ShellIntent.Create) }
+    // The tabs record themselves (over the page color) so the floating tab bar can blur what scrolls beneath it.
+    val pageColor = Pulse.colors.background
+    val backdrop = rememberLayerBackdrop {
+        drawRect(pageColor)
+        drawContent()
+    }
     AtmosphereBackground {
         if (Pulse.width == PulseWidth.Expanded) {
             Row(Modifier.fillMaxSize()) {
@@ -45,8 +53,8 @@ fun MainShell(navigation: MainNavigation, viewModel: ShellViewModel = koinViewMo
                 TabContent(state.tab, navigation, onOpenInbox = { select(Tab.INBOX) }, Modifier.weight(1f).fillMaxHeight())
             }
         } else {
-            TabContent(state.tab, navigation, onOpenInbox = { select(Tab.INBOX) }, Modifier.fillMaxSize())
-            PulseTabBar(state.tab, state.unread, onSelect = select, onCreate = create, modifier = Modifier.align(Alignment.BottomCenter))
+            TabContent(state.tab, navigation, onOpenInbox = { select(Tab.INBOX) }, Modifier.fillMaxSize().layerBackdrop(backdrop))
+            PulseTabBar(state.tab, state.unread, onSelect = select, onCreate = create, backdrop = backdrop, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
     // The daily check-in calendar opens over the tabs when today's reward is waiting.

@@ -37,6 +37,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.backdrops.emptyBackdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.isRenderEffectSupported
 import famelife.shared.generated.resources.Res
 import famelife.shared.generated.resources.go_live
 import famelife.shared.generated.resources.tab_discover
@@ -76,9 +83,22 @@ private fun Modifier.navSurface(shape: Shape): Modifier {
         .border(dimens.hairline, Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.14f), colors.highlight.copy(alpha = 0.03f))), shape)
 }
 
+/**
+ * The floating tab bar as liquid glass: it blurs and saturates the tab content behind it ([backdrop]), with a lens at
+ * the rounded ends on Android 13+. Without RenderEffect (Android 11 and older) it draws the opaque nav surface.
+ */
 @Composable
-internal fun PulseTabBar(selected: Tab, unread: Int, onSelect: (Tab) -> Unit, onCreate: () -> Unit, modifier: Modifier = Modifier) {
+internal fun PulseTabBar(
+    selected: Tab,
+    unread: Int,
+    onSelect: (Tab) -> Unit,
+    onCreate: () -> Unit,
+    modifier: Modifier = Modifier,
+    backdrop: Backdrop = emptyBackdrop(),
+) {
+    val colors = Pulse.colors
     val dimens = Pulse.dimens
+    val glass = if (isRenderEffectSupported()) colors.navGlass else colors.navSurface
     Box(
         modifier
             .fillMaxWidth()
@@ -90,7 +110,17 @@ internal fun PulseTabBar(selected: Tab, unread: Int, onSelect: (Tab) -> Unit, on
             Modifier
                 .fillMaxWidth()
                 .height(dimens.navBarHeight)
-                .navSurface(CircleShape)
+                .drawBackdrop(
+                    backdrop = backdrop,
+                    shape = { CircleShape },
+                    effects = {
+                        vibrancy()
+                        blur(dimens.navBlur.toPx())
+                        lens(dimens.navLensHeight.toPx(), dimens.navLensAmount.toPx())
+                    },
+                    onDrawSurface = { drawRect(glass) },
+                )
+                .border(dimens.hairline, Brush.verticalGradient(listOf(colors.highlight.copy(alpha = 0.14f), colors.highlight.copy(alpha = 0.03f))), CircleShape)
                 .padding(horizontal = dimens.sm),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
