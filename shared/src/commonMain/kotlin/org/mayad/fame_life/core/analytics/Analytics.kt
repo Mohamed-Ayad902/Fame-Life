@@ -27,6 +27,11 @@ sealed class AnalyticsEvent(val name: String, val params: Map<String, Any> = emp
     data object SummaryShared : AnalyticsEvent("summary_shared")
     data class AchievementUnlocked(val level: String) : AnalyticsEvent("achievement_unlocked", mapOf("level" to level))
     data class PermissionResult(val camera: Boolean, val mic: Boolean) : AnalyticsEvent("live_permissions", mapOf("camera" to camera, "mic" to mic))
+    // Points economy: counts and amounts only, never balances tied to a name.
+    data class StreakClaimed(val streakDays: Int, val reward: Int) : AnalyticsEvent("streak_claimed", mapOf("streak_days" to streakDays, "reward" to reward))
+    data class LivePaid(val style: String, val cost: Int) : AnalyticsEvent("live_paid", mapOf("live_style" to style, "cost" to cost))
+    data class PointsShort(val style: String, val cost: Int) : AnalyticsEvent("points_short", mapOf("live_style" to style, "cost" to cost))
+    data class RewardAd(val outcome: String) : AnalyticsEvent("reward_ad", mapOf("outcome" to outcome))
     data object PaywallViewed : AnalyticsEvent("paywall_viewed")
     data object SignupStarted : AnalyticsEvent("signup_started")
     data object SignupCompleted : AnalyticsEvent("sign_up", mapOf("method" to "google"))

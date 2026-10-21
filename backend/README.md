@@ -6,12 +6,22 @@ The trusted server between the app and the AI providers. The app never holds a p
 | --- | --- | --- |
 | `POST /v1/transcribe` | one utterance as 16 kHz mono WAV (≤ 1 MB) | Groq Whisper; detects Arabic/English itself. Returns `{text, language}`. |
 | `POST /v1/audience` | `AudienceRequest` JSON (`PROTOCOL_VERSION = 1`) | Gemini writes the comments. Returns `AudienceResponseDto` JSON. |
+| `POST /v1/points/checkin` | `{tz_offset_minutes}` | Daily streak reward, once per local day. Returns `{claimed, reward, wallet}`. |
+| `POST /v1/points/spend` | `{session_id, style_id}` | Charges the live style's cost once per session. 402 when short. |
+| `GET /v1/ads/admob-ssv` | AdMob's signed query | Credits a verified rewarded ad. Called by AdMob, not the app. |
 | `GET /healthz` | – | liveness |
 
 Every `/v1` call needs `Authorization: Bearer <Firebase ID token>` for project `live-fame`; the server verifies the
 signature itself (no Admin SDK). Per-user limits (in memory, reset on restart) protect the free provider quotas.
 Logs hold the route, status, latency and a hashed uid, never speech or comments. Audio is forwarded to Groq and not
 stored.
+
+The points routes need a Firebase service account (Firebase console → Project settings → Service accounts →
+Generate new private key). Install it with `sudo bash deploy/setup.sh --service-account <key.json>`; it is stored at
+`/etc/pulse/service-account.json` (readable by the service only) and the copy you uploaded is deleted. Without it the
+points routes answer 503 and lives are not charged. With it, `/v1/audience` only answers lives that were paid for.
+Wallets are written with the Firestore REST API (conditional commits instead of transactions); see
+`docs/ARCHITECTURE.md`, "Points economy", for the config document admins edit.
 
 No npm dependencies: Node 20+ only.
 

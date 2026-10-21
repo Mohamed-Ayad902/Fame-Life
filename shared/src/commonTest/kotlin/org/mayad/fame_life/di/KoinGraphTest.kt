@@ -21,6 +21,10 @@ import org.mayad.fame_life.data.local.ProfileRepository
 import org.mayad.fame_life.data.local.SessionHistoryRepository
 import org.mayad.fame_life.domain.account.AuthService
 import org.mayad.fame_life.domain.account.FakeAuthService
+import org.mayad.fame_life.domain.economy.NoRewardedAds
+import org.mayad.fame_life.domain.economy.PointsService
+import org.mayad.fame_life.domain.economy.RewardedAds
+import org.mayad.fame_life.domain.economy.UnavailablePointsService
 import org.mayad.fame_life.domain.simulation.SimulationConfig
 import org.mayad.fame_life.feature.ViewModelTest
 import org.mayad.fame_life.feature.discover.DiscoverViewModel
@@ -31,6 +35,7 @@ import org.mayad.fame_life.feature.live.LiveSummaryViewModel
 import org.mayad.fame_life.feature.notifications.InboxViewModel
 import org.mayad.fame_life.feature.onboarding.OnboardingViewModel
 import org.mayad.fame_life.feature.onboarding.ProfileSetupViewModel
+import org.mayad.fame_life.feature.points.DailyRewardViewModel
 import org.mayad.fame_life.feature.post.PostDetailViewModel
 import org.mayad.fame_life.feature.profile.CreatorProfileViewModel
 import org.mayad.fame_life.feature.profile.EditProfileViewModel
@@ -58,6 +63,8 @@ class KoinGraphTest : ViewModelTest() {
         single { EntitlementRepository() }
         single { AccountSync(get(), FakeCloudStore(), get(), get(), get(), get(), get(AppScope), { 10 }, { _, _ -> }) }
         single { LiveServices(speech = null, audience = null) }
+        single<PointsService> { UnavailablePointsService() }
+        single<RewardedAds> { NoRewardedAds }
     }
 
     @AfterTest
@@ -77,6 +84,7 @@ class KoinGraphTest : ViewModelTest() {
         assertNotNull(koin.get<EditProfileViewModel>())
         assertNotNull(koin.get<SettingsViewModel>())
         assertNotNull(koin.get<PaywallViewModel>())
+        assertNotNull(koin.get<DailyRewardViewModel>())
         assertNotNull(koin.get<PostDetailViewModel> { parametersOf("missing") })
         assertNotNull(koin.get<CreatorProfileViewModel> { parametersOf("missing") })
         assertNotNull(koin.get<LiveSetupViewModel> { parametersOf("title") })

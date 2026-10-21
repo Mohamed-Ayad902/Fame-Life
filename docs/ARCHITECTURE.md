@@ -69,6 +69,8 @@ Profile/SessionHistory/NotificationRepository (data/local) — the device cache 
 | `users/{uid}/notifications/{id}` | `InAppNotification`, newest 100 | owner |
 | `entitlements/{uid}` | verified plan | backend only |
 | `usage/{uid}/…` | AI and session counters | backend only |
+| `wallets/{uid}`, `wallets/{uid}/ledger/{id}` | points balance, streak, one entry per grant or spend | backend only |
+| `config/economy` | admin-tuned points values (read by every signed-in user) | admins, in the console |
 
 Rules live in `firestore.rules` (owner-only, field validation, server-only entitlements and usage); deploy with
 `firebase deploy --only firestore --project live-fame`. No per-tick live data and no transcripts are written.
@@ -82,6 +84,41 @@ sign-in.
 `Entitlements(plan, source)` maps to `PlanLimits`. Today the source is always `DEFAULT_FREE`. Paid limits will require
 `VERIFIED` (from the server after store purchase verification). Local counters, such as lives per day on the setup
 screen, are a convenience only; the server is the authority.
+
+## Points economy
+
+Points are an in-app simulation currency (never money, never real reach). The server owns every balance change; the
+app only reads its wallet.
+
+```
+config/economy (Firestore, edited by admins in the Firebase console) ─┐
+                                                                       ├→ backend/src/economy.mjs → wallets/{uid} + ledger
+App: POST /v1/points/checkin · /v1/points/spend  ─────────────────────┘                    │
+AdMob: GET /v1/ads/admob-ssv (signed callback) ──────────────────────→ credit             │
+App ← Firestore listener on wallets/{uid} and config/economy ← ─────────────────────────────┘
+```
+
+- **Daily streak**: one check-in per local day (the phone reports its UTC offset; a second claim also needs 6 hours
+  since the last). Consecutive days walk through `streakRewards` (day 1 … day N, then the cycle repeats); a missed day
+  starts again at day 1. `DailyRewardHost` in the main shell opens the calendar once per session when a reward waits.
+- **Going live** costs `liveCosts[styleId]` (or `defaultLiveCost`). The studio charges before starting; the session id
+  is the idempotency key (ledger `live-{sessionId}`), so a retried request never charges twice. `/v1/audience` refuses
+  AI comments (402) for a live that wasn't paid, and the app falls back to its on-device audience.
+- **Reward ads**: AdMob rewarded ads with server-side verification. The ad carries the uid; only AdMob's signed
+  callback (ECDSA, keys from gstatic) credits `adReward`, at most `adsPerDay` per UTC day, once per `transaction_id`.
+  Earning the reward on the phone credits nothing by itself. Consent goes through Google's UMP before any ad request.
+- **Admin config** (`config/economy`, all optional; bad values fall back field by field to the defaults that both
+  `EconomyConfig.Default` and the backend's `DEFAULT_CONFIG` hold):
+  `enabled` (false = lives are free), `startingBalance`, `streakRewards` (1–31 ints), `defaultLiveCost`,
+  `liveCosts` (map style id → points), `adReward`, `adsPerDay`, `adUnits` (allowed `ca-app-pub-…/…` ids; empty = any).
+  Changes reach the app live and the server within a minute. A Firestore document was chosen over Remote Config because
+  the server must enforce the same values: one document both sides read, no extra SDK in the app, and rules keep it
+  read-only for clients.
+- Without a backend (or on iOS today) `UnavailablePointsService` applies: no balance is shown and lives are free.
+- To enable: deploy `firestore.rules`; on the server install a Firebase service account
+  (`sudo bash deploy/setup.sh --service-account key.json`); for ads, create the AdMob app and rewarded unit, set its SSV
+  callback URL to `https://<backend>/v1/ads/admob-ssv`, and put `pulse.admobAppId` / `pulse.admobRewardedUnitId` in
+  `local.properties`.
 
 ## Local data
 

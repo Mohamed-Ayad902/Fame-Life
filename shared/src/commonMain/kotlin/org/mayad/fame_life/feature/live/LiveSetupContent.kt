@@ -78,6 +78,9 @@ import famelife.shared.generated.resources.perm_denied_body
 import famelife.shared.generated.resources.perm_title
 import famelife.shared.generated.resources.perm_unsupported_body
 import famelife.shared.generated.resources.perm_unsupported_title
+import famelife.shared.generated.resources.points_go_live_cost
+import famelife.shared.generated.resources.points_paying
+import famelife.shared.generated.resources.points_style_cost
 import org.jetbrains.compose.resources.stringResource
 import org.mayad.fame_life.core.designsystem.art.Artwork
 import org.mayad.fame_life.core.designsystem.components.AvatarRing
@@ -108,6 +111,13 @@ import org.mayad.fame_life.domain.simulation.AudienceLanguage
 import org.mayad.fame_life.domain.simulation.AudiencePreset
 import org.mayad.fame_life.domain.simulation.AudienceVibe
 import org.mayad.fame_life.domain.simulation.EventFrequency
+import org.mayad.fame_life.core.ui.messageRes
+import org.mayad.fame_life.domain.economy.EconomyConfig
+import org.mayad.fame_life.domain.economy.PointsState
+import org.mayad.fame_life.domain.economy.StreakRules
+import org.mayad.fame_life.domain.economy.Wallet
+import org.mayad.fame_life.feature.points.PointsBalancePill
+import org.mayad.fame_life.feature.points.PointsShortPanel
 import org.mayad.fame_life.feature.profile.selfAvatar
 
 
@@ -146,6 +156,10 @@ fun LiveSetupContent(
             Row(Modifier.fillMaxWidth().padding(dimens.lg), verticalAlignment = Alignment.CenterVertically) {
                 GlassIconButton(Glyphs.Close, contentDescription = stringResource(Res.string.live_close), onClick = onClose)
                 Spacer(Modifier.weight(1f))
+                (state.points as? PointsState.Ready)?.let {
+                    PointsBalancePill(it.balance)
+                    Spacer(Modifier.width(dimens.sm))
+                }
                 LiveBadge(label = stringResource(Res.string.live_preview))
             }
             val options: @Composable ColumnScope.() -> Unit = {
@@ -173,7 +187,7 @@ fun LiveSetupContent(
                     options()
                 }
             }
-            GoLiveBar(state, onGoLive)
+            GoLiveBar(state, onGoLive, onIntent)
         }
     }
 }
@@ -252,7 +266,9 @@ private fun ColumnScope.SetupOptions(
         Row(horizontalArrangement = Arrangement.spacedBy(dimens.md)) {
             LiveStyles.all.forEach { option ->
                 val locked = option.id !in limits.liveStyles
-                StyleCard(option, selected = option.id == draft.styleId, locked = locked) { onIntent(LiveSetupIntent.Style(option.id)) }
+                StyleCard(option, selected = option.id == draft.styleId, locked = locked, cost = state.costOf(option.id)) {
+                    onIntent(LiveSetupIntent.Style(option.id))
+                }
             }
         }
     }
@@ -311,12 +327,44 @@ private fun ColumnScope.SetupOptions(
 }
 
 @Composable
-private fun GoLiveBar(state: LiveSetupUiState, onGoLive: () -> Unit) {
+private fun GoLiveBar(state: LiveSetupUiState, onGoLive: () -> Unit, onIntent: (LiveSetupIntent) -> Unit) {
     val colors = Pulse.colors
     val dimens = Pulse.dimens
+    val wallet = state.points as? PointsState.Ready
     Column(Modifier.padding(horizontal = dimens.gutter, vertical = dimens.md)) {
+        // Keeps the last shortfall while it animates out.
+        var lastShortfall by remember { mutableStateOf(state.shortfall) }
+        state.shortfall?.let { lastShortfall = it }
+        AnimatedVisibility(state.shortfall != null && wallet != null) {
+            val shortfall = lastShortfall
+            if (shortfall != null && wallet != null) {
+                PointsShortPanel(
+                    cost = shortfall.cost,
+                    balance = wallet.balance,
+                    adReward = wallet.config.adReward,
+                    adsLeft = wallet.adsLeftToday,
+                    adsAvailable = state.adsAvailable,
+                    todayReward = wallet.todayReward,
+                    adStatus = state.adStatus,
+                    adCredited = state.adCredited,
+                    onWatchAd = { onIntent(LiveSetupIntent.WatchAd) },
+                    onClaimDaily = { onIntent(LiveSetupIntent.ClaimDaily) },
+                    onDismiss = { onIntent(LiveSetupIntent.DismissShortfall) },
+                    modifier = Modifier.padding(bottom = dimens.md),
+                )
+            }
+        }
+        state.pointsError?.let {
+            Text(stringResource(it.messageRes), style = Pulse.type.bodySmall, color = colors.error, modifier = Modifier.padding(bottom = dimens.sm))
+        }
+        val cost = state.cost
         PrimaryButton(
-            stringResource(if (state.livesLeft > 0) Res.string.go_live else Res.string.live_no_lives),
+            when {
+                state.livesLeft == 0 -> stringResource(Res.string.live_no_lives)
+                state.paying -> stringResource(Res.string.points_paying)
+                cost != null -> stringResource(Res.string.points_go_live_cost, cost)
+                else -> stringResource(Res.string.go_live)
+            },
             onClick = onGoLive,
             enabled = state.canGoLive,
             leading = Glyphs.Bolt,
@@ -414,7 +462,7 @@ private fun ChipRow(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun StyleCard(style: LiveStyle, selected: Boolean, locked: Boolean, onClick: () -> Unit) {
+private fun StyleCard(style: LiveStyle, selected: Boolean, locked: Boolean, cost: Int?, onClick: () -> Unit) {
     val colors = Pulse.colors
     val dimens = Pulse.dimens
     val name = stringResource(style.name)
@@ -441,6 +489,7 @@ private fun StyleCard(style: LiveStyle, selected: Boolean, locked: Boolean, onCl
         }
         Spacer(Modifier.height(dimens.xs))
         Text(name, style = Pulse.type.label, color = if (selected) colors.textPrimary else colors.textSecondary)
+        if (cost != null) Text(stringResource(Res.string.points_style_cost, cost), style = Pulse.type.meta, color = colors.gold)
     }
 }
 
@@ -482,7 +531,7 @@ private fun ProHintBanner(text: String, onSeePro: () -> Unit, onDismiss: () -> U
 @Composable
 private fun LiveSetupPreview() = PreviewContainer {
     LiveSetupContent(
-        state = LiveSetupUiState(SetupDraft(title = "Story time"), avatarPalette = 3, livesLeft = 2, proHint = ProHint.Mood(AudienceVibe.CRITICAL)),
+        state = LiveSetupUiState(SetupDraft(title = "Story time"), avatarPalette = 3, livesLeft = 2, proHint = ProHint.Mood(AudienceVibe.CRITICAL), points = previewWallet(120)),
         permission = PermissionNeed.NOT_ASKED,
         cameraPreview = false,
         onIntent = {},
@@ -490,5 +539,40 @@ private fun LiveSetupPreview() = PreviewContainer {
         onAllow = {},
         onClose = {},
         onSeePro = {},
+    )
+}
+
+@ScreenPreviews
+@Composable
+private fun LiveSetupShortOfPointsPreview() = PreviewContainer {
+    LiveSetupContent(
+        state = LiveSetupUiState(
+            SetupDraft(title = "Late night Q&A", styleId = LiveStyles.Noir.id),
+            avatarPalette = 5,
+            livesLeft = 3,
+            points = previewWallet(20),
+            adsAvailable = true,
+            shortfall = Shortfall(cost = 50),
+        ),
+        permission = PermissionNeed.NONE,
+        cameraPreview = false,
+        onIntent = {},
+        onGoLive = {},
+        onAllow = {},
+        onClose = {},
+        onSeePro = {},
+    )
+}
+
+private fun previewWallet(balance: Int): PointsState.Ready {
+    val wallet = Wallet(balance = balance, streak = 2, lastClaimDay = 0, lastClaimAtMs = 0)
+    val config = EconomyConfig.Default
+    return PointsState.Ready(
+        balance = balance,
+        streakDays = 2,
+        canClaimToday = true,
+        calendar = StreakRules.calendar(wallet, config, nowMs = 86_400_000L + StreakRules.MIN_CLAIM_GAP_MS, offsetMinutes = 0),
+        config = config,
+        adsLeftToday = config.adsPerDay,
     )
 }

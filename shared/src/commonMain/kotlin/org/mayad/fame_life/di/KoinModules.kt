@@ -20,6 +20,8 @@ import org.mayad.fame_life.core.platform.SystemMotionPreference
 import org.mayad.fame_life.core.platform.TextStore
 import org.mayad.fame_life.core.platform.createGoogleTokenProvider
 import org.mayad.fame_life.core.platform.createPulseBackend
+import org.mayad.fame_life.core.platform.createRewardedAds
+import org.mayad.fame_life.core.platform.utcOffsetMinutes
 import org.mayad.fame_life.core.platform.createSpeechInput
 import org.mayad.fame_life.core.platform.createTextStore
 import org.mayad.fame_life.core.platform.isFirebaseConfigured
@@ -27,6 +29,9 @@ import org.mayad.fame_life.data.cloud.AccountSync
 import org.mayad.fame_life.data.cloud.DeferredCloudSink
 import org.mayad.fame_life.data.cloud.FirebaseAuthService
 import org.mayad.fame_life.data.cloud.FirestoreCloudStore
+import org.mayad.fame_life.data.economy.BackendPointsApi
+import org.mayad.fame_life.data.economy.CloudPointsService
+import org.mayad.fame_life.data.economy.FirestoreEconomyStore
 import org.mayad.fame_life.data.local.EntitlementRepository
 import org.mayad.fame_life.data.local.NotificationRepository
 import org.mayad.fame_life.data.local.ProfileRepository
@@ -37,6 +42,9 @@ import org.mayad.fame_life.domain.account.UnavailableAuthService
 import org.mayad.fame_life.domain.ai.AudienceGenerator
 import org.mayad.fame_life.domain.ai.RemoteAudienceGenerator
 import org.mayad.fame_life.domain.ai.SpeechInput
+import org.mayad.fame_life.domain.economy.PointsService
+import org.mayad.fame_life.domain.economy.RewardedAds
+import org.mayad.fame_life.domain.economy.UnavailablePointsService
 
 /**
  * Optional services for a live session. [audience] is the backend generator: null when the build has no backend URL
@@ -87,6 +95,23 @@ val dataModule = module {
             onError = { what, error -> println("Pulse: cloud $what failed (${error::class.simpleName})") },
         ).also { get<DeferredCloudSink>().target = it }
     }
+
+    // Points: the wallet is read from Firestore and changed only through the backend. Without a backend (or on a
+    // build without Firebase) there is no economy and lives are free.
+    single<PointsService> {
+        val backend = if (isFirebaseConfigured()) createPulseBackend() else null
+        if (backend == null) UnavailablePointsService()
+        else CloudPointsService(
+            auth = get(),
+            store = FirestoreEconomyStore(),
+            api = BackendPointsApi(backend),
+            clock = get(),
+            utcOffsetMinutes = ::utcOffsetMinutes,
+            scope = get(AppScope),
+            onError = { what, error -> println("Pulse: $what failed (${error::class.simpleName})") },
+        )
+    }
+    single<RewardedAds> { createRewardedAds() }
 
     single {
         val backend = if (isFirebaseConfigured()) createPulseBackend() else null

@@ -18,12 +18,15 @@ core-splashscreen = "1.2.0"
 gitlive-firebase = "2.7.0"
 androidx-credentials = "1.6.0"
 googleid = "1.2.1"
+play-services-ads = "25.5.0"
+ump = "4.0.0"
 navigation3 = "1.1.2"
 koin = "4.2.2"
 collections-immutable = "0.5.2"
 google-services = "4.5.0"
 kotlin = "2.4.20"
 material3 = "1.12.0-alpha03"
+haze = "2.0.1"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -36,6 +39,8 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
 androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
+ump = { module = "com.google.android.ump:user-messaging-platform", version.ref = "ump" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
@@ -44,6 +49,8 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "collections-immutable" }
 gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
 gitlive-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive-firebase" }

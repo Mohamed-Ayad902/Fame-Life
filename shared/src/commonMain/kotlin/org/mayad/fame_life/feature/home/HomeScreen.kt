@@ -6,13 +6,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.mayad.fame_life.feature.shell.MainNavigation
 
-/** Tier 1: connects Home's state to its content and turns taps into navigation. */
+/**
+ * Tier 1: connects Home's state to its content and turns taps into navigation. [onOpenWallet] opens the daily
+ * streak and points dialog; without it the HUD pills only display.
+ */
 @Composable
-fun HomeScreen(navigation: MainNavigation, onOpenInbox: () -> Unit, viewModel: HomeViewModel = koinViewModel()) {
+fun HomeScreen(
+    navigation: MainNavigation,
+    onOpenInbox: () -> Unit,
+    onOpenWallet: (() -> Unit)? = null,
+    viewModel: HomeViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     HomeContent(
         state = state,
         onInbox = onOpenInbox,
+        onWallet = onOpenWallet,
         onCreator = navigation.openCreator,
         onPost = navigation.openPost,
         onChallenge = navigation.openLiveSetup,

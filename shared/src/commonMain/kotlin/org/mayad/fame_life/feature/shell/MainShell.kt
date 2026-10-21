@@ -21,6 +21,7 @@ import org.mayad.fame_life.core.presentation.CollectEvents
 import org.mayad.fame_life.feature.discover.DiscoverScreen
 import org.mayad.fame_life.feature.home.HomeScreen
 import org.mayad.fame_life.feature.notifications.InboxScreen
+import org.mayad.fame_life.feature.points.DailyRewardHost
 import org.mayad.fame_life.feature.profile.OwnProfileScreen
 
 /**
@@ -48,6 +49,8 @@ fun MainShell(navigation: MainNavigation, viewModel: ShellViewModel = koinViewMo
             PulseTabBar(state.tab, state.unread, onSelect = select, onCreate = create, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
+    // The daily check-in calendar opens over the tabs when today's reward is waiting.
+    DailyRewardHost()
 }
 
 @Composable

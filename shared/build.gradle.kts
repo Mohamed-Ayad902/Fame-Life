@@ -51,6 +51,8 @@ kotlin {
             implementation(libs.androidx.credentials)
             implementation(libs.androidx.credentials.play.services)
             implementation(libs.googleid)
+            implementation(libs.play.services.ads)
+            implementation(libs.ump)
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
@@ -73,6 +75,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.collections.immutable)
+            implementation(libs.haze)
+            implementation(libs.haze.blur)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

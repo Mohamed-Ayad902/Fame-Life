@@ -9,6 +9,7 @@ object PulseBrand {
     val Midnight = Color(0xFF080B14)
     val Blue = Color(0xFF4C7DFF)
     val BlueLight = Color(0xFF7FA2FF)
+    val BlueDeep = Color(0xFF2F55D8)
     val Violet = Color(0xFF945CFF)
     val Cyan = Color(0xFF55E5F2)
     val Gold = Color(0xFFFFC66D)
@@ -70,12 +71,27 @@ data class PulseColors(
     val criticalBubble: Color,
     /** Behind the camera before frames arrive. */
     val cameraBase: Color,
+    /** Game-HUD panels: a deep navy body lit from the top, with a cool blue rim. */
+    val hudPanel: Color,
+    val hudPanelTop: Color,
+    val hudRim: Color,
+    val hudRimBright: Color,
+    /** Tint over the blurred, pinned HUD; [hudGlassFallback] where the platform can't blur. */
+    val hudGlass: Color,
+    val hudGlassFallback: Color,
+    /** Metallic coin and medal faces. */
+    val coinRim: Color,
+    val coinFace: Color,
 ) {
     // Built once per palette instead of on every read.
     val brandGradient: Brush = Brush.linearGradient(listOf(primary, violet))
     val liveGradient: Brush = Brush.linearGradient(listOf(live, coral))
     val goldGradient: Brush = Brush.linearGradient(listOf(goldLight, gold, goldDeep))
     val orbGradient: Brush = Brush.linearGradient(listOf(primaryLight, primary, violet))
+    val hudPanelBrush: Brush = Brush.verticalGradient(listOf(hudPanelTop, hudPanel))
+    val hudRimBrush: Brush = Brush.verticalGradient(listOf(hudRimBright, hudRim))
+    val hudHeaderBrush: Brush = Brush.verticalGradient(listOf(primaryLight, primary, PulseBrand.BlueDeep))
+    val successGradient: Brush = Brush.linearGradient(listOf(success, cyan))
 }
 
 val DarkPulseColors = PulseColors(
@@ -116,4 +132,12 @@ val DarkPulseColors = PulseColors(
     glassBorder = Color(0x22FFFFFF),
     criticalBubble = Color(0x553A1420),
     cameraBase = Color.Black,
+    hudPanel = Color(0xFF0C1430),
+    hudPanelTop = Color(0xFF16245A),
+    hudRim = Color(0x334C7DFF),
+    hudRimBright = Color(0x997FA2FF),
+    hudGlass = Color(0xB30A1024),
+    hudGlassFallback = Color(0xF20A1024),
+    coinRim = Color(0xFFB86B12),
+    coinFace = Color(0xFFFFD36B),
 )

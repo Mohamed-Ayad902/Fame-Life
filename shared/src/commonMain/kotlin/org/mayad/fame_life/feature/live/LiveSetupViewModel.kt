@@ -3,7 +3,9 @@ package org.mayad.fame_life.feature.live
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.mayad.fame_life.core.analytics.Analytics
 import org.mayad.fame_life.core.analytics.AnalyticsEvent
 import org.mayad.fame_life.core.platform.EpochClock
@@ -11,6 +13,13 @@ import org.mayad.fame_life.core.presentation.MviViewModel
 import org.mayad.fame_life.data.local.EntitlementRepository
 import org.mayad.fame_life.data.local.ProfileRepository
 import org.mayad.fame_life.data.local.SessionHistoryRepository
+import org.mayad.fame_life.domain.economy.AdOutcome
+import org.mayad.fame_life.domain.economy.ClaimResult
+import org.mayad.fame_life.domain.economy.PointsError
+import org.mayad.fame_life.domain.economy.PointsService
+import org.mayad.fame_life.domain.economy.PointsState
+import org.mayad.fame_life.domain.economy.RewardedAds
+import org.mayad.fame_life.domain.economy.SpendResult
 import org.mayad.fame_life.domain.entitlement.Plan
 import org.mayad.fame_life.domain.entitlement.PlanLimits
 import org.mayad.fame_life.domain.simulation.AudienceLanguage
@@ -24,6 +33,8 @@ import kotlin.random.Random
 private const val DAY_MS = 24 * 60 * 60 * 1000L
 internal const val SECONDS_PER_MINUTE = 60
 internal val LENGTH_OPTIONS = listOf(5, 10, 20, 45)
+/** How long to wait for AdMob's server callback to credit the wallet before saying the points are on their way. */
+internal const val AD_CREDIT_WAIT_MS = 30_000L
 
 /** Everything the creator picks before going live. */
 @Immutable
@@ -47,6 +58,13 @@ sealed interface ProHint {
     data class Length(val maxMinutes: Int) : ProHint
 }
 
+/** Where a reward ad is: shown, waiting for the server to credit it, or how it ended. */
+enum class AdStatus { IDLE, SHOWING, VERIFYING, CREDITED, PENDING, DISMISSED, FAILED }
+
+/** Going live was refused for points: what the room costs. The balance is read live from [LiveSetupUiState.points]. */
+@Immutable
+data class Shortfall(val cost: Int)
+
 @Immutable
 data class LiveSetupUiState(
     val draft: SetupDraft,
@@ -57,8 +75,23 @@ data class LiveSetupUiState(
     val livesLeft: Int = 0,
     val proHint: ProHint? = null,
     val showMore: Boolean = false,
+    /** The wallet; [PointsState.Unavailable] means lives are free in this build. */
+    val points: PointsState = PointsState.Unavailable,
+    val adsAvailable: Boolean = false,
+    /** Charging the live's points. */
+    val paying: Boolean = false,
+    val shortfall: Shortfall? = null,
+    val adStatus: AdStatus = AdStatus.IDLE,
+    /** Points the last reward ad added, once the server confirmed them. */
+    val adCredited: Int = 0,
+    val pointsError: PointsError? = null,
 ) {
-    val canGoLive: Boolean get() = livesLeft > 0
+    val canGoLive: Boolean get() = livesLeft > 0 && !paying
+
+    /** What going live in the selected style costs, or null when there is no economy. */
+    val cost: Int? get() = (points as? PointsState.Ready)?.config?.liveCost(draft.styleId)
+
+    fun costOf(styleId: String): Int? = (points as? PointsState.Ready)?.config?.liveCost(styleId)
 }
 
 sealed interface LiveSetupIntent {
@@ -74,6 +107,9 @@ sealed interface LiveSetupIntent {
     data object ToggleMore : LiveSetupIntent
     data class PermissionResult(val camera: Boolean, val mic: Boolean) : LiveSetupIntent
     data class GoLive(val camera: Boolean, val mic: Boolean) : LiveSetupIntent
+    data object WatchAd : LiveSetupIntent
+    data object ClaimDaily : LiveSetupIntent
+    data object DismissShortfall : LiveSetupIntent
 }
 
 sealed interface LiveSetupEvent {
@@ -83,12 +119,17 @@ sealed interface LiveSetupEvent {
 /**
  * The pre-live studio. Owns the draft and decides which options the plan unlocks. The plan here only shapes the UI:
  * the engine re-applies [SimulationConfig.constrainedTo], and paid AI limits are enforced by the backend.
+ *
+ * Going live costs points (per live style, set by admins). The server charges them; when the balance is short the
+ * studio offers today's streak reward and a reward ad, whose points the server credits after AdMob confirms the view.
  */
 class LiveSetupViewModel(
     initialTitle: String,
     profiles: ProfileRepository,
     history: SessionHistoryRepository,
     entitlements: EntitlementRepository,
+    private val points: PointsService,
+    private val ads: RewardedAds,
     private val analytics: Analytics,
     private val clock: EpochClock,
 ) : MviViewModel<LiveSetupUiState, LiveSetupIntent, LiveSetupEvent>(
@@ -106,7 +147,20 @@ class LiveSetupViewModel(
                 setState { copy(avatarPalette = palette, limits = ent.limits, plan = ent.plan, livesLeft = left) }
             }
         }
+        viewModelScope.launch {
+            points.state.collect { wallet ->
+                setState {
+                    // Enough points now (a reward ad or the streak landed): the shortfall panel has done its job.
+                    val covered = shortfall != null && wallet is PointsState.Ready && wallet.balance >= shortfall.cost
+                    copy(points = wallet, shortfall = if (covered) null else shortfall)
+                }
+            }
+        }
+        setState { copy(adsAvailable = ads.isAvailable) }
     }
+
+    /** Kept until the live is charged or refused, so retrying after a lost response never charges twice. */
+    private var pendingSessionId: String? = null
 
     override fun onIntent(intent: LiveSetupIntent) {
         val limits = currentState.limits
@@ -127,6 +181,9 @@ class LiveSetupViewModel(
             LiveSetupIntent.ToggleMore -> setState { copy(showMore = !showMore) }
             is LiveSetupIntent.PermissionResult -> analytics.log(AnalyticsEvent.PermissionResult(intent.camera, intent.mic))
             is LiveSetupIntent.GoLive -> goLive(intent.camera, intent.mic)
+            LiveSetupIntent.WatchAd -> watchAd()
+            LiveSetupIntent.ClaimDaily -> claimDaily()
+            LiveSetupIntent.DismissShortfall -> setState { copy(shortfall = null, adStatus = AdStatus.IDLE, pointsError = null) }
         }
     }
 
@@ -156,8 +213,65 @@ class LiveSetupViewModel(
             maxDurationSeconds = draft.minutes * SECONDS_PER_MINUTE,
             seed = Random.nextLong(),
         ).constrainedTo(state.limits)
-        analytics.log(AnalyticsEvent.LiveStarted(config.preset.name, config.liveStyleId, state.plan.name, camera, mic))
-        emit(LiveSetupEvent.Start(newSessionId(), config))
+        val sessionId = pendingSessionId ?: newSessionId().also { pendingSessionId = it }
+        setState { copy(paying = true, pointsError = null) }
+        viewModelScope.launch {
+            when (val result = points.payForLive(sessionId, config.liveStyleId)) {
+                is SpendResult.Paid -> {
+                    analytics.log(AnalyticsEvent.LivePaid(config.liveStyleId, result.cost))
+                    start(sessionId, config, state.plan, camera, mic)
+                }
+                SpendResult.Free -> start(sessionId, config, state.plan, camera, mic)
+                is SpendResult.NotEnough -> {
+                    pendingSessionId = null
+                    analytics.log(AnalyticsEvent.PointsShort(config.liveStyleId, result.cost))
+                    setState { copy(paying = false, shortfall = Shortfall(result.cost), adStatus = AdStatus.IDLE) }
+                }
+                is SpendResult.Failed -> setState { copy(paying = false, pointsError = result.error) }
+            }
+        }
+    }
+
+    private fun start(sessionId: String, config: SimulationConfig, plan: Plan, camera: Boolean, mic: Boolean) {
+        pendingSessionId = null
+        analytics.log(AnalyticsEvent.LiveStarted(config.preset.name, config.liveStyleId, plan.name, camera, mic))
+        setState { copy(paying = false, shortfall = null) }
+        emit(LiveSetupEvent.Start(sessionId, config))
+    }
+
+    private fun watchAd() {
+        val uid = points.rewardUserId() ?: return
+        val before = (currentState.points as? PointsState.Ready)?.balance ?: return
+        if (!ads.isAvailable || currentState.adStatus == AdStatus.SHOWING || currentState.adStatus == AdStatus.VERIFYING) return
+        setState { copy(adStatus = AdStatus.SHOWING) }
+        viewModelScope.launch {
+            val outcome = ads.show(uid)
+            analytics.log(AnalyticsEvent.RewardAd(outcome.name.lowercase()))
+            when (outcome) {
+                AdOutcome.EARNED -> {
+                    setState { copy(adStatus = AdStatus.VERIFYING) }
+                    // Only AdMob's signed callback to our server credits points; the wallet listener shows it arriving.
+                    val credited = withTimeoutOrNull(AD_CREDIT_WAIT_MS) {
+                        points.state.first { (it as? PointsState.Ready)?.balance?.let { b -> b > before } == true }
+                    } as? PointsState.Ready
+                    setState {
+                        if (credited != null) copy(adStatus = AdStatus.CREDITED, adCredited = credited.balance - before) else copy(adStatus = AdStatus.PENDING)
+                    }
+                }
+                AdOutcome.DISMISSED -> setState { copy(adStatus = AdStatus.DISMISSED) }
+                AdOutcome.NOT_READY, AdOutcome.FAILED -> setState { copy(adStatus = AdStatus.FAILED) }
+            }
+        }
+    }
+
+    private fun claimDaily() {
+        viewModelScope.launch {
+            when (val result = points.claimDailyReward()) {
+                is ClaimResult.Claimed -> analytics.log(AnalyticsEvent.StreakClaimed(result.streakDays, result.reward))
+                ClaimResult.AlreadyClaimed -> Unit
+                is ClaimResult.Failed -> setState { copy(pointsError = result.error) }
+            }
+        }
     }
 
     private fun updateDraft(change: SetupDraft.() -> SetupDraft) = setState { copy(draft = draft.change(), proHint = null) }

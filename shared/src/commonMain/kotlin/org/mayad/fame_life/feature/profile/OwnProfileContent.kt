@@ -32,18 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import famelife.shared.generated.resources.Res
-import famelife.shared.generated.resources.badge_crowd
-import famelife.shared.generated.resources.badge_crowd_detail
-import famelife.shared.generated.resources.badge_first_live
-import famelife.shared.generated.resources.badge_first_live_detail
-import famelife.shared.generated.resources.badge_gifted
-import famelife.shared.generated.resources.badge_gifted_detail
-import famelife.shared.generated.resources.badge_regular
-import famelife.shared.generated.resources.badge_regular_detail
-import famelife.shared.generated.resources.badge_rising
-import famelife.shared.generated.resources.badge_rising_detail
-import famelife.shared.generated.resources.badge_storyteller
-import famelife.shared.generated.resources.badge_storyteller_detail
 import famelife.shared.generated.resources.go_live
 import famelife.shared.generated.resources.profile_badges
 import famelife.shared.generated.resources.profile_best_peak
@@ -79,19 +67,20 @@ import org.mayad.fame_life.core.designsystem.preview.ScreenPreviews
 import org.mayad.fame_life.core.designsystem.theme.Pulse
 import org.mayad.fame_life.core.format.compactCount
 import org.mayad.fame_life.core.preview.SampleData
+import org.mayad.fame_life.core.ui.detailRes
 import org.mayad.fame_life.core.ui.durationText
+import org.mayad.fame_life.core.ui.gloss
+import org.mayad.fame_life.core.ui.glyph
 import org.mayad.fame_life.core.ui.label
 import org.mayad.fame_life.core.ui.title
+import org.mayad.fame_life.core.ui.titleRes
 import org.mayad.fame_life.data.local.CreatorProfile
 import org.mayad.fame_life.domain.entitlement.Plan
-import org.mayad.fame_life.domain.progression.FameLevel
+import org.mayad.fame_life.domain.progression.Achievements
 import org.mayad.fame_life.domain.progression.FameProgression
 import org.mayad.fame_life.domain.simulation.SessionSummary
 
 private const val BADGES_PER_ROW = 3
-private const val CROWD_PEAK = 1_000
-private const val STORYTELLER_SECONDS = 600
-private const val REGULAR_LIVES = 5
 
 /** Tier 2: stateless. Phones scroll one column; wide windows keep the identity pane beside the lives and badges. */
 @Composable
@@ -232,17 +221,9 @@ private fun LazyListScope.ownTabItems(
 }
 
 /** Badges are derived from progress on the device; they unlock nothing paid. */
-private fun badgesFor(points: Int, sessions: List<SessionSummary>): ImmutableList<Badge> {
-    val level = FameProgression.levelFor(points)
-    return listOf(
-        Badge(Res.string.badge_first_live, Res.string.badge_first_live_detail, Gloss.Violet, Glyphs.Mic, sessions.isNotEmpty()),
-        Badge(Res.string.badge_crowd, Res.string.badge_crowd_detail, Gloss.Blue, Glyphs.Users, sessions.any { it.peakViewers >= CROWD_PEAK }),
-        Badge(Res.string.badge_gifted, Res.string.badge_gifted_detail, Gloss.Gold, Glyphs.Gift, sessions.any { it.topGiftId == "crown" || it.topGiftId == "galaxy" }),
-        Badge(Res.string.badge_storyteller, Res.string.badge_storyteller_detail, Gloss.Cyan, Glyphs.Book, sessions.any { it.durationSeconds >= STORYTELLER_SECONDS }),
-        Badge(Res.string.badge_regular, Res.string.badge_regular_detail, Gloss.Mint, Glyphs.Bolt, sessions.size >= REGULAR_LIVES),
-        Badge(Res.string.badge_rising, Res.string.badge_rising_detail, Gloss.Coral, Glyphs.Star, level >= FameLevel.RISING_CREATOR),
-    ).toImmutableList()
-}
+private fun badgesFor(points: Int, sessions: List<SessionSummary>): ImmutableList<Badge> =
+    Achievements.evaluate(points, sessions).map { Badge(it.achievement.titleRes, it.achievement.detailRes, it.achievement.gloss, it.achievement.glyph, it.unlocked) }
+        .toImmutableList()
 
 @Composable
 private fun SessionRow(summary: SessionSummary, modifier: Modifier = Modifier, onClick: () -> Unit) {

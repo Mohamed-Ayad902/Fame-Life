@@ -8,6 +8,12 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.apps
 import org.mayad.fame_life.data.remote.PulseBackend
 import org.mayad.fame_life.domain.ai.SpeechInput
+import org.mayad.fame_life.domain.economy.NoRewardedAds
+import org.mayad.fame_life.domain.economy.RewardedAds
+import platform.Foundation.NSDate
+import platform.Foundation.NSTimeZone
+import platform.Foundation.dateWithTimeIntervalSince1970
+import platform.Foundation.localTimeZone
 import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIAccessibilityIsReduceMotionEnabled
 import platform.UIKit.UIActivityViewController
@@ -42,6 +48,12 @@ actual fun createPulseBackend(): PulseBackend? = null
 
 /** iOS microphone capture is not built yet; the live screen says so and uses the room's vibe. */
 actual fun createSpeechInput(backend: PulseBackend?): SpeechInput? = null
+
+actual fun utcOffsetMinutes(epochMs: Long): Int =
+    (NSTimeZone.localTimeZone.secondsFromGMTForDate(NSDate.dateWithTimeIntervalSince1970(epochMs / 1000.0)) / 60).toInt()
+
+/** The Google Mobile Ads SDK isn't linked on iOS yet. */
+actual fun createRewardedAds(): RewardedAds = NoRewardedAds
 
 private object UnsupportedLivePermissions : LivePermissions {
     override val camera = false

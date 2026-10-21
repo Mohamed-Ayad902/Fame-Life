@@ -14,6 +14,9 @@ import org.mayad.fame_life.data.remote.PulseBackend
 import org.mayad.fame_life.data.remote.firebaseIdToken
 import org.mayad.fame_life.data.remote.transcribe
 import org.mayad.fame_life.domain.ai.SpeechInput
+import org.mayad.fame_life.domain.economy.NoRewardedAds
+import org.mayad.fame_life.domain.economy.RewardedAds
+import java.util.TimeZone
 
 /**
  * Platform context for the shared code. [init] runs once per process from the Application; [attach] runs from the
@@ -28,13 +31,18 @@ object PulseAndroid {
     internal var backendUrl: String = ""
         private set
 
+    /** The AdMob rewarded ad unit from the app's build config; blank turns reward ads off. */
+    internal var rewardedAdUnitId: String = ""
+        private set
+
     // Held weakly so a destroyed Activity is never leaked.
     private var activityRef: WeakReference<Activity>? = null
     internal val activity: Activity? get() = activityRef?.get()
 
-    fun init(context: Context, backendUrl: String = "") {
+    fun init(context: Context, backendUrl: String = "", rewardedAdUnitId: String = "") {
         appContext = context.applicationContext
         this.backendUrl = backendUrl
+        this.rewardedAdUnitId = rewardedAdUnitId
         // Firebase's content provider normally does this from google-services.json; calling it again is a no-op,
         // and it makes start-up order explicit. Returns null (and accounts stay unavailable) without that file.
         if (Firebase.apps(appContext).isEmpty()) Firebase.initialize(appContext)
@@ -78,3 +86,8 @@ actual fun createPulseBackend(): PulseBackend? =
 actual fun createSpeechInput(backend: PulseBackend?): SpeechInput? =
     if (backend != null) CloudSpeechInput(PulseAndroid.appContext) { samples -> backend.transcribe(samples) }
     else AndroidSpeechInput(PulseAndroid.appContext)
+
+actual fun utcOffsetMinutes(epochMs: Long): Int = TimeZone.getDefault().getOffset(epochMs) / 60_000
+
+actual fun createRewardedAds(): RewardedAds =
+    PulseAndroid.rewardedAdUnitId.takeIf { it.isNotBlank() }?.let(::AdMobRewardedAds) ?: NoRewardedAds
