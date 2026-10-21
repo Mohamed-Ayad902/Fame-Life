@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,13 +46,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.HazeColorEffect
-import dev.chrisbanes.haze.blur.hazeBlur
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
+import com.kyant.backdrop.backdrops.LayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.isRenderEffectSupported
 import famelife.shared.generated.resources.Res
 import famelife.shared.generated.resources.badge_locked
 import famelife.shared.generated.resources.badge_unlocked
@@ -137,7 +138,12 @@ fun HomeContent(
     val dimens = Pulse.dimens
     val grid = rememberLazyStaggeredGridState()
     val cascade = rememberCascadeState()
-    val haze = rememberHazeState()
+    // The grid records itself (over the page color, so the glass never shows transparent pixels) for the HUD to blur.
+    val pageColor = Pulse.colors.background
+    val backdrop = rememberLayerBackdrop {
+        drawRect(pageColor)
+        drawContent()
+    }
     val density = LocalDensity.current
     var hudHeight by remember { mutableStateOf(0.dp) }
     val columns = when (Pulse.width) {
@@ -150,7 +156,7 @@ fun HomeContent(
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(columns),
             state = grid,
-            modifier = Modifier.fillMaxSize().hazeSource(haze),
+            modifier = Modifier.fillMaxSize().layerBackdrop(backdrop),
             contentPadding = PaddingValues(start = dimens.gutter, end = dimens.gutter, top = hudHeight + dimens.sm, bottom = dimens.bottomBarClearance),
             horizontalArrangement = Arrangement.spacedBy(dimens.md),
             verticalItemSpacing = dimens.xl,
@@ -213,7 +219,7 @@ fun HomeContent(
         }
         HomeHud(
             state = state,
-            haze = haze,
+            backdrop = backdrop,
             grid = grid,
             onInbox = onInbox,
             onWallet = onWallet,
@@ -266,7 +272,7 @@ private fun HeroBlock(
 @Composable
 private fun HomeHud(
     state: HomeUiState,
-    haze: HazeState,
+    backdrop: LayerBackdrop,
     grid: LazyStaggeredGridState,
     onInbox: () -> Unit,
     onWallet: (() -> Unit)?,
@@ -280,17 +286,22 @@ private fun HomeHud(
     val levelTitle = hud.level.level.title()
     // Only the spendable wallet opens the points dialog; fame points have nothing to collect.
     val openWallet = onWallet?.takeIf { hud.wallet }
-    val blur = remember(colors, dimens) {
-        HazeBlurStyle {
-            blurRadius(dimens.hudBlur)
-            colorEffects(listOf(HazeColorEffect.tint(colors.hudGlass)))
-            fallbackColorEffect(HazeColorEffect.tint(colors.hudGlassFallback))
-        }
-    }
+    // Below Android 12 Backdrop can't blur, so the glass gets a near-opaque tint instead.
+    val glass = if (isRenderEffectSupported()) colors.hudGlass else colors.hudGlassFallback
     Row(
         modifier
             .fillMaxWidth()
-            .hazeBlur(HazeInput.Sources(haze), blur)
+            .drawBackdrop(
+                backdrop = backdrop,
+                shape = { RectangleShape },
+                effects = {
+                    vibrancy()
+                    blur(dimens.hudBlur.toPx())
+                },
+                highlight = null,
+                shadow = null,
+                onDrawSurface = { drawRect(glass) },
+            )
             .drawBehind {
                 // Read in draw: the divider fades in as soon as anything scrolls beneath the HUD.
                 val scrolled = grid.firstVisibleItemIndex > 0 || grid.firstVisibleItemScrollOffset > 0
