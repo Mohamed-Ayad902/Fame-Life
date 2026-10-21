@@ -1,46 +1,139 @@
 # Pulse (Fame Life)
 
-Pulse is a mobile app that lets anyone feel what it's like to be a popular creator. You browse a social-style feed,
-tap the glowing button to go live with your own camera, and talk. A **simulated** audience listens to what you say
-and reacts: comments, questions, gifts, viewer spikes. When you end the live you get a recap and earn fame points.
+Pulse is a phone app that lets anyone feel what it's like to be a popular creator. You scroll a social-style feed,
+tap the glowing button to "go live" with your own camera, and talk. A **pretend audience** listens to what you say
+and reacts: comments, questions, gifts, viewers joining. When you end the live you get a recap and earn fame points.
 
-Nothing is broadcast. The viewers aren't real, the camera never leaves your phone, and the app says so wherever a
-number could be mistaken for real reach. Keep it that way. The rules every contributor follows are in
-[`CLAUDE.md`](CLAUDE.md); the deeper design notes are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Nothing is broadcast. The viewers aren't real, the camera never leaves your phone, and the app says "Simulated"
+wherever a number could be mistaken for real reach. Keep it that way.
 
-- **Platforms:** Android and iOS from one Kotlin codebase (Kotlin Multiplatform + Compose Multiplatform).
-- **Accounts and data:** Firebase Authentication with Google sign-in, and Cloud Firestore, project `live-fame`.
-- **Working name:** "Pulse". Brand strings live in `AppConfig` (`shared/.../app/AppConfig.kt`).
+New here? Read this file top to bottom, then [`HANDOVER.md`](HANDOVER.md) (accounts, servers, money, what to do
+next). The rules every contributor and coding agent follows are in [`CLAUDE.md`](CLAUDE.md); deeper design notes are
+in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`backend/README.md`](backend/README.md).
 
 ---
 
-## 1. Run it
+## 1. The app in plain words
+
+### What the user sees
+
+| Screen | What it's for |
+| --- | --- |
+| Splash, welcome, intro | Explains the idea and that everything is simulated |
+| Sign in | "Continue with Google" (the only sign-in option today) |
+| Profile setup | Pick a display name, username, avatar look and interests |
+| **Home** | A game-style dashboard: your level, points, badges, a featured live, live rooms, trending topics, a feed |
+| Discover | Browse creators, rooms and posts by category |
+| Post / creator profile | Fake creators' posts and comments (all made-up content shipped with the app) |
+| Inbox | In-app notifications (level ups, finished lives) |
+| Your profile | Your lives, best peak, badges, fame level |
+| **Live setup** | Choose a title, audience size and mood, look and feel; asks for camera and microphone here only |
+| **Live session** | Your camera, a moving comment stream, viewer count, gifts, reactions |
+| Live summary | Peak viewers, comments, gifts, points earned, level progress |
+| Daily reward | A day 1, day 2, day 3… calendar; come back daily to collect points |
+| Settings, paywall | Account, privacy, delete account; the Pro plan (not for sale yet) |
+
+### The two kinds of "points"
+
+- **Fame points** grow your level (New Creator → Rising → … → Superstar). You earn them by finishing lives. They
+  are just for fun and can't be spent.
+- **Wallet points** (the gold coin in the Home header) are spent to go live. You get them from the daily streak and,
+  later, by watching a reward ad. Admins decide the prices. They are never real money.
+
+### The three parts of the system
+
+```
+ ┌──────────────────────┐       ┌───────────────────────────┐       ┌─────────────────────────┐
+ │  The phone app        │       │  Our backend server        │       │  Firebase (Google cloud) │
+ │  Android + iOS        │──────▶│  backend/ (Node, on AWS)   │──────▶│  Login + database        │
+ │  shared/ (Kotlin)     │       │  - turns speech into text  │       │  - who you are (Auth)    │
+ │                       │       │  - writes audience comments│       │  - your profile, lives   │
+ │                       │◀──────│  - gives / takes points    │       │  - your points wallet    │
+ └──────────┬───────────┘       └─────────────┬─────────────┘       └─────────────────────────┘
+            │  reads your own data directly    │ calls AI providers with secret keys
+            └─────────────────────────────────▶│  Groq (speech to text), Gemini (comments)
+```
+
+**Why is there a server at all if we have Firebase?** Two jobs can't be done safely inside the app:
+
+1. **Secret keys.** Talking to the AI services (Groq, Gemini) needs a paid key. Anything inside an app can be pulled
+   out by anyone, so the key lives only on the server.
+2. **Points.** If the phone could change its own balance, anyone could give themselves a million points or pretend
+   they watched an ad. So the server is the only one allowed to add or remove points. Firestore's security rules
+   block the app from writing them.
+
+The server is small (plain Node.js, no extra packages) and stores nothing itself: all saved data goes to Firebase.
+
+### Where every piece of data lives
+
+| Data | Stored in | Who can write it |
+| --- | --- | --- |
+| Your account (Google login) | Firebase Authentication | Firebase, when you sign in |
+| Profile (name, avatar, fame points, lives count) | Firestore `users/{uid}` | the app (only your own) |
+| Past lives (one recap per live) | Firestore `users/{uid}/sessions/` | the app (only your own) |
+| Inbox notifications | Firestore `users/{uid}/notifications/` | the app (only your own) |
+| **Points balance and streak** | Firestore `wallets/{uid}` | **the server only** |
+| Every points change (history) | Firestore `wallets/{uid}/ledger/` | the server only |
+| Prices and rewards (admin settings) | Firestore `config/economy` | admins, in the Firebase console |
+| Paid plan (future) | Firestore `entitlements/{uid}` | the server only |
+| A copy of profile, lives and inbox for offline use | on the phone (`TextStore`) | the app |
+| Your voice | **nowhere**: sent sentence by sentence to the server, passed to Groq, thrown away | – |
+| Camera video | **nowhere**: it never leaves the phone | – |
+| The fake feed (creators, posts, rooms) | built into the app (`data/content/SeedContent.kt`) | developers |
+
+Open the Firebase console (project **live-fame**) → Firestore Database to see the real documents.
+
+### What happens during a live, step by step
+
+1. **Setup.** You pick options. If the points system is on, the server charges the live's price first.
+2. **You talk.** The phone listens and cuts your speech into sentences.
+3. **Speech to text.** Each sentence goes to our server, which asks Groq Whisper what you said (Arabic or English).
+4. **The audience reacts.** The server sends the recent text to Gemini, which suggests a few comments and maybe a gift.
+5. **Safety check.** The app checks every suggestion (length, bad words, tone) and drops anything wrong.
+6. **The engine decides.** A rule engine on the phone decides when each comment appears, how many viewers there
+   are, and when gifts land. The AI only *suggests*; the engine *decides*. That keeps the numbers believable.
+7. **No internet?** If the server is slow or down, a built-in generator on the phone writes simple comments instead,
+   so the room never goes quiet.
+8. **End.** You get a summary, earn fame points, and the recap is saved to Firestore.
+
+---
+
+## 2. Run it
 
 ### What you need
 
-- Android Studio (recent), with an emulator or a phone in developer mode.
+- Android Studio (recent), with a phone in developer mode or an emulator "with Google Play".
 - For iOS: a Mac with Xcode 16 or newer.
 - JDK 17 or newer (Android Studio's bundled one is fine).
+
+### Settings file: `local.properties`
+
+This file sits in the project root, is not committed, and tells the app where things are:
+
+| Key | What it does | If missing |
+| --- | --- | --- |
+| `sdk.dir` | Android SDK folder (Android Studio fills it in) | build fails |
+| `pulse.backendUrl` | address of our server, e.g. `https://1-2-3-4.sslip.io` | no AI server: on-device comments, no points |
+| `pulse.admobAppId` | AdMob app id for reward ads | Google's test id is used |
+| `pulse.admobRewardedUnitId` | AdMob rewarded ad unit | "watch an ad" offer is hidden |
 
 ### Android
 
 ```bash
 ./gradlew :androidApp:assembleDebug          # build the APK
-./gradlew :androidApp:installDebug           # install on the running emulator/phone
+./gradlew :androidApp:installDebug           # install on the connected phone or emulator
 ```
 
-Or open the folder in Android Studio and press Run on the `androidApp` configuration.
-Firebase is already connected on Android through `androidApp/google-services.json`.
+Or open the folder in Android Studio and press Run on `androidApp`. Firebase is connected through
+`androidApp/google-services.json`.
 
 ### iOS
 
-1. `iosApp/iosApp/GoogleService-Info.plist` is already in the repo (iOS bundle id `org.mayad.famelife`;
-   iOS bundle ids can't contain underscores, so it differs from the Android package `org.mayad.fame_life`).
-2. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK and GoogleSignIn (Swift
-   Package Manager); give it a minute.
-3. Pick an iPhone simulator and press Run. Xcode runs Gradle for you to build the shared Kotlin code.
+1. Open `iosApp/iosApp.xcodeproj` in Xcode. The first open downloads the Firebase iOS SDK and GoogleSignIn; give it
+   a minute.
+2. Pick an iPhone simulator and press Run. Xcode runs Gradle for you to build the shared Kotlin code.
 
-From the terminal instead:
+From the terminal:
 
 ```bash
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
@@ -48,220 +141,91 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator 
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO build
 ```
 
-If `xcodebuild` says it "requires Xcode", your Mac points at the Command Line Tools. Either run
-`sudo xcode-select -s /Applications/Xcode.app` once, or prefix commands with
-`DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+If `xcodebuild` says it "requires Xcode", run `sudo xcode-select -s /Applications/Xcode.app` once, or prefix the
+command with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
-### First launch
-
-Splash → welcome → "How a live works" → "Before you start" (what's simulated) → Continue with Google → pick your
-name and look → interests → home. On Android, Google sign-in needs a Google account on the device or emulator
-(an emulator image "with Google Play"). Next time you open the app you go straight home.
-
----
-
-## 2. Folder map
-
-```
-androidApp/                 Android host: MainActivity, manifest, splash theme, google-services.json
-iosApp/                     iOS host: iOSApp.swift (configures Firebase), launch screen, Xcode project
-shared/src/
-  commonMain/composeResources/  Fonts and strings (values/ English, values-ar/ Arabic)
-  commonMain/kotlin/org/mayad/fame_life/
-    App.kt                  Root: splash → onboarding → profile setup → main, picked by RootViewModel
-    app/                    RootViewModel (which gate to show), AppConfig
-      navigation/           AppRoute (typed Navigation 3 keys), AppNavigator, AppNavHost (NavDisplay + transitions)
-    di/                     Koin: dataModule (platform, Firebase, repositories), viewModelModule (one per screen)
-    core/presentation/      MviViewModel base (state, intents, one-time events) + CollectEvents
-    core/designsystem/      Pulse theme (colors, type, adaptive dimens, shapes, motion), cascade + scroll motion,
-                            previews, glossy 3D icons, shared components
-    core/ui/                Domain values to localized labels
-    core/preview/           SampleData for previews
-    core/platform/          "expect" functions each platform implements: storage, camera, mic, speech, share
-    core/analytics/         Typed analytics events (never carry names, transcripts or comment text)
-    domain/                 Pure Kotlin rules, no UI and no Firebase
-      account/              AuthService interface, AuthRules (validation + error copy)
-      simulation/           The live engine: viewers, comments, gifts, pacing, cooldowns, summary
-      ai/                   Speech transcript buffer, AI request policy, response validator, on-device audience
-      entitlement/          Free/Pro limits (Pro only from a server-verified source)
-      progression/ profile/ Fame levels, profile validation
-    data/
-      content/              Fictional seed feed: creators, posts, lives (stable ids, no randomness per render)
-      local/                Repositories screens read from (profile, sessions, inbox) = the device cache
-      cloud/                FirebaseAuthService, FirestoreCloudStore, AccountSync (keeps cache and cloud in step)
-    feature/                One folder per area: onboarding, home, discover, post, profile, live, notifications, settings, shell.
-                            Each screen = XViewModel.kt + XScreen.kt (tier 1) + XContent.kt (tier 2 + previews)
-  androidMain/ iosMain/     The platform implementations of core/platform
-  commonTest/               Tests, shared by both platforms
-docs/ARCHITECTURE.md        Data flow, backend boundary, Firestore layout, entitlements
-firestore.rules             Who may read/write what in Firestore
-firebase.json, .firebaserc  Firebase CLI config (rules deploy)
-_removed_template/          Old template files, not built, not committed
-```
-
----
-
-## 3. How a live session flows through the code
-
-```
-LiveSetupViewModel ──(LiveSetupEvent.Start → AppRoute.Live)──▶ LiveSessionViewModel
-                                                                │ creates (in viewModelScope)
-                                                    ▼
-Microphone ─▶ SpeechInput (platform) ─▶ LiveSessionController ─▶ AudienceGenerator ─▶ ResponseValidator
-                                          │  (every 200 ms tick)     (on-device today;      (rejects bad output)
-                                          ▼                           backend later)
-                                     LiveSessionEngine + EventPolicy  ◀── validated comment ideas
-                                          │  decides viewers, gifts, timing, totals
-                                          ▼
-                                     LiveSessionState (StateFlow) ─▶ Compose UI (comments, viewer count, gifts)
-                                          │
-                                   end() │
-                                          ▼
-                                     SessionSummary ─▶ history.save / profiles.recordSession / inbox ─▶ AccountSync ─▶ Firestore
-                                          │
-                                          ▼
-                                     LiveSummaryScreen (recap, level progress)
-```
-
-Where to look:
-
-| Step | File |
-| --- | --- |
-| Setup (title, audience size, mood, plan locks, lives left) | `feature/live/LiveSetupViewModel.kt`, `LiveSetupContent.kt` |
-| Camera/mic permission (asked only here) | `feature/live/LiveSetupScreen.kt` |
-| Owning the session, countdown, pause on background | `feature/live/LiveSessionViewModel.kt` |
-| Saving the result (history, points, inbox, analytics) | `feature/live/SessionRecorder.kt` |
-| Coroutines, speech, AI requests, start/pause/end | `domain/simulation/LiveSessionController.kt` |
-| Viewer counts, comment pacing, gifts, totals | `domain/simulation/LiveSessionEngine.kt`, `EventPolicy.kt`, `ViewerCountEngine.kt` |
-| What the audience says | `domain/ai/LocalAudienceGenerator.kt` (on device), `AudienceProtocol.kt` (future backend) |
-| Safety net on AI output | `domain/ai/ResponseValidator.kt` |
-
-The golden rule: **the AI proposes, the engine decides.** The AI can suggest a comment or a gift; only the engine
-decides if and when it shows, and what the totals are.
-
----
-
-## 4. How Firebase is wired
-
-- **Start-up:** Android initializes Firebase from `google-services.json` (`PulseAndroid.init` in
-  `shared/src/androidMain/.../PlatformServices.android.kt`). iOS calls `FirebaseApp.configure()` in
-  `iosApp/iosApp/iOSApp.swift` when `GoogleService-Info.plist` is bundled.
-- **Choosing real or "not configured":** `di/KoinModules.kt` checks `isFirebaseConfigured()`. If false it uses
-  `UnavailableAuthService`, so the app runs and says plainly that sign-in isn't set up.
-- **Accounts (Google only):** `domain/account/Auth.kt` defines `AuthService` (sign in with Google, sign out,
-  re-confirm, delete) and `GoogleTokenProvider` (shows the platform account picker). `FirebaseAuthService` turns the
-  Google token into a Firebase credential. The picker is `GoogleSignIn.android.kt` (Credential Manager) on Android
-  and `GoogleSignInBridge.swift` (GoogleSignIn SDK) on iOS, handed to Kotlin through `PulseIos.googleSignIn`.
-  Errors become `AuthErrorKind`, which `AuthRules.message` turns into friendly copy (closing the picker shows none).
-- **Google sign-in keys:** Android needs each signing key's SHA-1 registered in Firebase (debug is done; add the
-  release key with `firebase apps:android:sha:create <appId> <sha1> --project live-fame`, then re-download
-  `google-services.json`). iOS needs the `REVERSED_CLIENT_ID` URL scheme in `Info.plist` (done).
-- **Data:** screens never talk to Firestore. They read the repositories in `data/local/` (plain `StateFlow`s).
-  `AccountSync` (`data/cloud/AccountSync.kt`):
-  - on sign-in, loads `users/{uid}`, the newest sessions and the inbox into those repositories;
-  - whenever a repository changes, writes the change to Firestore;
-  - on sign-out (or a different account), wipes the device cache.
-- **Firestore layout:** `users/{uid}` (profile), `users/{uid}/sessions/{id}`, `users/{uid}/notifications/{id}`.
-  `entitlements/{uid}` and `usage/{uid}` are reserved for the server; the app never writes them.
-- **Rules:** `firestore.rules`, already deployed. After editing, redeploy with
-  `firebase deploy --only firestore --project live-fame`.
-- **Library:** [GitLive firebase-kotlin-sdk](https://github.com/GitLiveApp/firebase-kotlin-sdk) 2.7.0 in
-  `commonMain`. On iOS it needs the real Firebase iOS SDK linked, which the Xcode project does through Swift Package
-  Manager (`firebase-ios-sdk` 11.x: FirebaseCore, FirebaseAuth, FirebaseFirestore).
-
----
-
-## 5. How to add a screen
-
-Every screen has a ViewModel, three composable tiers, its strings in resources, and previews. Example
-`feature/badges/`:
-
-```kotlin
-// BadgesViewModel.kt: state, intents and events. Plain Kotlin collections become ImmutableList/ImmutableSet.
-@Immutable
-data class BadgesUiState(val points: Int = 0, val badges: ImmutableList<Badge> = persistentListOf())
-
-class BadgesViewModel(profiles: ProfileRepository) : MviViewModel<BadgesUiState, Nothing, NoEvent>(BadgesUiState()) {
-    init { viewModelScope.launch { profiles.profile.collect { p -> setState { copy(points = p?.famePoints ?: 0) } } } }
-    override fun onIntent(intent: Nothing) = Unit
-}
-
-// BadgesScreen.kt, tier 1: gets the ViewModel from Koin, collects state, turns callbacks into navigation.
-@Composable
-fun BadgesScreen(onBack: () -> Unit, viewModel: BadgesViewModel = koinViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    BadgesContent(state, onBack)
-}
-
-// BadgesContent.kt, tier 2: stateless. Only parameters in, callbacks out, so it previews in any state.
-@Composable
-fun BadgesContent(state: BadgesUiState, onBack: () -> Unit) {
-    AtmosphereBackground {
-        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            ScreenHeader(stringResource(Res.string.badges_title), onBack = onBack)
-            // Tier 3: pick the layout by window width, not by device.
-            if (Pulse.width.split) { /* side-by-side panes, e.g. SplitPanes(...) */ } else { /* one column */ }
-        }
-    }
-}
-
-@ScreenPreviews
-@Composable
-private fun BadgesPreview() = PreviewContainer { BadgesContent(BadgesUiState(points = 640), onBack = {}) }
-```
-
-Then:
-1. Add the strings to `composeResources/values/strings_<feature>.xml` **and** the Arabic to `values-ar/`.
-2. Register the ViewModel in `di/ViewModelModule.kt` (`viewModelOf(::BadgesViewModel)`, or
-   `viewModel { (id: String) -> ... }` when it takes a route argument passed with `parametersOf(id)`).
-3. Add a `@Serializable data object Badges : AppRoute` in `app/navigation/AppRoute.kt`, register it in
-   `AppRouteSavedState`, and add an `entry<AppRoute.Badges> { BadgesScreen(onBack = navigator::pop) }` in
-   `AppNavHost`. Each entry gets its own ViewModel store, cleared when the screen is popped.
-
-Keep screen state in the ViewModel, not in `rememberSaveable`. Composable parameters must be stable: use
-`ImmutableList`/`ImmutableSet` (kotlinx-collections-immutable) and `@Immutable` state classes. Pure-Kotlin domain
-and content models are declared stable in `compose-stability.conf`.
-
-Rules (from `CLAUDE.md`): sizes from `Pulse.dimens`, colors from `Pulse.colors`, shapes from `Pulse.shapes`, no
-literal dp/sp/colors/strings; glossy `GlossyIcon` tiles on feature surfaces; every button works or is visibly
-disabled with a reason; respect `Pulse.reducedMotion`; label simulated numbers with `SimulatedTag`; enter lists with
-`cascadeIn`; read scroll/animation values only in `graphicsLayer` or draw lambdas.
-
-## 6. Tests
+### Tests
 
 ```bash
-./gradlew :shared:testAndroidHostTest        # all shared tests, on your computer (fast)
+./gradlew :shared:testAndroidHostTest        # all app logic tests, on your computer
+cd backend && npm test                       # server tests, no keys needed
 ```
 
-Tests live in `shared/src/commonTest/`. They cover the simulation engine, AI pipeline, progression, local
-repositories, auth validation, account sync, the back stack, the root gate, screen ViewModels (inbox, live setup,
-edit profile) and that every ViewModel resolves from the Koin graph. Firebase is never called in tests: `FakeAuthService` and
-`FakeCloudStore` stand in for it. To test new logic, put it in `domain/` or `data/` (not in a composable) and use
-these fakes. ViewModel tests extend `ViewModelTest`, which swaps `Dispatchers.Main` for a test dispatcher.
+---
 
-`./gradlew :shared:iosSimulatorArm64Test` currently **fails to link** (`framework 'FirebaseCore' not found`) because
-the iOS test binary needs the Firebase frameworks on its search path. The same tests run on the Android host above.
+## 3. How the code is organised
+
+Almost all code lives in **`shared/`** and runs on both Android and iOS. `androidApp/` and `iosApp/` are thin shells
+that start it.
+
+```
+androidApp/                 Android shell: MainActivity, manifest, google-services.json
+iosApp/                     iOS shell: iOSApp.swift (starts Firebase), Google sign-in bridge, Xcode project
+backend/                    Our server (Node.js): routes, AI calls, points, deploy script
+docs/                       ARCHITECTURE.md (deep dive), licenses/
+firestore.rules             Who may read/write what in Firestore (deploy with the Firebase CLI)
+shared/src/
+  commonMain/composeResources/  Fonts and all text (values/ = English, values-ar/ = Arabic)
+  commonMain/kotlin/org/mayad/fame_life/
+    App.kt                  Decides the first screen: splash → onboarding → profile setup → main
+    app/navigation/         The list of screens (AppRoute) and how to move between them (AppNavHost)
+    di/                     Koin "wiring": which real or fake class each part of the app gets
+    core/designsystem/      The look: Pulse colors, sizes, fonts, motion, glossy icons, HUD pieces (Hud.kt)
+    core/platform/          Things each phone does differently: storage, camera, mic, speech, ads
+    core/ui/                Turns codes (levels, badges, errors) into translated text
+    domain/                 The rules, pure Kotlin, no screens and no Firebase:
+      simulation/           the live engine (viewers, comments, gifts, timing)
+      ai/                   speech buffer, AI request limits, the safety check, on-device audience
+      economy/              points: streak rules, prices, the PointsService interface
+      progression/          fame levels and badges
+      entitlement/          Free vs Pro limits
+      account/ profile/     sign-in contract, profile validation
+    data/
+      content/              The made-up feed (creators, posts, rooms)
+      local/                What screens read: profile, lives, inbox (the phone's copy)
+      cloud/                Firebase sign-in and Firestore sync (AccountSync)
+      economy/              Reads the wallet from Firestore, asks the server to claim/spend
+      remote/               Talks to our backend (speech, audience)
+    feature/                One folder per area of the app (home, live, profile, points, settings, …)
+  androidMain/ iosMain/     The Android and iOS versions of core/platform
+  commonTest/               Tests
+```
+
+### Words you'll see in the code
+
+| Word | Means |
+| --- | --- |
+| **Kotlin Multiplatform / Compose Multiplatform** | Write the app once in Kotlin, run it on Android and iOS |
+| **Screen / Content / ViewModel** | Each screen has 3 files: the ViewModel holds the data, `XScreen` connects it, `XContent` draws it |
+| **State** | Everything a screen shows, in one object. Change the state and the screen redraws |
+| **Repository** | A box that holds one kind of data (profile, lives) and tells screens when it changes |
+| **Koin** | Hands each class the things it needs, so tests can swap in fakes |
+| **Firestore** | Google's cloud database. Data is "documents" inside "collections", like folders and files |
+| **Firestore rules** | The guard that decides who can read or write each document |
+| **Backend / server** | Our own program on AWS that holds secret keys and owns points |
+| **Firebase ID token** | Proof the app sends to the server that says "this really is user X" |
+| **Pulse** | The design system: every color, size and font comes from `Pulse.*` |
+| **Simulated** | Made-up by the app. Always labelled so nobody thinks it's real |
+
+### How to add a screen
+
+1. Make `feature/<name>/` with `XViewModel.kt` (state + actions), `XScreen.kt` (connects ViewModel and navigation)
+   and `XContent.kt` (draws the state, plus previews at the end of the file).
+2. Put all text in `composeResources/values/strings_<feature>.xml` **and** the Arabic in `values-ar/`.
+3. Register the ViewModel in `di/ViewModelModule.kt` (`viewModelOf(::XViewModel)`).
+4. Add a route in `app/navigation/AppRoute.kt` and an `entry<AppRoute.X> { … }` in `AppNavHost`.
+5. Follow `CLAUDE.md`: no hard-coded sizes, colors or text; every button works or is visibly disabled; label
+   simulated numbers; respect reduced motion.
 
 ---
 
-## 7. What isn't built yet
+## 4. What isn't built yet
 
-- **AI backend.** The audience runs on the device (`LocalAudienceGenerator`). The protocol for a server-side LLM is
-  ready (`AudienceProtocol.kt`); the server isn't. Never put an API key in the app.
-- **Billing.** Everyone is on Free. Pro must come from a server-verified purchase written to `entitlements/{uid}`.
-- **iOS camera and speech.** The iOS live screen shows honest fallbacks; AVFoundation and SFSpeechRecognizer aren't
-  wired.
-- **Sign-in options.** Google only. Apple sign-in (required by App Store rules when other social logins exist)
-  and unique usernames are not done.
-- **Firebase extras.** Analytics forwarding, Crashlytics, App Check, Remote Config.
-- **iOS unit tests** (see Tests).
+- **Billing.** Everyone is on Free. Pro must come from a store purchase verified by the server.
+- **Points on iOS.** iOS has no backend client yet, so no balance, no ads, and lives are free there.
+- **iOS camera and speech.** The iOS live screen shows honest fallbacks.
+- **Sign-in options.** Google only. Apple sign-in (needed for the App Store) is not done.
+- **Firebase extras.** Analytics, Crashlytics, App Check, Remote Config.
+- **iOS unit tests** fail to link today (`framework 'FirebaseCore' not found`); the same tests run on Android.
 
----
-
-## 8. Firebase setup status
-
-- Google sign-in provider: enabled in the console.
-- Firestore rules and indexes: deployed.
-- Android app: debug SHA-1 registered, `google-services.json` includes the web client id.
-- iOS app `org.mayad.famelife`: registered, `GoogleService-Info.plist` committed.
-- Still to do before a store release: register the release keystore SHA-1; add Apple sign-in for iOS.
+See [`HANDOVER.md`](HANDOVER.md) for the full status and next steps.
