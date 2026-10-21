@@ -132,6 +132,7 @@ fun HomeContent(
     onCreator: (String) -> Unit,
     onPost: (String) -> Unit,
     onChallenge: (String) -> Unit,
+    onWallet: (() -> Unit)? = null,
 ) {
     val dimens = Pulse.dimens
     val grid = rememberLazyStaggeredGridState()
@@ -215,6 +216,7 @@ fun HomeContent(
             haze = haze,
             grid = grid,
             onInbox = onInbox,
+            onWallet = onWallet,
             modifier = Modifier.align(Alignment.TopCenter).onSizeChanged { hudHeight = with(density) { it.height.toDp() } },
         )
     }
@@ -262,13 +264,22 @@ private fun HeroBlock(
  * exists, and the inbox. The grid scrolls under it through a blur; a hairline appears once content is underneath.
  */
 @Composable
-private fun HomeHud(state: HomeUiState, haze: HazeState, grid: LazyStaggeredGridState, onInbox: () -> Unit, modifier: Modifier = Modifier) {
+private fun HomeHud(
+    state: HomeUiState,
+    haze: HazeState,
+    grid: LazyStaggeredGridState,
+    onInbox: () -> Unit,
+    onWallet: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
     val colors = Pulse.colors
     val dimens = Pulse.dimens
     val hud = state.hud
     val inbox = stringResource(Res.string.tab_inbox)
     val levelNumber = hud.level.level.ordinal + 1
     val levelTitle = hud.level.level.title()
+    // Only the spendable wallet opens the points dialog; fame points have nothing to collect.
+    val openWallet = onWallet?.takeIf { hud.wallet }
     val blur = remember(colors, dimens) {
         HazeBlurStyle {
             blurRadius(dimens.hudBlur)
@@ -307,10 +318,10 @@ private fun HomeHud(state: HomeUiState, haze: HazeState, grid: LazyStaggeredGrid
             Text(levelTitle.uppercase(), style = Pulse.type.overline, color = colors.gold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Spacer(Modifier.width(dimens.xs))
-        HudPill(hud.points, stringResource(if (hud.wallet) Res.string.hud_wallet else Res.string.hud_points, compactCount(hud.points)))
+        HudPill(hud.points, stringResource(if (hud.wallet) Res.string.hud_wallet else Res.string.hud_points, compactCount(hud.points)), onClick = openWallet)
         hud.streakDays?.let { days ->
             Spacer(Modifier.width(dimens.sm))
-            HudPill(days, stringResource(Res.string.hud_streak, days), accent = colors.coral, emblem = { FlameEmblem() })
+            HudPill(days, stringResource(Res.string.hud_streak, days), accent = colors.coral, onClick = openWallet, emblem = { FlameEmblem() })
         }
         HudIconButton(
             Glyphs.Bell,

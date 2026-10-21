@@ -113,7 +113,7 @@ private fun DrawScope.drawCoin(colors: PulseColors) {
 
 /**
  * A HUD currency or counter pill: the emblem overlaps the pill's leading edge like a game wallet, the number sits in
- * bold numeric type. [value] eases to new totals.
+ * bold numeric type. [value] eases to new totals. With [onClick] the pill is a button (it opens the wallet).
  */
 @Composable
 fun HudPill(
@@ -121,11 +121,17 @@ fun HudPill(
     contentDescription: String,
     modifier: Modifier = Modifier,
     accent: Color = Pulse.colors.gold,
+    onClick: (() -> Unit)? = null,
     emblem: @Composable () -> Unit = { CoinEmblem() },
 ) {
     val colors = Pulse.colors
     val dimens = Pulse.dimens
-    Box(modifier.semantics(mergeDescendants = true) { this.contentDescription = contentDescription }, contentAlignment = Alignment.CenterStart) {
+    Box(
+        modifier
+            .then(if (onClick != null) Modifier.pressable(onClick = onClick) else Modifier)
+            .semantics(mergeDescendants = true) { this.contentDescription = contentDescription },
+        contentAlignment = Alignment.CenterStart,
+    ) {
         Row(
             Modifier
                 .padding(start = dimens.emblem / 2)
